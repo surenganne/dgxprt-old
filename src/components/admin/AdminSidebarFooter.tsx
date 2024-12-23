@@ -1,18 +1,16 @@
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, PanelLeft, PanelRightOpen } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
-import { SidebarFooter, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { SidebarFooter } from "@/components/ui/sidebar";
+import { AdminSidebarCollapse } from "./AdminSidebarCollapse";
 import { toast } from "sonner";
 
 export const AdminSidebarFooter = () => {
   const session = useSession();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
-  const { state } = useSidebar();
-  const isMobile = useIsMobile();
 
   const handleSignOut = async () => {
     try {
@@ -39,26 +37,7 @@ export const AdminSidebarFooter = () => {
               <p className="text-xs text-white/70">Administrator</p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=collapsed]:px-3 group-data-[state=collapsed]:py-3"
-            size="sm"
-            asChild
-          >
-            <SidebarTrigger>
-              {state === "collapsed" ? (
-                <div className="flex items-center w-full">
-                  <PanelRightOpen className="h-5 w-5" />
-                  <span className="ml-2">Expand</span>
-                </div>
-              ) : (
-                <div className="flex items-center w-full">
-                  <PanelLeft className="h-5 w-5" />
-                  <span className="ml-2">Collapse</span>
-                </div>
-              )}
-            </SidebarTrigger>
-          </Button>
+          <AdminSidebarCollapse />
         </div>
         <div className="flex flex-col space-y-2">
           <ThemeToggle />
