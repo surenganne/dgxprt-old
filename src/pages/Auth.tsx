@@ -22,13 +22,19 @@ const Auth = () => {
         try {
           const { data: profile, error } = await supabase
             .from('profiles')
-            .select('is_admin')
+            .select('is_admin, status')
             .eq('id', session.user.id)
             .single();
 
           if (error) {
             console.error('Error fetching profile:', error);
             toast.error('Error checking user permissions');
+            return;
+          }
+
+          if (profile?.status !== 'active') {
+            toast.error('Your account is not active. Please contact an administrator.');
+            await supabase.auth.signOut();
             return;
           }
 
