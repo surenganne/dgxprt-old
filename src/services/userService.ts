@@ -4,24 +4,51 @@ import { generateSecurePassword } from "@/utils/passwordUtils";
 import { sendWelcomeEmail } from "./emailService";
 
 export const createNewUser = async (formData: UserFormData) => {
-  console.log('Creating new user');
+  console.log('Creating new user - start');
+  
+  // First check if user already exists in auth
+  const { data: existingAuth } = await supabase.auth.admin.listUsers({
+    filters: {
+      email: formData.email
+    }
+  });
+
+  if (existingAuth?.users?.length > 0) {
+    console.log('User already exists in auth system');
+    // Just update their profile
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({
+        email: formData.email,
+        full_name: formData.full_name,
+        is_admin: formData.is_admin,
+        status: formData.status,
+      })
+      .eq("email", formData.email);
+
+    if (profileError) {
+      console.error('Error updating existing profile:', profileError);
+      throw profileError;
+    }
+    console.log('Profile updated successfully');
+    return;
+  }
+
+  // If user doesn't exist, create new
   const tempPassword = generateSecurePassword();
   console.log('Generated temporary password');
   
-  console.log('Attempting to sign up new user');
-  const { data: authData, error: authError } = await supabase.auth.signUp({
+  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
     email: formData.email,
     password: tempPassword,
-    options: {
-      data: {
-        full_name: formData.full_name,
-      },
-      emailRedirectTo: `${window.location.origin}/auth`,
+    email_confirm: true,
+    user_metadata: {
+      full_name: formData.full_name,
     },
   });
 
   if (authError) {
-    console.error('Error in auth signup:', authError);
+    console.error('Error in auth creation:', authError);
     throw authError;
   }
 
@@ -29,7 +56,7 @@ export const createNewUser = async (formData: UserFormData) => {
     console.log('User created successfully:', authData.user.id);
     await sendWelcomeEmail(formData.email, tempPassword);
 
-    console.log('Updating profile with admin status');
+    // Profile will be created automatically via trigger
     const { error: profileError } = await supabase
       .from("profiles")
       .update({
@@ -49,6 +76,7 @@ export const createNewUser = async (formData: UserFormData) => {
 };
 
 export const updateExistingUser = async (userId: string, formData: UserFormData) => {
+  console.log('Updating existing user:', userId);
   const { error } = await supabase
     .from("profiles")
     .update({
