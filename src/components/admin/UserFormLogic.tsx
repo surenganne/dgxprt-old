@@ -116,12 +116,13 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
         } else {
           // Create new user with secure password
           const tempPassword = generateSecurePassword();
-          const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+          const { data: authData, error: authError } = await supabase.auth.signUp({
             email: formData.email,
             password: tempPassword,
-            email_confirm: true,
-            user_metadata: {
-              full_name: formData.full_name,
+            options: {
+              data: {
+                full_name: formData.full_name,
+              },
             },
           });
 
