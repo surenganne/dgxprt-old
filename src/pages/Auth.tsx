@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { BackgroundEffects } from "@/components/shared/BackgroundEffects";
+import type { CSSProperties } from "react";
 
 const Auth = () => {
   const session = useSession();
@@ -65,14 +66,14 @@ const Auth = () => {
                 marginBottom: '10px',
                 transition: 'all 150ms ease',
                 transform: 'translateY(0)',
-                hover: {
+                '&:hover': {
                   background: '#7a4ba3',
                   transform: 'translateY(-1px)'
-                },
-                active: {
+                } as CSSProperties,
+                '&:active': {
                   transform: 'translateY(0)'
-                }
-              },
+                } as CSSProperties
+              } as CSSProperties,
               input: {
                 background: 'transparent',
                 border: '1px solid rgb(var(--border))',
@@ -80,32 +81,32 @@ const Auth = () => {
                 padding: '10px 16px',
                 fontSize: '14px',
                 marginBottom: '10px',
-                focus: {
+                '&:focus': {
                   borderColor: '#895AB7',
                   outline: 'none',
                   boxShadow: '0 0 0 2px rgba(137, 90, 183, 0.2)'
-                }
-              },
+                } as CSSProperties
+              } as CSSProperties,
               label: {
                 color: 'rgb(var(--foreground))',
                 fontSize: '14px',
                 marginBottom: '6px'
-              },
+              } as CSSProperties,
               message: {
                 color: 'rgb(var(--muted-foreground))',
                 fontSize: '14px',
                 marginBottom: '16px'
-              },
+              } as CSSProperties,
               anchor: {
                 color: '#895AB7',
                 textDecoration: 'none',
-                hover: {
+                '&:hover': {
                   textDecoration: 'underline'
-                }
-              },
+                } as CSSProperties
+              } as CSSProperties,
               container: {
                 gap: '16px'
-              }
+              } as CSSProperties
             }
           }}
           providers={[]}
