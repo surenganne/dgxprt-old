@@ -12,25 +12,44 @@ const Index = () => {
       
       {/* Hero Section */}
       <section className="relative py-20 px-4 overflow-hidden dark:bg-background/50 dark:backdrop-blur-xl">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-purple/10 to-primary-blue/10 -z-10" />
-        <div className="absolute inset-0 bg-grid-white/10 -z-10" />
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-primary-purple/10 px-4 py-1.5 rounded-full text-sm text-primary-purple mb-6 backdrop-blur-sm">
+        {/* Enhanced gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-purple/10 via-primary-blue/5 to-transparent -z-10" />
+        
+        {/* Improved grid pattern with animation */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8882_1px,transparent_1px),linear-gradient(to_bottom,#8882_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] -z-10" />
+        
+        {/* Animated floating shapes */}
+        <div className="absolute inset-0 overflow-hidden -z-10">
+          <div className="absolute -left-4 top-10 h-72 w-72 rounded-full bg-primary-purple/10 mix-blend-multiply blur-xl animate-blob" />
+          <div className="absolute -right-4 top-10 h-72 w-72 rounded-full bg-primary-blue/10 mix-blend-multiply blur-xl animate-blob animation-delay-2000" />
+          <div className="absolute left-1/2 bottom-10 h-72 w-72 rounded-full bg-primary-purple/10 mix-blend-multiply blur-xl animate-blob animation-delay-4000" />
+        </div>
+
+        <div className="max-w-3xl mx-auto text-center relative">
+          <div className="inline-flex items-center gap-2 bg-primary-purple/10 px-4 py-1.5 rounded-full text-sm text-primary-purple mb-6 backdrop-blur-sm hover:bg-primary-purple/20 transition-colors duration-300 cursor-pointer">
             <span>New Features Available</span>
-            <span>→</span>
+            <span className="animate-bounce">→</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary-purple to-primary-blue">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-br from-primary-purple via-primary-blue to-primary-purple/80 animate-gradient">
             Chemical Management Simplified
           </h1>
-          <p className="text-xl text-muted-foreground mb-8">
+          <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
             Comprehensive chemical inventory management, SDS tracking,
             and compliance monitoring in one secure platform.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button size="lg" className="bg-primary-purple hover:bg-primary-purple/90 shadow-lg shadow-primary-purple/20">
+            <Button 
+              size="lg" 
+              className="bg-gradient-to-r from-primary-purple to-primary-blue hover:opacity-90 transition-opacity duration-300 shadow-lg shadow-primary-purple/20 group"
+            >
               Start Free Trial
+              <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
             </Button>
-            <Button size="lg" variant="outline" className="border-primary-purple/20 hover:bg-primary-purple/5">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-primary-purple/20 hover:bg-primary-purple/5 transition-colors duration-300"
+            >
               Schedule Demo
             </Button>
           </div>
