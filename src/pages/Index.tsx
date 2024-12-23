@@ -1,54 +1,42 @@
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useSession } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { Header } from "@/components/shared/Header";
+import { Footer } from "@/components/shared/Footer";
+import { BackgroundEffects } from "@/components/shared/BackgroundEffects";
 
 const Index = () => {
   const session = useSession();
-  const supabase = useSupabaseClient();
   const navigate = useNavigate();
 
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      navigate("/auth");
-      toast.success("Signed out successfully");
-    } catch (error) {
-      toast.error("Error signing out");
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">DGXPRT</h1>
-          <div className="flex items-center gap-4">
-            {session ? (
-              <>
-                <span className="text-sm text-muted-foreground">
-                  {session.user.email}
-                </span>
-                <Button variant="outline" onClick={handleSignOut}>
-                  Sign Out
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-grow">
+        <div className="relative">
+          <BackgroundEffects />
+          <div className="container mx-auto px-4 py-16 relative z-10">
+            <div className="max-w-3xl mx-auto text-center">
+              <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary-purple to-primary-blue">
+                Modern Chemical Management System
+              </h1>
+              <p className="text-xl text-muted-foreground mb-8">
+                Streamline your chemical inventory, safety, and compliance processes with our comprehensive management solution.
+              </p>
+              {!session && (
+                <Button
+                  size="lg"
+                  onClick={() => navigate("/auth")}
+                  className="bg-gradient-to-r from-primary-purple to-primary-blue text-white hover:opacity-90 transition-opacity"
+                >
+                  Get Started
                 </Button>
-              </>
-            ) : (
-              <Button variant="default" onClick={() => navigate("/auth")}>
-                Get Started
-              </Button>
-            )}
-            <ThemeToggle />
+              )}
+            </div>
           </div>
         </div>
-      </header>
-      <main className="container mx-auto px-4 py-8">
-        <h2 className="text-xl font-semibold mb-4">
-          {session ? "Welcome to DGXPRT" : "DGXPRT - Chemical Management System"}
-        </h2>
-        {/* Landing page content will go here */}
       </main>
+      <Footer />
     </div>
   );
 };
