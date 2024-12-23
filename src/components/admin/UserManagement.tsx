@@ -1,23 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UserFormDialog } from "./UserFormDialog";
-import { Badge } from "@/components/ui/badge";
 import { DeleteUserDialog } from "./DeleteUserDialog";
-import { UserActions } from "./UserActions";
-
-// Since this file is quite long (205 lines), let's split it into smaller components
 import { UserTableHeader } from "./UserTableHeader";
 import { UserTableRow } from "./UserTableRow";
 
@@ -151,50 +140,20 @@ export const UserManagement = () => {
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
         <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-50">
-              <TableHead className="text-primary-blue">Name</TableHead>
-              <TableHead className="text-primary-blue">Email</TableHead>
-              <TableHead className="text-primary-blue">Role</TableHead>
-              <TableHead className="text-primary-blue">Status</TableHead>
-              <TableHead className="text-primary-blue">Created At</TableHead>
-              <TableHead className="text-right text-primary-blue">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
+          <UserTableHeader />
           <TableBody>
             {users?.map((user) => (
-              <TableRow key={user.id} className="hover:bg-gray-50">
-                <TableCell className="font-medium">{user.full_name || "N/A"}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.is_admin ? "Admin" : "User"}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={user.status === "active" ? "default" : "secondary"}
-                    className={
-                      user.status === "active"
-                        ? "bg-green-100 text-green-800 hover:bg-green-100"
-                        : "bg-gray-100 text-gray-800 hover:bg-gray-100"
-                    }
-                  >
-                    {user.status === "active" ? "Active" : "Inactive"}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-gray-600">
-                  {new Date(user.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <UserActions
-                    user={user}
-                    isLoading={isLoading}
-                    onEdit={() => handleEditUser(user)}
-                    onDelete={() => {
-                      setUserToDelete(user);
-                      setDeleteDialogOpen(true);
-                    }}
-                    onSendPassword={() => handleSendPassword(user.email)}
-                  />
-                </TableCell>
-              </TableRow>
+              <UserTableRow
+                key={user.id}
+                user={user}
+                isLoading={isLoading}
+                onEdit={handleEditUser}
+                onDelete={() => {
+                  setUserToDelete(user);
+                  setDeleteDialogOpen(true);
+                }}
+                onSendPassword={handleSendPassword}
+              />
             ))}
           </TableBody>
         </Table>
