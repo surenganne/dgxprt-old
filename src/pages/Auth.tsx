@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ const Auth = () => {
   const emailFromUrl = urlParams.get('email');
 
   // If email is provided in URL, set it
-  useState(() => {
+  useEffect(() => {
     if (emailFromUrl) {
       setEmail(emailFromUrl);
     }
