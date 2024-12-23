@@ -2,10 +2,11 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { cn } from "@/lib/utils";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
   
   const isActiveLink = (path: string) => {
     return location.hash === path;
@@ -53,6 +54,7 @@ export function Header() {
             <Button 
               variant="outline" 
               className="hidden md:inline-flex transition-all hover:scale-105"
+              onClick={() => navigate("/auth")}
             >
               Get Started
             </Button>
