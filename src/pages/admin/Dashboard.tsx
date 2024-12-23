@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sidebar";
 import { AdminSidebarContent } from "@/components/admin/AdminSidebarContent";
 import { AdminSidebarFooter } from "@/components/admin/AdminSidebarFooter";
-import { menuItems } from "@/config/admin-menu";
+import { UserManagement } from "@/components/admin/UserManagement";
 
 const AdminDashboard = () => {
   const session = useSession();
@@ -63,31 +63,7 @@ const AdminDashboard = () => {
 
         <main className="flex-1 overflow-auto">
           <div className="container mx-auto px-4 py-6">
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-semibold text-foreground">
-                Admin Dashboard
-              </h1>
-            </div>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {menuItems.slice(0, 6).map((item) => (
-                <div
-                  key={item.path}
-                  className="p-6 rounded-lg border border-border bg-card hover:border-primary-purple/50 transition-colors"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 rounded-md bg-primary-purple/10 dark:bg-primary-purple/20">
-                      <item.icon className="h-6 w-6 text-primary-purple" />
-                    </div>
-                    <h3 className="text-lg font-medium text-foreground">
-                      {item.label}
-                    </h3>
-                  </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Manage {item.label.toLowerCase()} and related settings
-                  </p>
-                </div>
-              ))}
-            </div>
+            <UserManagement />
           </div>
         </main>
       </div>
