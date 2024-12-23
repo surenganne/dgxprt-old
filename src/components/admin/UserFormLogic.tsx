@@ -34,6 +34,7 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
 
   useEffect(() => {
     if (user) {
+      console.log('Initializing form with existing user:', user);
       setFormData({
         email: user.email || "",
         full_name: user.full_name || "",
@@ -41,6 +42,7 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
         status: user.status as 'active' | 'inactive',
       });
     } else {
+      console.log('Initializing form for new user');
       setFormData({
         email: "",
         full_name: "",
@@ -51,26 +53,37 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
   }, [user]);
 
   const sendWelcomeEmail = async (email: string, password: string) => {
+    console.log('Attempting to send welcome email to:', email);
     const loginLink = `${window.location.origin}/auth`;
 
-    const { error } = await supabase.functions.invoke('send-welcome-email', {
-      body: {
-        to: email,
-        password,
-        loginLink,
-      },
-    });
+    try {
+      const { error } = await supabase.functions.invoke('send-welcome-email', {
+        body: {
+          to: email,
+          password,
+          loginLink,
+        },
+      });
 
-    if (error) throw error;
+      if (error) {
+        console.error('Error sending welcome email:', error);
+        throw error;
+      }
+      console.log('Welcome email sent successfully');
+    } catch (error) {
+      console.error('Error in sendWelcomeEmail:', error);
+      throw error;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submission started with data:', formData);
     setLoading(true);
 
     try {
       if (user) {
-        // Update existing user
+        console.log('Updating existing user:', user.id);
         const { error } = await supabase
           .from("profiles")
           .update({
@@ -81,23 +94,31 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
           })
           .eq("id", user.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error updating user profile:', error);
+          throw error;
+        }
 
+        console.log('User updated successfully');
         toast({
           title: "User updated successfully",
           description: "The user's information has been updated.",
         });
       } else {
-        // First check if user exists in profiles table
+        console.log('Checking for existing profile with email:', formData.email);
         const { data: existingProfile, error: profileError } = await supabase
           .from("profiles")
           .select("id")
           .eq("email", formData.email)
           .maybeSingle();
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error('Error checking existing profile:', profileError);
+          throw profileError;
+        }
 
         if (existingProfile) {
+          console.log('Updating existing profile:', existingProfile.id);
           const { error: updateError } = await supabase
             .from("profiles")
             .update({
@@ -107,17 +128,22 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
             })
             .eq("id", existingProfile.id);
 
-          if (updateError) throw updateError;
+          if (updateError) {
+            console.error('Error updating existing profile:', updateError);
+            throw updateError;
+          }
 
+          console.log('Existing user updated successfully');
           toast({
             title: "User updated successfully",
             description: "The existing user's information has been updated.",
           });
         } else {
-          // Create new user with secure password
+          console.log('Creating new user');
           const tempPassword = generateSecurePassword();
+          console.log('Generated temporary password');
           
-          // Use a custom signup that doesn't automatically sign in
+          console.log('Attempting to sign up new user');
           const { data: authData, error: authError } = await supabase.auth.signUp({
             email: formData.email,
             password: tempPassword,
@@ -129,12 +155,17 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
             },
           });
 
-          if (authError) throw authError;
+          if (authError) {
+            console.error('Error in auth signup:', authError);
+            throw authError;
+          }
 
           if (authData?.user) {
-            // Send welcome email with password
+            console.log('User created successfully:', authData.user.id);
+            console.log('Sending welcome email');
             await sendWelcomeEmail(formData.email, tempPassword);
 
+            console.log('Updating profile with admin status');
             const { error: profileError } = await supabase
               .from("profiles")
               .update({
@@ -143,8 +174,12 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
               })
               .eq("id", authData.user.id);
 
-            if (profileError) throw profileError;
+            if (profileError) {
+              console.error('Error updating profile:', profileError);
+              throw profileError;
+            }
 
+            console.log('Profile updated successfully');
             toast({
               title: "User created successfully",
               description: "Login credentials have been sent to the user's email.",
@@ -153,10 +188,11 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
         }
       }
 
+      console.log('Form submission completed successfully');
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
-      console.error("Error:", error);
+      console.error("Error in form submission:", error);
       toast({
         title: user ? "Error updating user" : "Error creating user",
         description: error.message,
