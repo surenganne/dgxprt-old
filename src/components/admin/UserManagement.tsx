@@ -13,6 +13,12 @@ import { Button } from "@/components/ui/button";
 import { UserPlus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { UserFormDialog } from "./UserFormDialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const UserManagement = () => {
   const { toast } = useToast();
@@ -40,7 +46,17 @@ export const UserManagement = () => {
     },
   });
 
-  const handleDeleteUser = async (userId: string) => {
+  const handleDeleteUser = async (userId: string, email: string) => {
+    // Prevent deletion of admin@dgxprt.ai
+    if (email === "admin@dgxprt.ai") {
+      toast({
+        title: "Cannot delete admin account",
+        description: "The main administrator account cannot be deleted.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     const { error } = await supabase
       .from("profiles")
@@ -112,14 +128,27 @@ export const UserManagement = () => {
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  disabled={isLoading}
-                  onClick={() => handleDeleteUser(user.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={isLoading || user.email === "admin@dgxprt.ai"}
+                          onClick={() => handleDeleteUser(user.id, user.email)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {user.email === "admin@dgxprt.ai" && (
+                      <TooltipContent>
+                        <p>The main administrator account cannot be deleted</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
               </TableCell>
             </TableRow>
           ))}
