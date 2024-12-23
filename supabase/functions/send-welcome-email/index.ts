@@ -57,6 +57,7 @@ serve(async (req) => {
     });
 
     const data = await res.json();
+    console.log('Email sent response:', data);
 
     return new Response(
       JSON.stringify(data),

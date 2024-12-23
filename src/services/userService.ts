@@ -33,8 +33,9 @@ export const createNewUser = async (formData: UserFormData) => {
     return;
   }
 
-  // If user doesn't exist, create new
+  // Generate temporary password
   const tempPassword = generateSecurePassword();
+  console.log('Generated temporary password:', tempPassword);
 
   // Create a separate client for user creation to avoid session changes
   const anonClient = createClient(
@@ -57,25 +58,28 @@ export const createNewUser = async (formData: UserFormData) => {
       data: {
         full_name: formData.full_name,
       },
-      emailRedirectTo: `${window.location.origin}/auth`,
+      emailRedirectTo: `${window.location.origin}/auth?email=${encodeURIComponent(formData.email)}`,
     }
   });
 
   if (authError) throw authError;
 
   if (authData?.user) {
-    await sendWelcomeEmail(formData.email, tempPassword);
-
-    // Profile will be created automatically via trigger
-    const { error: profileError } = await supabase
+    // Store the temporary password hash in the profile
+    const { error: profileUpdateError } = await supabase
       .from("profiles")
       .update({
         is_admin: formData.is_admin,
         status: formData.status,
+        temporary_password_hash: tempPassword, // Store the temporary password
+        has_reset_password: false
       })
       .eq("id", authData.user.id);
 
-    if (profileError) throw profileError;
+    if (profileUpdateError) throw profileUpdateError;
+
+    // Send welcome email with the temporary password
+    await sendWelcomeEmail(formData.email, tempPassword);
   }
 
   return authData;

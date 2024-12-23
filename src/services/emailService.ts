@@ -14,6 +14,7 @@ export const sendWelcomeEmail = async (email: string, password: string) => {
 
     if (error) throw error;
   } catch (error) {
+    console.error('Error sending welcome email:', error);
     throw error;
   }
 };

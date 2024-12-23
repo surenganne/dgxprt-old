@@ -50,9 +50,11 @@ export type Database = {
           created_at: string
           email: string | null
           full_name: string | null
+          has_reset_password: boolean | null
           id: string
           is_admin: boolean | null
           status: string
+          temporary_password_hash: string | null
           updated_at: string
         }
         Insert: {
@@ -60,9 +62,11 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string | null
+          has_reset_password?: boolean | null
           id: string
           is_admin?: boolean | null
           status?: string
+          temporary_password_hash?: string | null
           updated_at?: string
         }
         Update: {
@@ -70,9 +74,11 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string | null
+          has_reset_password?: boolean | null
           id?: string
           is_admin?: boolean | null
           status?: string
+          temporary_password_hash?: string | null
           updated_at?: string
         }
         Relationships: []

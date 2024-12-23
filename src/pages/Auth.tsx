@@ -34,10 +34,27 @@ const Auth = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
+      // Check if the user needs to reset their password
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('has_reset_password')
+        .eq('email', email)
+        .single();
+
+      if (profile && !profile.has_reset_password) {
+        // Redirect to password reset page or show password reset form
+        toast({
+          title: "Please reset your password",
+          description: "For security reasons, please set a new password.",
+        });
+        // Here you would typically redirect to a password reset page
+        // For now, we'll just show a toast
+      } else {
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Error logging in",
