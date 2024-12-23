@@ -22,13 +22,17 @@ export const AdminSidebarContent = () => {
           </Button>
         ))}
       </nav>
-      <SidebarTrigger 
-        className="w-full justify-start text-white hover:bg-white/20 transition-colors duration-200 ease-in-out mb-4 group-data-[state=collapsed]:px-2" 
+      <Button
+        variant="ghost"
+        className="w-full justify-start text-white hover:bg-white/20 transition-colors duration-200 ease-in-out mb-4 group-data-[state=collapsed]:px-2"
+        asChild
       >
-        <span className="group-data-[state=collapsed]:block group-data-[state=collapsed]:text-center ml-2 group-data-[state=collapsed]:ml-0">
-          {state === 'collapsed' ? 'Expand' : 'Collapse'}
-        </span>
-      </SidebarTrigger>
+        <SidebarTrigger>
+          <span className="group-data-[state=collapsed]:block group-data-[state=collapsed]:text-center ml-2 group-data-[state=collapsed]:ml-0">
+            {state === 'collapsed' ? 'Expand' : 'Collapse'}
+          </span>
+        </SidebarTrigger>
+      </Button>
     </SidebarContent>
   );
 };
