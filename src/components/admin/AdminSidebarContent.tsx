@@ -18,7 +18,7 @@ export const AdminSidebarContent = () => {
             className="w-full justify-start text-white hover:bg-white/20 transition-colors duration-200 ease-in-out group-data-[state=collapsed]:px-2"
             onClick={() => navigate(item.path)}
           >
-            <item.icon className="h-4 w-4 shrink-0 group-data-[state=collapsed]:mr-0 mr-2" />
+            <item.icon className="h-4 w-4 shrink-0 group-data-[state=collapsed]:h-5 group-data-[state=collapsed]:w-5 group-data-[state=collapsed]:mr-0 mr-2" />
             <span className="group-data-[state=collapsed]:hidden">{item.label}</span>
           </Button>
         ))}
@@ -29,7 +29,7 @@ export const AdminSidebarContent = () => {
         asChild
       >
         <SidebarTrigger>
-          <PanelLeft className="h-4 w-4 shrink-0 group-data-[state=collapsed]:mr-0 mr-2" />
+          <PanelLeft className="h-4 w-4 shrink-0 group-data-[state=collapsed]:h-5 group-data-[state=collapsed]:w-5 group-data-[state=collapsed]:mr-0 mr-2" />
           <span className="text-white group-data-[state=collapsed]:hidden">
             {state === 'collapsed' ? 'Expand' : 'Collapse'}
           </span>
