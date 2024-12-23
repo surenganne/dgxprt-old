@@ -113,9 +113,12 @@ const Auth = () => {
                 } as CSSProperties
               } as CSSProperties,
               label: {
-                color: 'rgb(var(--foreground))',
+                color: '#895AB7',
                 fontSize: '14px',
-                marginBottom: '6px'
+                fontWeight: '500',
+                marginBottom: '6px',
+                display: 'block',
+                transition: 'color 150ms ease'
               } as CSSProperties,
               message: {
                 color: 'rgb(var(--muted-foreground))',
