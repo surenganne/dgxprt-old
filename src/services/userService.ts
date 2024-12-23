@@ -6,17 +6,22 @@ import { sendWelcomeEmail } from "./emailService";
 export const createNewUser = async (formData: UserFormData) => {
   console.log('Creating new user - start');
   
-  // First check if user already exists in auth
-  const { data: existingAuth } = await supabase.auth.admin.listUsers({
-    filters: {
-      email: formData.email
-    }
-  });
+  // First check if user already exists in profiles
+  const { data: existingProfile, error: profileError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("email", formData.email)
+    .single();
 
-  if (existingAuth?.users?.length > 0) {
-    console.log('User already exists in auth system');
+  if (profileError && profileError.code !== 'PGRST116') {
+    console.error('Error checking existing profile:', profileError);
+    throw profileError;
+  }
+
+  if (existingProfile) {
+    console.log('User already exists in system');
     // Just update their profile
-    const { error: profileError } = await supabase
+    const { error: updateError } = await supabase
       .from("profiles")
       .update({
         email: formData.email,
@@ -26,9 +31,9 @@ export const createNewUser = async (formData: UserFormData) => {
       })
       .eq("email", formData.email);
 
-    if (profileError) {
-      console.error('Error updating existing profile:', profileError);
-      throw profileError;
+    if (updateError) {
+      console.error('Error updating existing profile:', updateError);
+      throw updateError;
     }
     console.log('Profile updated successfully');
     return;
