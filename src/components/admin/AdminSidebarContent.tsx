@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { SidebarContent, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarContent, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { menuItems } from "@/config/admin-menu";
 
 export const AdminSidebarContent = () => {
   const navigate = useNavigate();
+  const { state } = useSidebar();
 
   return (
     <SidebarContent className="flex flex-col flex-1">
@@ -23,7 +24,11 @@ export const AdminSidebarContent = () => {
       </nav>
       <SidebarTrigger 
         className="w-full justify-start text-white hover:bg-white/20 transition-colors duration-200 ease-in-out mb-4 group-data-[state=collapsed]:px-2" 
-      />
+      >
+        <span className="ml-2 group-data-[state=collapsed]:hidden">
+          {state === 'collapsed' ? 'Expand' : 'Collapse'}
+        </span>
+      </SidebarTrigger>
     </SidebarContent>
   );
 };
