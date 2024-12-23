@@ -28,7 +28,8 @@ export const AdminSidebarContent = () => {
         asChild
       >
         <SidebarTrigger>
-          <span className="group-data-[state=collapsed]:block group-data-[state=collapsed]:text-center ml-2 group-data-[state=collapsed]:ml-0">
+          <span className="h-4 w-4 shrink-0 group-data-[state=collapsed]:mr-0 mr-2" />
+          <span className="group-data-[state=collapsed]:block group-data-[state=collapsed]:text-center group-data-[state=collapsed]:ml-0">
             {state === 'collapsed' ? 'Expand' : 'Collapse'}
           </span>
         </SidebarTrigger>
