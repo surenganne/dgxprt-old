@@ -17,6 +17,7 @@ interface UserFormDialogProps {
     email: string;
     full_name: string | null;
     is_admin: boolean | null;
+    status: 'active' | 'inactive';
   };
   onSuccess: () => void;
 }
