@@ -56,39 +56,84 @@ export const UserFormDialog = ({
           description: "The user's information has been updated.",
         });
       } else {
-        // Create new user
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: formData.email,
-          password: Math.random().toString(36).slice(-8), // Generate random password
-          options: {
-            data: {
-              full_name: formData.full_name,
-            },
-          },
-        });
+        // First check if user exists in profiles table
+        const { data: existingProfile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("email", formData.email)
+          .single();
 
-        if (authError) throw authError;
-
-        if (authData.user) {
-          const { error: profileError } = await supabase
+        if (existingProfile) {
+          // Update existing profile
+          const { error: updateError } = await supabase
             .from("profiles")
             .update({
+              full_name: formData.full_name,
               is_admin: formData.is_admin,
             })
-            .eq("id", authData.user.id);
+            .eq("id", existingProfile.id);
 
-          if (profileError) throw profileError;
+          if (updateError) throw updateError;
+
+          toast({
+            title: "User updated successfully",
+            description: "The existing user's information has been updated.",
+          });
+        } else {
+          // Create new user
+          const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: formData.email,
+            password: Math.random().toString(36).slice(-8), // Generate random password
+            options: {
+              data: {
+                full_name: formData.full_name,
+              },
+            },
+          });
+
+          if (authError) {
+            // If user exists in auth but not in profiles, handle that case
+            if (authError.message === "User already registered") {
+              const { data: userData } = await supabase.auth.admin.getUserByEmail(formData.email);
+              if (userData?.user) {
+                const { error: profileError } = await supabase
+                  .from("profiles")
+                  .insert({
+                    id: userData.user.id,
+                    email: formData.email,
+                    full_name: formData.full_name,
+                    is_admin: formData.is_admin,
+                  });
+
+                if (profileError) throw profileError;
+              }
+            } else {
+              throw authError;
+            }
+          }
+
+          if (authData?.user) {
+            const { error: profileError } = await supabase
+              .from("profiles")
+              .update({
+                is_admin: formData.is_admin,
+              })
+              .eq("id", authData.user.id);
+
+            if (profileError) throw profileError;
+          }
+
+          toast({
+            title: "User created successfully",
+            description: "An email has been sent to the user with login instructions.",
+          });
         }
-
-        toast({
-          title: "User created successfully",
-          description: "An email has been sent to the user with login instructions.",
-        });
       }
 
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
+      console.error("Error:", error);
       toast({
         title: user ? "Error updating user" : "Error creating user",
         description: error.message,
