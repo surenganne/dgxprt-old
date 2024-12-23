@@ -57,11 +57,13 @@ export const UserFormDialog = ({
         });
       } else {
         // First check if user exists in profiles table
-        const { data: existingProfile } = await supabase
+        const { data: existingProfile, error: profileError } = await supabase
           .from("profiles")
           .select("id")
           .eq("email", formData.email)
-          .single();
+          .maybeSingle();
+
+        if (profileError) throw profileError;
 
         if (existingProfile) {
           // Update existing profile
@@ -93,7 +95,7 @@ export const UserFormDialog = ({
 
           if (authError) {
             if (authError.message === "User already registered") {
-              // If user exists in auth but not in profiles, create a new profile
+              // If user exists in auth but not in profiles, send magic link
               const { data: signInData } = await supabase.auth.signInWithOtp({
                 email: formData.email,
               });
