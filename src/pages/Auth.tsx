@@ -65,7 +65,8 @@ const Auth = () => {
         </div>
         
         <SupabaseAuth 
-          supabaseClient={supabase} 
+          supabaseClient={supabase}
+          view="sign_in"
           appearance={{ 
             theme: ThemeSupa,
             variables: {
@@ -142,17 +143,15 @@ const Auth = () => {
           }}
           providers={[]}
           theme={theme === 'dark' ? 'dark' : 'default'}
-          options={{
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-            additionalSignUpFields: [
-              {
-                key: 'full_name',
-                label: 'Full Name',
-                type: 'text',
-                required: true,
-              }
-            ]
-          }}
+          redirectTo={`${window.location.origin}/auth/callback`}
+          additionalSignUpFields={[
+            {
+              key: 'full_name',
+              label: 'Full Name',
+              type: 'text',
+              required: true,
+            }
+          ]}
         />
       </div>
     </div>
