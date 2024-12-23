@@ -27,7 +27,7 @@ export const AdminSidebarFooter = () => {
       <div className="flex flex-col space-y-4">
         <div className="flex flex-col space-y-2">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white group-data-[state=collapsed]:w-8 group-data-[state=collapsed]:h-8">
+            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white">
               {session?.user?.email?.[0].toUpperCase()}
             </div>
             <div className="flex-1 min-w-0 group-data-[state=collapsed]:hidden">
@@ -43,7 +43,7 @@ export const AdminSidebarFooter = () => {
           <Button
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-white/50 hover:text-black transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=collapsed]:px-3 group-data-[state=collapsed]:py-3"
+            className="text-white hover:bg-white/50 hover:text-black transition-colors duration-200 ease-in-out w-full flex items-center px-2 h-8 group-data-[state=collapsed]:justify-center"
           >
             <ThemeToggle />
           </Button>
@@ -51,7 +51,7 @@ export const AdminSidebarFooter = () => {
             variant="ghost"
             size="sm"
             onClick={handleSignOut}
-            className="text-white hover:bg-white/50 hover:text-black transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=collapsed]:px-3 group-data-[state=collapsed]:py-3"
+            className="text-white hover:bg-white/50 hover:text-black transition-colors duration-200 ease-in-out w-full flex items-center px-2 h-8 group-data-[state=collapsed]:justify-center"
           >
             <LogOut className="h-5 w-5" />
             <span className="ml-2 group-data-[state=collapsed]:hidden">Logout</span>
