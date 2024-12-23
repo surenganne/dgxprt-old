@@ -2,21 +2,37 @@ import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { useSession } from "@supabase/auth-helpers-react";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { BackgroundEffects } from "@/components/shared/BackgroundEffects";
+import { useTheme } from "@/components/ui/theme-provider";
 import type { CSSProperties } from "react";
 
 const Auth = () => {
   const session = useSession();
   const navigate = useNavigate();
+  const { theme } = useTheme();
 
   useEffect(() => {
-    if (session) {
-      navigate("/", { replace: true });
-    }
+    const checkUserAndRedirect = async () => {
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profile?.is_admin) {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/dashboard');
+        }
+      }
+    };
+
+    checkUserAndRedirect();
   }, [session, navigate]);
 
   return (
@@ -52,6 +68,14 @@ const Auth = () => {
           supabaseClient={supabase} 
           appearance={{ 
             theme: ThemeSupa,
+            variables: {
+              default: {
+                colors: {
+                  brand: '#895AB7',
+                  brandAccent: '#7a4ba3',
+                }
+              }
+            },
             style: {
               button: {
                 background: '#895AB7',
@@ -75,12 +99,13 @@ const Auth = () => {
                 } as CSSProperties
               } as CSSProperties,
               input: {
-                background: 'transparent',
+                background: theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
                 border: '1px solid rgb(var(--border))',
                 borderRadius: '8px',
                 padding: '10px 16px',
                 fontSize: '14px',
                 marginBottom: '10px',
+                color: 'rgb(var(--foreground))',
                 '&:focus': {
                   borderColor: '#895AB7',
                   outline: 'none',
@@ -110,6 +135,7 @@ const Auth = () => {
             }
           }}
           providers={[]}
+          theme={theme === 'dark' ? 'dark' : 'default'}
         />
       </div>
     </div>
