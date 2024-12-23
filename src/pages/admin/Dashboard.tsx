@@ -5,7 +5,6 @@ import {
   Sidebar,
   SidebarHeader,
   SidebarProvider,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { AdminSidebarContent } from "@/components/admin/AdminSidebarContent";
 import { AdminSidebarFooter } from "@/components/admin/AdminSidebarFooter";
@@ -41,20 +40,17 @@ const AdminDashboard = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <Sidebar className="bg-primary-purple group-data-[state=collapsed]:w-[60px] transition-all">
-          <SidebarHeader className="p-4 border-b border-white/10 flex items-center justify-between">
-            <div className="flex justify-center flex-1">
-              <img
-                src="/dg-text-logo.png"
-                alt="DGXPRT Logo"
-                className="h-6 w-auto group-data-[state=collapsed]:hidden"
-              />
-              <img
-                src="/dg-only-logo.png"
-                alt="DGXPRT Icon"
-                className="h-6 w-auto hidden group-data-[state=collapsed]:block"
-              />
-            </div>
-            <SidebarTrigger className="text-white hover:text-white/80" />
+          <SidebarHeader className="p-4 border-b border-white/10 flex justify-center">
+            <img
+              src="/dg-text-logo.png"
+              alt="DGXPRT Logo"
+              className="h-6 w-auto group-data-[state=collapsed]:hidden"
+            />
+            <img
+              src="/dg-only-logo.png"
+              alt="DGXPRT Icon"
+              className="h-6 w-auto hidden group-data-[state=collapsed]:block"
+            />
           </SidebarHeader>
 
           <AdminSidebarContent />

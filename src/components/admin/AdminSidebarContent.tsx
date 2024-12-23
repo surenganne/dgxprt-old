@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { SidebarContent } from "@/components/ui/sidebar";
+import { SidebarContent, SidebarTrigger } from "@/components/ui/sidebar";
 import { menuItems } from "@/config/admin-menu";
 
 export const AdminSidebarContent = () => {
@@ -20,6 +20,7 @@ export const AdminSidebarContent = () => {
             <span className="group-data-[state=collapsed]:hidden">{item.label}</span>
           </Button>
         ))}
+        <SidebarTrigger className="w-full justify-start text-white hover:bg-white/10 group-data-[state=collapsed]:px-2 group-data-[state=collapsed]:justify-center" />
       </nav>
     </SidebarContent>
   );
