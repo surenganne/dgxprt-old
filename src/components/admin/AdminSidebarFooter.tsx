@@ -27,7 +27,7 @@ export const AdminSidebarFooter = () => {
       <div className="flex flex-col space-y-4">
         <div className="flex flex-col space-y-2">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white group-data-[state=collapsed]:w-6 group-data-[state=collapsed]:h-6">
+            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white group-data-[state=collapsed]:w-8 group-data-[state=collapsed]:h-8">
               {session?.user?.email?.[0].toUpperCase()}
             </div>
             <div className="flex-1 min-w-0 group-data-[state=collapsed]:hidden">
