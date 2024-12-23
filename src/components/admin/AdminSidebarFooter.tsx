@@ -39,7 +39,7 @@ export const AdminSidebarFooter = () => {
           </div>
           <Button
             variant="ghost"
-            className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=expanded]:hidden"
+            className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2"
             size="sm"
             asChild
           >
