@@ -31,9 +31,6 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
     setLoading(true);
 
     try {
-      // Prevent any navigation during the operation
-      const unblock = window.history.pushState(null, '', window.location.href);
-      
       if (user) {
         await updateExistingUser(user.id, formData);
         toast({
@@ -51,9 +48,6 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
       console.log('Form submission completed successfully');
       onSuccess();
       onOpenChange(false);
-      
-      // Restore navigation
-      window.history.go(0);
     } catch (error: any) {
       console.error("Error in form submission:", error);
       toast({
