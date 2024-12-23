@@ -48,19 +48,19 @@ export const AdminSidebarFooter = () => {
               <span>Collapse</span>
             </SidebarTrigger>
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSignOut}
-            className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=collapsed]:justify-center"
-          >
-            <LogOut className="h-4 w-4 mr-2 group-data-[state=collapsed]:mr-0" />
-            <span className="group-data-[state=collapsed]:hidden">Logout</span>
-          </Button>
         </div>
         <div className="flex items-center justify-between group-data-[state=collapsed]:justify-center">
           <ThemeToggle />
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleSignOut}
+          className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=collapsed]:justify-center"
+        >
+          <LogOut className="h-4 w-4 mr-2 group-data-[state=collapsed]:mr-0" />
+          <span className="group-data-[state=collapsed]:hidden">Logout</span>
+        </Button>
       </div>
     </SidebarFooter>
   );
