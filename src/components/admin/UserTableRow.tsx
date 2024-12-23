@@ -42,7 +42,7 @@ export const UserTableRow = ({
           user={user}
           isLoading={isLoading}
           onEdit={() => onEdit(user)}
-          onDelete={() => onDelete()}
+          onDelete={() => onDelete(user)}
           onSendPassword={() => onSendPassword(user.email)}
         />
       </TableCell>
