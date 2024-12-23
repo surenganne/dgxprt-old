@@ -58,7 +58,8 @@ export const createNewUser = async (formData: UserFormData) => {
       data: {
         full_name: formData.full_name,
       },
-      emailRedirectTo: `${window.location.origin}/auth?email=${encodeURIComponent(formData.email)}`,
+      // Explicitly redirect to the auth page with email parameter
+      emailRedirectTo: `${window.location.origin}/auth?email=${encodeURIComponent(formData.email)}&temp=true`,
     }
   });
 

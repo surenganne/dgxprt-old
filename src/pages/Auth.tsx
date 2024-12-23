@@ -13,16 +13,20 @@ const Auth = () => {
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
 
-  // Check URL parameters for email
+  // Check URL parameters for email and temp flag
   const urlParams = new URLSearchParams(window.location.search);
   const emailFromUrl = urlParams.get('email');
+  const isTemp = urlParams.get('temp') === 'true';
 
   // If email is provided in URL, set it
   useEffect(() => {
     if (emailFromUrl) {
       setEmail(emailFromUrl);
+      if (isTemp) {
+        toast.info("Please use the temporary password sent to your email to log in.");
+      }
     }
-  }, [emailFromUrl]);
+  }, [emailFromUrl, isTemp]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
