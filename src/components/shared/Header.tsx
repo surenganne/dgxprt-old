@@ -16,9 +16,6 @@ export function Header() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" asChild>
-            <Link to="/login">Login</Link>
-          </Button>
           <Button className="bg-primary-purple hover:bg-primary-purple/90" asChild>
             <Link to="/signup">Get Started</Link>
           </Button>
