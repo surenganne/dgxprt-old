@@ -32,7 +32,6 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
     status: 'active',
   });
 
-  // Update form data when user prop changes
   useEffect(() => {
     if (user) {
       setFormData({
@@ -124,6 +123,7 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
               data: {
                 full_name: formData.full_name,
               },
+              emailRedirectTo: `${window.location.origin}/auth`,
             },
           });
 
