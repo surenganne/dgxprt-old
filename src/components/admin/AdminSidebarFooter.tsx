@@ -44,8 +44,8 @@ export const AdminSidebarFooter = () => {
             asChild
           >
             <SidebarTrigger>
-              <PanelLeft className="h-4 w-4 mr-2" />
-              <span>Collapse</span>
+              <PanelLeft className="h-4 w-4 mr-2 group-data-[state=collapsed]:mr-0" />
+              <span className="group-data-[state=collapsed]:hidden">Collapse</span>
             </SidebarTrigger>
           </Button>
         </div>
