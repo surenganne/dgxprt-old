@@ -60,13 +60,13 @@ export const AdminSidebarFooter = () => {
             </SidebarTrigger>
           </Button>
         </div>
-        <div className="flex items-center justify-between space-x-2">
+        <div className="flex flex-col space-y-2">
           <ThemeToggle />
           <Button
             variant="ghost"
             size="sm"
             onClick={handleSignOut}
-            className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out flex-1 justify-start pl-2 group-data-[state=collapsed]:px-3 group-data-[state=collapsed]:py-3"
+            className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=collapsed]:px-3 group-data-[state=collapsed]:py-3"
           >
             <LogOut className="h-5 w-5" />
             <span className="ml-2 group-data-[state=collapsed]:hidden">Logout</span>
