@@ -1,9 +1,10 @@
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, PanelLeft } from "lucide-react";
+import { LogOut, PanelLeft, PanelRightOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { SidebarFooter, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 
 export const AdminSidebarFooter = () => {
@@ -11,6 +12,7 @@ export const AdminSidebarFooter = () => {
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const { state } = useSidebar();
+  const isMobile = useIsMobile();
 
   const handleSignOut = async () => {
     try {
@@ -41,10 +43,21 @@ export const AdminSidebarFooter = () => {
             variant="ghost"
             className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=collapsed]:justify-center"
             size="sm"
-            onClick={() => state.setCollapsed(!state.collapsed)}
+            asChild
           >
-            <PanelLeft className="h-4 w-4 mr-2 group-data-[state=collapsed]:mr-0" />
-            <span className="group-data-[state=collapsed]:hidden">Collapse</span>
+            <SidebarTrigger>
+              {state.collapsed ? (
+                <>
+                  <PanelRightOpen className="h-4 w-4 mr-2 group-data-[state=collapsed]:mr-0" />
+                  <span className="group-data-[state=collapsed]:hidden">Expand</span>
+                </>
+              ) : (
+                <>
+                  <PanelLeft className="h-4 w-4 mr-2 group-data-[state=collapsed]:mr-0" />
+                  <span className="group-data-[state=collapsed]:hidden">Collapse</span>
+                </>
+              )}
+            </SidebarTrigger>
           </Button>
         </div>
         <div className="flex items-center justify-between group-data-[state=collapsed]:justify-center">
