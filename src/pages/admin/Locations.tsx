@@ -8,8 +8,9 @@ import {
 } from "@/components/ui/sidebar";
 import { AdminSidebarContent } from "@/components/admin/AdminSidebarContent";
 import { AdminSidebarFooter } from "@/components/admin/AdminSidebarFooter";
+import { LocationManagement } from "@/components/admin/LocationManagement";
 
-const AdminDashboard = () => {
+const AdminLocations = () => {
   const session = useSession();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
@@ -62,8 +63,7 @@ const AdminDashboard = () => {
 
         <main className="flex-1 overflow-auto">
           <div className="container mx-auto px-4 py-6">
-            <h2 className="text-2xl font-semibold">Admin Dashboard</h2>
-            {/* Dashboard content will go here */}
+            <LocationManagement />
           </div>
         </main>
       </div>
@@ -71,4 +71,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default AdminLocations;
