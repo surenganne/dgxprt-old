@@ -39,7 +39,7 @@ const AdminDashboard = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
-        <Sidebar className="bg-primary-purple group-data-[state=collapsed]:w-[60px] transition-all">
+        <Sidebar className="bg-primary-blue group-data-[state=collapsed]:w-[60px] transition-all">
           <SidebarHeader className="p-4 border-b border-white/10 flex justify-center">
             <img
               src="/dg-text-logo.png"

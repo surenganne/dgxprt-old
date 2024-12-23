@@ -20,8 +20,8 @@ export const AdminSidebarContent = () => {
             <span className="group-data-[state=collapsed]:hidden">{item.label}</span>
           </Button>
         ))}
-        <SidebarTrigger className="w-full justify-start text-white hover:bg-white/10 group-data-[state=collapsed]:px-2 group-data-[state=collapsed]:justify-center" />
       </nav>
+      <SidebarTrigger className="w-full justify-start text-white hover:bg-white/10 mt-1 group-data-[state=collapsed]:px-2 group-data-[state=collapsed]:justify-center" />
     </SidebarContent>
   );
 };
