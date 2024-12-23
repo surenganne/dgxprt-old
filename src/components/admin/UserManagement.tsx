@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { UserPlus, Pencil, Trash2, Lock } from "lucide-react";
+import { UserPlus, Pencil, Trash2, Lock, Mail } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { UserFormDialog } from "./UserFormDialog";
 import {
@@ -97,6 +97,36 @@ export const UserManagement = () => {
     setDialogOpen(true);
   };
 
+  const handleSendPassword = async (email: string) => {
+    if (email === "admin@dgxprt.ai") {
+      toast({
+        title: "Cannot reset admin password",
+        description: "The main administrator password cannot be reset.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email,
+    });
+
+    if (error) {
+      toast({
+        title: "Error sending password reset",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Password reset email sent",
+        description: "A login link has been sent to the user's email.",
+      });
+    }
+    setIsLoading(false);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -159,6 +189,28 @@ export const UserManagement = () => {
                     )}
                   </Tooltip>
                 </TooltipProvider>
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="mr-2"
+                          disabled={isLoading || user.email === "admin@dgxprt.ai"}
+                          onClick={() => handleSendPassword(user.email)}
+                        >
+                          <Mail className="h-4 w-4" />
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Send password reset email</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
