@@ -2,7 +2,7 @@ import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -142,6 +142,25 @@ const Auth = () => {
           }}
           providers={[]}
           theme={theme === 'dark' ? 'dark' : 'default'}
+          localization={{
+            variables: {
+              sign_up: {
+                full_name_label: 'Full Name',
+                full_name_placeholder: 'Enter your full name',
+              }
+            }
+          }}
+          options={{
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            additionalSignUpFields: [
+              {
+                key: 'full_name',
+                label: 'Full Name',
+                type: 'text',
+                required: true,
+              }
+            ]
+          }}
         />
       </div>
     </div>
