@@ -48,12 +48,12 @@ const AdminDashboard = () => {
             <img
               src="/dg-text-logo.png"
               alt="DGXPRT Logo"
-              className="h-8 w-auto object-contain group-data-[state=collapsed]:hidden"
+              className="h-10 w-auto object-contain group-data-[state=collapsed]:hidden"
             />
             <img
               src="/dg-only-logo.png"
               alt="DGXPRT Icon"
-              className="h-8 w-8 hidden group-data-[state=collapsed]:block object-contain"
+              className="h-10 w-10 hidden group-data-[state=collapsed]:block object-contain"
             />
           </SidebarHeader>
 
