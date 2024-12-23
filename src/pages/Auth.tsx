@@ -51,39 +51,61 @@ const Auth = () => {
           supabaseClient={supabase} 
           appearance={{ 
             theme: ThemeSupa,
-            variables: {
-              default: {
-                colors: {
-                  brand: 'rgb(var(--primary-purple))',
-                  brandAccent: 'rgb(var(--primary-blue))',
-                  brandButtonText: 'white',
-                },
-                borderWidths: {
-                  buttonBorderWidth: '1px',
-                  inputBorderWidth: '1px',
-                },
-                radii: {
-                  borderRadiusButton: '0.5rem',
-                  buttonBorderRadius: '0.5rem',
-                  inputBorderRadius: '0.5rem',
-                },
-              }
-            },
             style: {
               button: {
+                background: '#895AB7',
+                color: 'white',
                 border: '1px solid transparent',
+                borderRadius: '8px',
+                padding: '10px 20px',
+                height: '42px',
+                fontSize: '14px',
                 fontWeight: '500',
+                width: '100%',
+                marginBottom: '10px',
                 transition: 'all 150ms ease',
-              },
-              anchor: {
-                color: 'rgb(var(--primary-purple))',
-                transition: 'opacity 150ms ease',
+                '&:hover': {
+                  background: '#7a4ba3',
+                  transform: 'translateY(-1px)'
+                },
+                '&:active': {
+                  transform: 'translateY(0)'
+                }
               },
               input: {
-                backgroundColor: 'transparent',
+                background: 'transparent',
                 border: '1px solid rgb(var(--border))',
+                borderRadius: '8px',
+                padding: '10px 16px',
+                fontSize: '14px',
+                marginBottom: '10px',
+                '&:focus': {
+                  borderColor: '#895AB7',
+                  outline: 'none',
+                  boxShadow: '0 0 0 2px rgba(137, 90, 183, 0.2)'
+                }
               },
-            },
+              label: {
+                color: 'rgb(var(--foreground))',
+                fontSize: '14px',
+                marginBottom: '6px'
+              },
+              message: {
+                color: 'rgb(var(--muted-foreground))',
+                fontSize: '14px',
+                marginBottom: '16px'
+              },
+              anchor: {
+                color: '#895AB7',
+                textDecoration: 'none',
+                '&:hover': {
+                  textDecoration: 'underline'
+                }
+              },
+              container: {
+                gap: '16px'
+              }
+            }
           }}
           providers={[]}
         />
