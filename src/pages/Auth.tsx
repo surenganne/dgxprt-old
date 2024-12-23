@@ -67,6 +67,7 @@ const Auth = () => {
         <SupabaseAuth 
           supabaseClient={supabase}
           view="sign_in"
+          showLinks={false}
           appearance={{ 
             theme: ThemeSupa,
             variables: {
@@ -144,7 +145,6 @@ const Auth = () => {
           providers={[]}
           theme={theme === 'dark' ? 'dark' : 'default'}
           redirectTo={`${window.location.origin}/auth/callback`}
-          showLinks={true}
           magicLink={false}
           localization={{
             variables: {
