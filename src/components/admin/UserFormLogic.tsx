@@ -15,7 +15,6 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
 
   useEffect(() => {
     if (user) {
-      console.log('Setting form data for existing user:', user);
       setFormData({
         email: user.email || "",
         full_name: user.full_name || "",
@@ -27,7 +26,6 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submission started with data:', formData);
     setLoading(true);
 
     try {
@@ -45,11 +43,9 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
         });
       }
 
-      console.log('Form submission completed successfully');
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
-      console.error("Error in form submission:", error);
       toast({
         title: user ? "Error updating user" : "Error creating user",
         description: error.message,
