@@ -13,7 +13,7 @@ export const AdminSidebarContent = () => {
           <Button
             key={item.path}
             variant="ghost"
-            className="w-full justify-start text-white hover:bg-white/10 group-data-[state=collapsed]:px-2"
+            className="w-full justify-start text-white hover:bg-white/20 transition-colors duration-200 ease-in-out group-data-[state=collapsed]:px-2"
             onClick={() => navigate(item.path)}
           >
             <item.icon className="h-4 w-4 shrink-0 group-data-[state=collapsed]:mr-0 mr-2" />
@@ -22,7 +22,7 @@ export const AdminSidebarContent = () => {
         ))}
       </nav>
       <SidebarTrigger 
-        className="w-full justify-start text-white hover:bg-white/10 mb-4 group-data-[state=collapsed]:px-2" 
+        className="w-full justify-start text-white hover:bg-white/20 transition-colors duration-200 ease-in-out mb-4 group-data-[state=collapsed]:px-2" 
       />
     </SidebarContent>
   );
