@@ -7,21 +7,23 @@ export const AdminSidebarContent = () => {
   const navigate = useNavigate();
 
   return (
-    <SidebarContent className="p-2">
-      <nav className="space-y-1">
+    <SidebarContent className="flex flex-col flex-1">
+      <nav className="space-y-1 flex-1">
         {menuItems.map((item) => (
           <Button
             key={item.path}
             variant="ghost"
-            className="w-full justify-start hover:bg-white/10 group-data-[state=collapsed]:px-2 group-data-[state=collapsed]:justify-center"
+            className="w-full justify-start text-white hover:bg-white/10 group-data-[state=collapsed]:px-2"
             onClick={() => navigate(item.path)}
           >
-            <item.icon className="mr-2 h-4 w-4 text-white group-data-[state=collapsed]:mr-0" />
+            <item.icon className="h-4 w-4 shrink-0 group-data-[state=collapsed]:mr-0 mr-2" />
             <span className="group-data-[state=collapsed]:hidden">{item.label}</span>
           </Button>
         ))}
       </nav>
-      <SidebarTrigger className="w-full justify-start text-white hover:bg-white/10 mt-1 group-data-[state=collapsed]:px-2 group-data-[state=collapsed]:justify-center" />
+      <SidebarTrigger 
+        className="w-full justify-start text-white hover:bg-white/10 mb-4 group-data-[state=collapsed]:px-2" 
+      />
     </SidebarContent>
   );
 };

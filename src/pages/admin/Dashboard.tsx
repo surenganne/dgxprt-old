@@ -37,9 +37,13 @@ const AdminDashboard = () => {
   }, [session, navigate, supabase]);
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-background">
-        <Sidebar className="bg-primary-blue group-data-[state=collapsed]:w-[60px] transition-all">
+        <Sidebar 
+          className="bg-primary-blue transition-all duration-300 ease-in-out"
+          variant="sidebar"
+          collapsible="icon"
+        >
           <SidebarHeader className="p-4 border-b border-border/10 bg-white flex justify-center">
             <img
               src="/dg-text-logo.png"
