@@ -1,6 +1,7 @@
 import { Shield, BarChart3, AlertCircle, Database, FileText, PieChart, ClipboardCheck, ScrollText, Bell, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/shared/Header";
+import { Footer } from "@/components/shared/Footer";
 import { FeatureCard } from "@/components/shared/FeatureCard";
 import { SolutionCard } from "@/components/shared/SolutionCard";
 
@@ -10,9 +11,11 @@ const Index = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="py-20 text-center px-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-primary-purple/10 px-4 py-1.5 rounded-full text-sm text-primary-purple mb-6">
+      <section className="relative py-20 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-purple/10 to-primary-blue/10 -z-10" />
+        <div className="absolute inset-0 bg-grid-white/10 -z-10" />
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 bg-primary-purple/10 px-4 py-1.5 rounded-full text-sm text-primary-purple mb-6 backdrop-blur-sm">
             <span>New Features Available</span>
             <span>→</span>
           </div>
@@ -24,10 +27,10 @@ const Index = () => {
             and compliance monitoring in one secure platform.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button size="lg" className="bg-primary-purple hover:bg-primary-purple/90">
+            <Button size="lg" className="bg-primary-purple hover:bg-primary-purple/90 shadow-lg shadow-primary-purple/20">
               Start Free Trial
             </Button>
-            <Button size="lg" variant="outline">
+            <Button size="lg" variant="outline" className="border-primary-purple/20 hover:bg-primary-purple/5">
               Schedule Demo
             </Button>
           </div>
@@ -35,7 +38,7 @@ const Index = () => {
       </section>
 
       {/* Core Features */}
-      <section className="py-16 px-4 bg-slate-50">
+      <section className="py-16 px-4 bg-slate-50/50 backdrop-blur-xl border-y">
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
           <FeatureCard
             icon={Shield}
@@ -56,7 +59,8 @@ const Index = () => {
       </section>
 
       {/* Comprehensive Features */}
-      <section className="py-16 px-4">
+      <section className="py-16 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary-purple/5 to-transparent -z-10" />
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-3xl font-bold mb-4">Comprehensive Chemical Management</h2>
           <p className="text-muted-foreground">
@@ -98,7 +102,7 @@ const Index = () => {
       </section>
 
       {/* Solutions */}
-      <section className="py-16 px-4 bg-slate-50">
+      <section className="py-16 px-4 bg-slate-50/50 backdrop-blur-xl border-y">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-3xl font-bold mb-4">Solutions for Every Need</h2>
           <p className="text-muted-foreground">
@@ -143,7 +147,8 @@ const Index = () => {
       </section>
 
       {/* Compliance Section */}
-      <section className="py-16 px-4">
+      <section className="py-16 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary-blue/5 to-transparent -z-10" />
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-3xl font-bold mb-4">Stay Compliant and Secure</h2>
           <p className="text-muted-foreground">
@@ -178,6 +183,8 @@ const Index = () => {
           </Button>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };
