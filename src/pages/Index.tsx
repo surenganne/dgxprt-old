@@ -4,26 +4,16 @@ import { Header } from "@/components/shared/Header";
 import { Footer } from "@/components/shared/Footer";
 import { FeatureCard } from "@/components/shared/FeatureCard";
 import { SolutionCard } from "@/components/shared/SolutionCard";
+import { BackgroundEffects } from "@/components/shared/BackgroundEffects";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background dark:bg-[#121212]">
       <Header />
       
       {/* Hero Section */}
-      <section className="relative py-20 px-4 overflow-hidden dark:bg-background/50 dark:backdrop-blur-xl">
-        {/* Enhanced gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-purple/10 via-primary-blue/5 to-transparent -z-10" />
-        
-        {/* Improved grid pattern with animation */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8882_1px,transparent_1px),linear-gradient(to_bottom,#8882_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] -z-10" />
-        
-        {/* Animated floating shapes */}
-        <div className="absolute inset-0 overflow-hidden -z-10">
-          <div className="absolute -left-4 top-10 h-72 w-72 rounded-full bg-primary-purple/10 mix-blend-multiply blur-xl animate-blob" />
-          <div className="absolute -right-4 top-10 h-72 w-72 rounded-full bg-primary-blue/10 mix-blend-multiply blur-xl animate-blob animation-delay-2000" />
-          <div className="absolute left-1/2 bottom-10 h-72 w-72 rounded-full bg-primary-purple/10 mix-blend-multiply blur-xl animate-blob animation-delay-4000" />
-        </div>
+      <section className="relative py-20 px-4 overflow-hidden dark:bg-[#121212]/90">
+        <BackgroundEffects />
 
         <div className="max-w-3xl mx-auto text-center relative">
           <div className="inline-flex items-center gap-2 bg-primary-purple/10 px-4 py-1.5 rounded-full text-sm text-primary-purple mb-6 backdrop-blur-sm hover:bg-primary-purple/20 transition-colors duration-300 cursor-pointer">
@@ -57,7 +47,7 @@ const Index = () => {
       </section>
 
       {/* Core Features */}
-      <section className="py-16 px-4 bg-slate-50/50 backdrop-blur-xl border-y dark:bg-background/50 dark:backdrop-blur-xl">
+      <section className="py-16 px-4 bg-slate-50/50 backdrop-blur-xl border-y dark:border-white/5 dark:bg-[#1a1a1a]/90">
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
           <FeatureCard
             icon={Shield}
@@ -78,8 +68,7 @@ const Index = () => {
       </section>
 
       {/* Comprehensive Features */}
-      <section className="py-16 px-4 relative overflow-hidden dark:bg-background/50 dark:backdrop-blur-xl">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary-purple/5 to-transparent -z-10" />
+      <section className="py-16 px-4 relative overflow-hidden dark:bg-[#121212]/90">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-3xl font-bold mb-4">Comprehensive Chemical Management</h2>
           <p className="text-muted-foreground">
@@ -121,7 +110,7 @@ const Index = () => {
       </section>
 
       {/* Solutions */}
-      <section className="py-16 px-4 bg-slate-50/50 backdrop-blur-xl border-y dark:bg-background/50 dark:backdrop-blur-xl">
+      <section className="py-16 px-4 bg-slate-50/50 backdrop-blur-xl border-y dark:border-white/5 dark:bg-[#1a1a1a]/90">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-3xl font-bold mb-4">Solutions for Every Need</h2>
           <p className="text-muted-foreground">
@@ -166,8 +155,7 @@ const Index = () => {
       </section>
 
       {/* Compliance Section */}
-      <section className="py-16 px-4 relative overflow-hidden dark:bg-background/50 dark:backdrop-blur-xl">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary-blue/5 to-transparent -z-10" />
+      <section className="py-16 px-4 relative overflow-hidden dark:bg-[#121212]/90">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-3xl font-bold mb-4">Stay Compliant and Secure</h2>
           <p className="text-muted-foreground">
