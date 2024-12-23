@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { toast } from "sonner";
 import {
   Sidebar,
   SidebarHeader,
@@ -21,19 +22,37 @@ const AdminDashboard = () => {
         return;
       }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("is_admin")
-        .eq("id", session.user.id)
-        .single();
+      try {
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("is_admin, status")
+          .eq("id", session.user.id)
+          .maybeSingle();
 
-      if (!profile?.is_admin) {
+        if (error) {
+          console.error("Error fetching profile:", error);
+          toast.error("Error checking admin access");
+          navigate("/dashboard");
+          return;
+        }
+
+        if (!profile?.is_admin || profile.status !== 'active') {
+          toast.error("You don't have admin access");
+          navigate("/dashboard");
+        }
+      } catch (error) {
+        console.error("Error in admin access check:", error);
+        toast.error("Error checking admin access");
         navigate("/dashboard");
       }
     };
 
     checkAdminAccess();
   }, [session, navigate, supabase]);
+
+  if (!session) {
+    return null;
+  }
 
   return (
     <SidebarProvider defaultOpen={true}>
