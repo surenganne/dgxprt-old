@@ -1,105 +1,119 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { BackgroundEffects } from "@/components/shared/BackgroundEffects";
 
 const Auth = () => {
-  const supabase = useSupabaseClient();
-  const session = useSession();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [searchParams] = useSearchParams();
-  const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState(searchParams.get("email") || "");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const supabase = useSupabaseClient();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (session) {
-      navigate("/dashboard");
+  // Check URL parameters for email
+  const urlParams = new URLSearchParams(window.location.search);
+  const emailFromUrl = urlParams.get('email');
+
+  // If email is provided in URL, set it
+  useState(() => {
+    if (emailFromUrl) {
+      setEmail(emailFromUrl);
     }
-  }, [session, navigate]);
+  }, [emailFromUrl]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
 
-      // Check if the user needs to reset their password
+      // Check if the user is an admin and their password reset status
       const { data: profile } = await supabase
         .from('profiles')
-        .select('has_reset_password')
-        .eq('email', email)
+        .select('is_admin, has_reset_password')
+        .eq('id', authData.user.id)
         .single();
 
       if (profile && !profile.has_reset_password) {
-        // Redirect to password reset page or show password reset form
-        toast({
-          title: "Please reset your password",
-          description: "For security reasons, please set a new password.",
-        });
+        toast.info("Please reset your password for security reasons.");
         // Here you would typically redirect to a password reset page
         // For now, we'll just show a toast
+      }
+
+      // Determine redirect based on admin status
+      if (profile?.is_admin) {
+        toast.success("Welcome back, admin!");
+        navigate("/admin/dashboard");
       } else {
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        });
+        toast.success("Login successful!");
+        navigate("/dashboard");
       }
     } catch (error: any) {
-      toast({
-        title: "Error logging in",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error logging in: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
       <BackgroundEffects />
-      <div className="w-full max-w-md space-y-8 p-8 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm rounded-lg shadow-xl">
+      
+      <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-lg shadow-lg relative z-10">
         <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
-          <p className="text-sm text-muted-foreground mt-2">
-            Sign in to your account
-          </p>
+          <img
+            src="/dg-text-logo.png"
+            alt="DGXPRT Logo"
+            className="mx-auto h-12 w-auto mb-8"
+          />
+          <h2 className="text-2xl font-semibold">Sign in to your account</h2>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={!!searchParams.get("email")}
-              required
-            />
+        <form onSubmit={handleLogin} className="mt-8 space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium">
+                Email address
+              </label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={!!emailFromUrl}
+                className="mt-1"
+                placeholder="Enter your email"
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium">
+                Password
+              </label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="mt-1"
+                placeholder="Enter your password"
+              />
+            </div>
           </div>
-          <div>
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+
           <Button
             type="submit"
-            className="w-full bg-primary-purple hover:bg-primary-purple/90"
+            className="w-full bg-gradient-to-r from-primary-purple to-primary-blue text-white"
             disabled={loading}
           >
             {loading ? "Signing in..." : "Sign in"}
