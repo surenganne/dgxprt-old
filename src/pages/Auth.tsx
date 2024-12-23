@@ -64,11 +64,12 @@ const Auth = () => {
                 width: '100%',
                 marginBottom: '10px',
                 transition: 'all 150ms ease',
-                hover: {
+                transform: 'translateY(0)',
+                '&:hover': {
                   background: '#7a4ba3',
                   transform: 'translateY(-1px)'
                 },
-                active: {
+                '&:active': {
                   transform: 'translateY(0)'
                 }
               },
@@ -79,7 +80,7 @@ const Auth = () => {
                 padding: '10px 16px',
                 fontSize: '14px',
                 marginBottom: '10px',
-                focus: {
+                '&:focus': {
                   borderColor: '#895AB7',
                   outline: 'none',
                   boxShadow: '0 0 0 2px rgba(137, 90, 183, 0.2)'
@@ -98,7 +99,7 @@ const Auth = () => {
               anchor: {
                 color: '#895AB7',
                 textDecoration: 'none',
-                hover: {
+                '&:hover': {
                   textDecoration: 'underline'
                 }
               },
