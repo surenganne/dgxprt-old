@@ -39,17 +39,17 @@ serve(async (req) => {
         subject: "Welcome to DGXPRT - Your Login Credentials",
         html: `
           <h1>Welcome to DGXPRT!</h1>
-          <p>Your account has been created successfully. Here are your temporary login credentials:</p>
+          <p>Your account has been created successfully. Here are your login credentials:</p>
           <p><strong>Email:</strong> ${to}</p>
           <p><strong>Temporary Password:</strong> ${password}</p>
-          <p>For security reasons, please follow these steps:</p>
+          <p>Please follow these steps to access your account:</p>
           <ol>
-            <li>Visit the login page at: ${loginLink}</li>
-            <li>Sign in using your email and the temporary password provided above</li>
-            <li>After signing in, you will be prompted to change your password</li>
-            <li>Choose a strong, unique password that you'll remember</li>
+            <li>Click on this link to go to the login page: <a href="${loginLink}">Login to DGXPRT</a></li>
+            <li>Your email will be pre-filled</li>
+            <li>Enter the temporary password provided above</li>
+            <li>After logging in, you'll be prompted to set a new password</li>
           </ol>
-          <p>This temporary password will expire once you set your new password.</p>
+          <p>For security reasons, please change your password upon first login.</p>
           <p>If you have any questions, please contact your administrator.</p>
           <p>Best regards,<br>The DGXPRT Team</p>
         `,

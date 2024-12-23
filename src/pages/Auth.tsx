@@ -1,208 +1,93 @@
-import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import { useSession } from "@supabase/auth-helpers-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSupabaseClient, useSession } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
 import { BackgroundEffects } from "@/components/shared/BackgroundEffects";
-import { useTheme } from "@/components/ui/theme-provider";
-import type { CSSProperties } from "react";
-import { toast } from "sonner";
 
 const Auth = () => {
+  const supabase = useSupabaseClient();
   const session = useSession();
   const navigate = useNavigate();
-  const { theme } = useTheme();
+  const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState(searchParams.get("email") || "");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
-    const checkUserAndRedirect = async () => {
-      if (session?.user) {
-        try {
-          console.log('Checking user role for:', session.user.id);
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('is_admin, status')
-            .eq('id', session.user.id)
-            .maybeSingle();
-
-          if (error) {
-            console.error('Error fetching profile:', error);
-            toast.error('Error checking user permissions');
-            return;
-          }
-
-          if (!profile) {
-            console.error('No profile found for user:', session.user.id);
-            toast.error('User profile not found');
-            await supabase.auth.signOut();
-            return;
-          }
-
-          console.log('Profile found:', profile);
-
-          if (profile.status !== 'active') {
-            console.log('User account is inactive');
-            toast.error('Your account is not active. Please contact an administrator.');
-            await supabase.auth.signOut();
-            return;
-          }
-
-          if (profile.is_admin) {
-            console.log('Redirecting admin user to dashboard');
-            navigate('/admin/dashboard');
-          } else {
-            console.log('Redirecting standard user to dashboard');
-            navigate('/dashboard');
-          }
-        } catch (error) {
-          console.error('Error in checkUserAndRedirect:', error);
-          toast.error('Error during authentication');
-        }
-      }
-    };
-
-    checkUserAndRedirect();
+    if (session) {
+      navigate("/dashboard");
+    }
   }, [session, navigate]);
 
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error logging in",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background relative">
+    <div className="min-h-screen flex items-center justify-center">
       <BackgroundEffects />
-      <Button
-        variant="ghost"
-        onClick={() => navigate("/")}
-        className="absolute top-4 left-4 flex items-center gap-2 text-primary-purple hover:text-primary-purple/90 transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Home
-      </Button>
-      
-      <div className="w-full max-w-md p-8 space-y-8 bg-card/50 backdrop-blur-sm rounded-2xl shadow-xl border border-primary-purple/10">
-        <div className="text-center space-y-6">
-          <img 
-            src="/dg-only-logo.png" 
-            alt="DGXPRT Logo" 
-            className="h-16 w-auto mx-auto mb-4 drop-shadow-lg"
-          />
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary-purple to-primary-blue bg-clip-text text-transparent">
-              Welcome to DGXPRT
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Sign in to access your chemical management dashboard
-            </p>
-          </div>
+      <div className="w-full max-w-md space-y-8 p-8 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm rounded-lg shadow-xl">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
+          <p className="text-sm text-muted-foreground mt-2">
+            Sign in to your account
+          </p>
         </div>
-        
-        <SupabaseAuth 
-          supabaseClient={supabase}
-          view="sign_in"
-          showLinks={false}
-          appearance={{ 
-            theme: ThemeSupa,
-            variables: {
-              default: {
-                colors: {
-                  brand: '#895AB7',
-                  brandAccent: '#7a4ba3',
-                }
-              }
-            },
-            style: {
-              button: {
-                background: '#895AB7',
-                color: 'white',
-                border: '1px solid transparent',
-                borderRadius: '8px',
-                padding: '10px 20px',
-                height: '42px',
-                fontSize: '14px',
-                fontWeight: '500',
-                width: '100%',
-                marginBottom: '10px',
-                transition: 'all 150ms ease',
-                transform: 'translateY(0)',
-                '&:hover': {
-                  background: '#7a4ba3',
-                  transform: 'translateY(-1px)'
-                } as CSSProperties,
-                '&:active': {
-                  transform: 'translateY(0)'
-                } as CSSProperties
-              } as CSSProperties,
-              input: {
-                background: theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
-                border: '1px solid rgb(var(--border))',
-                borderRadius: '8px',
-                padding: '10px 16px',
-                fontSize: '14px',
-                marginBottom: '10px',
-                color: theme === 'dark' ? '#E5DEFF' : '#333333',
-                '&:focus': {
-                  borderColor: '#895AB7',
-                  outline: 'none',
-                  boxShadow: '0 0 0 2px rgba(137, 90, 183, 0.2)'
-                } as CSSProperties,
-                '&::placeholder': {
-                  color: theme === 'dark' ? '#8E9196' : '#8A898C'
-                } as CSSProperties
-              } as CSSProperties,
-              label: {
-                color: '#895AB7',
-                fontSize: '14px',
-                fontWeight: '500',
-                marginBottom: '6px',
-                display: 'block',
-                transition: 'color 150ms ease'
-              } as CSSProperties,
-              message: {
-                color: 'rgb(var(--muted-foreground))',
-                fontSize: '14px',
-                marginBottom: '16px'
-              } as CSSProperties,
-              anchor: {
-                color: '#895AB7',
-                textDecoration: 'none',
-                '&:hover': {
-                  textDecoration: 'underline'
-                } as CSSProperties
-              } as CSSProperties,
-              container: {
-                gap: '16px'
-              } as CSSProperties
-            }
-          }}
-          providers={[]}
-          theme={theme === 'dark' ? 'dark' : 'default'}
-          redirectTo={`${window.location.origin}/auth/callback`}
-          magicLink={false}
-          localization={{
-            variables: {
-              sign_up: {
-                email_label: 'Email',
-                password_label: 'Password',
-                email_input_placeholder: 'Your email address',
-                password_input_placeholder: 'Your password',
-                button_label: 'Sign up',
-                loading_button_label: 'Signing up...',
-                social_provider_text: 'Sign in with',
-                link_text: "Don't have an account? Sign up",
-                confirmation_text: 'Check your email for the confirmation link',
-              },
-              sign_in: {
-                email_label: 'Email',
-                password_label: 'Password',
-                email_input_placeholder: 'Your email address',
-                password_input_placeholder: 'Your password',
-                button_label: 'Sign in',
-                loading_button_label: 'Signing in...',
-                social_provider_text: 'Sign in with',
-                link_text: 'Already have an account? Sign in',
-              },
-            },
-          }}
-        />
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <Input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={!!searchParams.get("email")}
+              required
+            />
+          </div>
+          <div>
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <Button
+            type="submit"
+            className="w-full bg-primary-purple hover:bg-primary-purple/90"
+            disabled={loading}
+          >
+            {loading ? "Signing in..." : "Sign in"}
+          </Button>
+        </form>
       </div>
     </div>
   );
