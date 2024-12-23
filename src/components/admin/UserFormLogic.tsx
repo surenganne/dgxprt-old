@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { generateSecurePassword } from "@/utils/passwordUtils";
 
 export interface UserFormData {
   email: string;
@@ -50,6 +51,21 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
     }
   }, [user]);
 
+  const sendWelcomeEmail = async (email: string, password: string) => {
+    const { data: { origin } } = await supabase.auth.getSession();
+    const loginLink = `${window.location.origin}/auth`;
+
+    const { error } = await supabase.functions.invoke('send-welcome-email', {
+      body: {
+        to: email,
+        password,
+        loginLink,
+      },
+    });
+
+    if (error) throw error;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -84,7 +100,6 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
         if (profileError) throw profileError;
 
         if (existingProfile) {
-          // Update existing profile
           const { error: updateError } = await supabase
             .from("profiles")
             .update({
@@ -101,10 +116,11 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
             description: "The existing user's information has been updated.",
           });
         } else {
-          // Create new user
+          // Create new user with secure password
+          const tempPassword = generateSecurePassword();
           const { data: authData, error: authError } = await supabase.auth.signUp({
             email: formData.email,
-            password: Math.random().toString(36).slice(-8),
+            password: tempPassword,
             options: {
               data: {
                 full_name: formData.full_name,
@@ -128,6 +144,9 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
               throw authError;
             }
           } else if (authData?.user) {
+            // Send welcome email with password
+            await sendWelcomeEmail(formData.email, tempPassword);
+
             const { error: profileError } = await supabase
               .from("profiles")
               .update({
@@ -140,7 +159,7 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
 
             toast({
               title: "User created successfully",
-              description: "An email has been sent to the user with login instructions.",
+              description: "Login credentials have been sent to the user's email.",
             });
           }
         }
