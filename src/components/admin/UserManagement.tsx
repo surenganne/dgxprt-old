@@ -10,22 +10,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { UserPlus, Pencil, Trash2, Lock, Mail } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { UserPlus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { UserFormDialog } from "./UserFormDialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import { DeleteUserDialog } from "./DeleteUserDialog";
+import { UserActions } from "./UserActions";
 
 export const UserManagement = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<any>(null);
 
   const { data: users, refetch } = useQuery({
     queryKey: ["users"],
@@ -47,8 +45,10 @@ export const UserManagement = () => {
     },
   });
 
-  const handleDeleteUser = async (userId: string, email: string) => {
-    if (email === "admin@dgxprt.ai") {
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    if (userToDelete.email === "admin@dgxprt.ai") {
       toast({
         title: "Cannot delete admin account",
         description: "The main administrator account cannot be deleted.",
@@ -59,17 +59,13 @@ export const UserManagement = () => {
 
     setIsLoading(true);
     try {
-      // First delete the user from auth.users using admin API
       const { error: authError } = await supabase.auth.admin.deleteUser(
-        userId
+        userToDelete.id
       );
 
       if (authError) {
         throw authError;
       }
-
-      // The profile will be automatically deleted due to the ON DELETE CASCADE
-      // constraint between auth.users and public.profiles
 
       toast({
         title: "User deleted successfully",
@@ -85,6 +81,8 @@ export const UserManagement = () => {
       });
     } finally {
       setIsLoading(false);
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
     }
   };
 
@@ -164,83 +162,26 @@ export const UserManagement = () => {
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.is_admin ? "Admin" : "User"}</TableCell>
               <TableCell>
-                <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
-                  {user.status === 'active' ? 'Active' : 'Inactive'}
+                <Badge
+                  variant={user.status === "active" ? "default" : "secondary"}
+                >
+                  {user.status === "active" ? "Active" : "Inactive"}
                 </Badge>
               </TableCell>
               <TableCell>
                 {new Date(user.created_at).toLocaleDateString()}
               </TableCell>
-              <TableCell className="text-right">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="mr-2"
-                          disabled={isLoading || user.email === "admin@dgxprt.ai"}
-                          onClick={() => handleEditUser(user)}
-                        >
-                          {user.email === "admin@dgxprt.ai" ? (
-                            <Lock className="h-4 w-4" />
-                          ) : (
-                            <Pencil className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </span>
-                    </TooltipTrigger>
-                    {user.email === "admin@dgxprt.ai" && (
-                      <TooltipContent>
-                        <p>The main administrator account cannot be modified</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                </TooltipProvider>
-
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="mr-2"
-                          disabled={isLoading || user.email === "admin@dgxprt.ai"}
-                          onClick={() => handleSendPassword(user.email)}
-                        >
-                          <Mail className="h-4 w-4" />
-                        </Button>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Send password reset email</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          disabled={isLoading || user.email === "admin@dgxprt.ai"}
-                          onClick={() => handleDeleteUser(user.id, user.email)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </span>
-                    </TooltipTrigger>
-                    {user.email === "admin@dgxprt.ai" && (
-                      <TooltipContent>
-                        <p>The main administrator account cannot be deleted</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                </TooltipProvider>
+              <TableCell>
+                <UserActions
+                  user={user}
+                  isLoading={isLoading}
+                  onEdit={() => handleEditUser(user)}
+                  onDelete={() => {
+                    setUserToDelete(user);
+                    setDeleteDialogOpen(true);
+                  }}
+                  onSendPassword={() => handleSendPassword(user.email)}
+                />
               </TableCell>
             </TableRow>
           ))}
@@ -252,6 +193,14 @@ export const UserManagement = () => {
         onOpenChange={setDialogOpen}
         user={selectedUser}
         onSuccess={refetch}
+      />
+
+      <DeleteUserDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteUser}
+        userName={userToDelete?.full_name || userToDelete?.email || "this user"}
+        loading={isLoading}
       />
     </div>
   );
