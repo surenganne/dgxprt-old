@@ -2,6 +2,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { UserFormData } from "./UserFormLogic";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface UserFormFieldsProps {
   formData: UserFormData;
@@ -53,6 +54,24 @@ export const UserFormFields = ({
           disabled={loading}
         />
         <Label htmlFor="is_admin">Admin User</Label>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="status">Status</Label>
+        <Select
+          value={formData.status}
+          onValueChange={(value: 'active' | 'inactive') =>
+            setFormData({ ...formData, status: value })
+          }
+          disabled={loading}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="inactive">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     </>
   );

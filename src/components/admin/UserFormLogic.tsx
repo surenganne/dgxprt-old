@@ -6,6 +6,7 @@ export interface UserFormData {
   email: string;
   full_name: string;
   is_admin: boolean;
+  status: 'active' | 'inactive';
 }
 
 export interface UseUserFormProps {
@@ -14,6 +15,7 @@ export interface UseUserFormProps {
     email: string;
     full_name: string | null;
     is_admin: boolean | null;
+    status: 'active' | 'inactive';
   };
   onSuccess: () => void;
   onOpenChange: (open: boolean) => void;
@@ -26,6 +28,7 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
     email: "",
     full_name: "",
     is_admin: false,
+    status: 'active',
   });
 
   // Update form data when user prop changes
@@ -35,12 +38,14 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
         email: user.email || "",
         full_name: user.full_name || "",
         is_admin: user.is_admin || false,
+        status: user.status as 'active' | 'inactive',
       });
     } else {
       setFormData({
         email: "",
         full_name: "",
         is_admin: false,
+        status: 'active',
       });
     }
   }, [user]);
@@ -58,6 +63,7 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
             email: formData.email,
             full_name: formData.full_name,
             is_admin: formData.is_admin,
+            status: formData.status,
           })
           .eq("id", user.id);
 
@@ -84,6 +90,7 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
             .update({
               full_name: formData.full_name,
               is_admin: formData.is_admin,
+              status: formData.status,
             })
             .eq("id", existingProfile.id);
 
@@ -125,6 +132,7 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
               .from("profiles")
               .update({
                 is_admin: formData.is_admin,
+                status: formData.status,
               })
               .eq("id", authData.user.id);
 

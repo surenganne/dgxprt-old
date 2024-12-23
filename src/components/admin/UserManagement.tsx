@@ -19,6 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 export const UserManagement = () => {
   const { toast } = useToast();
@@ -112,6 +113,7 @@ export const UserManagement = () => {
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Role</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead>Created At</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -122,6 +124,11 @@ export const UserManagement = () => {
               <TableCell>{user.full_name || "N/A"}</TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.is_admin ? "Admin" : "User"}</TableCell>
+              <TableCell>
+                <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
+                  {user.status === 'active' ? 'Active' : 'Inactive'}
+                </Badge>
+              </TableCell>
               <TableCell>
                 {new Date(user.created_at).toLocaleDateString()}
               </TableCell>
