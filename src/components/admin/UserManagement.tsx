@@ -58,25 +58,34 @@ export const UserManagement = () => {
     }
 
     setIsLoading(true);
-    const { error } = await supabase
-      .from("profiles")
-      .delete()
-      .eq("id", userId);
+    try {
+      // First delete the user from auth.users using admin API
+      const { error: authError } = await supabase.auth.admin.deleteUser(
+        userId
+      );
 
-    if (error) {
+      if (authError) {
+        throw authError;
+      }
+
+      // The profile will be automatically deleted due to the ON DELETE CASCADE
+      // constraint between auth.users and public.profiles
+
+      toast({
+        title: "User deleted successfully",
+        description: "The user has been completely removed from the system.",
+      });
+      refetch();
+    } catch (error: any) {
+      console.error("Error deleting user:", error);
       toast({
         title: "Error deleting user",
         description: error.message,
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "User deleted successfully",
-        description: "The user has been removed from the system.",
-      });
-      refetch();
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const handleEditUser = (user: any) => {
