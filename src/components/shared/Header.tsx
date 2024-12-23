@@ -8,7 +8,7 @@ export function Header() {
       <nav className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link to="/" className="flex items-center gap-2">
-            <img src="/dg-text-logo.png" alt="DGXPRT Logo" className="h-12 w-auto" />
+            <img src="/dg-text-logo.png" alt="DGXPRT Logo" className="h-9 w-auto" />
           </Link>
           <div className="hidden md:flex space-x-4">
             <Link to="#features" className="text-sm text-muted-foreground hover:text-primary-purple transition-colors">
