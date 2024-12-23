@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { SidebarFooter } from "@/components/ui/sidebar";
 import { AdminSidebarCollapse } from "./AdminSidebarCollapse";
+import { useTheme } from "@/components/ui/theme-provider";
 import { toast } from "sonner";
 
 export const AdminSidebarFooter = () => {
   const session = useSession();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
 
   const handleSignOut = async () => {
     try {
