@@ -12,25 +12,32 @@ const Index = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="relative py-20 px-4 overflow-hidden dark:bg-[#121212]/90">
+      <section className="relative min-h-[90vh] flex items-center justify-center py-20 px-4 overflow-hidden bg-gradient-to-b from-background to-background/50 dark:from-[#121212] dark:to-[#121212]/90">
         <BackgroundEffects />
 
-        <div className="max-w-3xl mx-auto text-center relative">
-          <div className="inline-flex items-center gap-2 bg-primary-purple/10 px-4 py-1.5 rounded-full text-sm text-primary-purple mb-6 backdrop-blur-sm hover:bg-primary-purple/20 transition-colors duration-300 cursor-pointer">
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <div 
+            className="inline-flex items-center gap-2 bg-primary-purple/10 dark:bg-primary-purple/20 px-6 py-2 rounded-full text-sm font-medium text-primary-purple mb-8 backdrop-blur-sm hover:bg-primary-purple/20 dark:hover:bg-primary-purple/30 transition-all duration-300 cursor-pointer transform hover:scale-105"
+          >
             <span>New Features Available</span>
             <span className="animate-bounce">→</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-br from-primary-purple via-primary-blue to-primary-purple/80 animate-gradient">
-            Chemical Management Simplified
+          
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-primary-purple via-primary-blue to-primary-purple animate-gradient leading-tight">
+            Chemical Management
+            <br />
+            <span className="text-4xl md:text-5xl lg:text-6xl opacity-90">Simplified</span>
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+          
+          <p className="text-xl md:text-2xl text-muted-foreground mb-12 leading-relaxed max-w-2xl mx-auto">
             Comprehensive chemical inventory management, SDS tracking,
             and compliance monitoring in one secure platform.
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
+          
+          <div className="flex flex-wrap justify-center gap-6">
             <Button 
               size="lg" 
-              className="bg-gradient-to-r from-primary-purple to-primary-blue hover:opacity-90 transition-opacity duration-300 shadow-lg shadow-primary-purple/20 group"
+              className="bg-gradient-to-r from-primary-purple to-primary-blue hover:opacity-90 transition-all duration-300 shadow-lg shadow-primary-purple/20 dark:shadow-primary-purple/10 group text-lg px-8 py-6 rounded-xl transform hover:scale-105"
             >
               Start Free Trial
               <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
@@ -38,7 +45,7 @@ const Index = () => {
             <Button 
               size="lg" 
               variant="outline" 
-              className="border-primary-purple/20 hover:bg-primary-purple/5 transition-colors duration-300"
+              className="border-2 border-primary-purple/20 dark:border-primary-purple/30 hover:bg-primary-purple/5 dark:hover:bg-primary-purple/10 transition-all duration-300 text-lg px-8 py-6 rounded-xl transform hover:scale-105"
             >
               Schedule Demo
             </Button>
