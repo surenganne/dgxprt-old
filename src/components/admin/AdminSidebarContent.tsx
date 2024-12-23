@@ -1,25 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Users,
-  Building2,
-  Beaker,
-  FileText,
-  BarChart3,
-  Settings,
-} from "lucide-react";
 import { SidebarContent } from "@/components/ui/sidebar";
-
-const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
-  { icon: Users, label: "Users", path: "/admin/users" },
-  { icon: Building2, label: "Locations", path: "/admin/locations" },
-  { icon: Beaker, label: "Chemicals", path: "/admin/chemicals" },
-  { icon: FileText, label: "SDS", path: "/admin/sds" },
-  { icon: BarChart3, label: "Reports", path: "/admin/reports" },
-  { icon: Settings, label: "Settings", path: "/admin/settings" },
-];
+import { menuItems } from "@/config/admin-menu";
 
 export const AdminSidebarContent = () => {
   const navigate = useNavigate();

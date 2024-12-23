@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/sidebar";
 import { AdminSidebarContent } from "@/components/admin/AdminSidebarContent";
 import { AdminSidebarFooter } from "@/components/admin/AdminSidebarFooter";
+import { menuItems } from "@/config/admin-menu";
 
 const AdminDashboard = () => {
   const session = useSession();
