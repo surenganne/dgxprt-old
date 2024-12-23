@@ -11,9 +11,9 @@ export const createNewUser = async (formData: UserFormData) => {
     .from("profiles")
     .select("*")
     .eq("email", formData.email)
-    .single();
+    .maybeSingle();
 
-  if (profileError && profileError.code !== 'PGRST116') {
+  if (profileError) {
     console.error('Error checking existing profile:', profileError);
     throw profileError;
   }
