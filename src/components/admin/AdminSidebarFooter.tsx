@@ -1,15 +1,16 @@
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
-import { LogOut } from "lucide-react";
+import { LogOut, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
-import { SidebarFooter } from "@/components/ui/sidebar";
+import { SidebarFooter, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { toast } from "sonner";
 
 export const AdminSidebarFooter = () => {
   const session = useSession();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
+  const { state } = useSidebar();
 
   const handleSignOut = async () => {
     try {
@@ -34,6 +35,16 @@ export const AdminSidebarFooter = () => {
             </p>
             <p className="text-xs text-white/70">Administrator</p>
           </div>
+          <Button
+            variant="ghost"
+            className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out group-data-[state=collapsed]:hidden"
+            size="icon"
+            asChild
+          >
+            <SidebarTrigger>
+              <PanelLeft className="h-4 w-4 group-data-[state=collapsed]:h-5 group-data-[state=collapsed]:w-5" />
+            </SidebarTrigger>
+          </Button>
         </div>
         <div className="flex items-center justify-between group-data-[state=collapsed]:flex-col group-data-[state=collapsed]:space-y-4">
           <ThemeToggle />
