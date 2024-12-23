@@ -11,7 +11,7 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2">
-              <img src="/dg-square-logo.png" alt="DGXPRT Logo" className="h-15 w-auto" />
+              <img src="/dg-square-logo.png" alt="DGXPRT Logo" className="h-9 w-auto" />
             </Link>
             <p className="text-sm text-muted-foreground">
               Modern chemical management system for educational institutions.
