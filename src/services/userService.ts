@@ -43,13 +43,14 @@ export const createNewUser = async (formData: UserFormData) => {
   const tempPassword = generateSecurePassword();
   console.log('Generated temporary password');
   
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+  const { data: authData, error: authError } = await supabase.auth.signUp({
     email: formData.email,
     password: tempPassword,
-    email_confirm: true,
-    user_metadata: {
-      full_name: formData.full_name,
-    },
+    options: {
+      data: {
+        full_name: formData.full_name,
+      },
+    }
   });
 
   if (authError) {
