@@ -20,6 +20,7 @@ const Auth = () => {
     const checkUserAndRedirect = async () => {
       if (session?.user) {
         try {
+          console.log('Checking user role for:', session.user.id);
           const { data: profile, error } = await supabase
             .from('profiles')
             .select('is_admin, status')
