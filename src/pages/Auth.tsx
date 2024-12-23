@@ -9,6 +9,7 @@ import { ArrowLeft } from "lucide-react";
 import { BackgroundEffects } from "@/components/shared/BackgroundEffects";
 import { useTheme } from "@/components/ui/theme-provider";
 import type { CSSProperties } from "react";
+import { toast } from "sonner";
 
 const Auth = () => {
   const session = useSession();
@@ -18,16 +19,27 @@ const Auth = () => {
   useEffect(() => {
     const checkUserAndRedirect = async () => {
       if (session?.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', session.user.id)
-          .single();
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', session.user.id)
+            .single();
 
-        if (profile?.is_admin) {
-          navigate('/admin/dashboard');
-        } else {
-          navigate('/dashboard');
+          if (error) {
+            console.error('Error fetching profile:', error);
+            toast.error('Error checking user permissions');
+            return;
+          }
+
+          if (profile?.is_admin) {
+            navigate('/admin/dashboard');
+          } else {
+            navigate('/dashboard');
+          }
+        } catch (error) {
+          console.error('Error in checkUserAndRedirect:', error);
+          toast.error('Error during authentication');
         }
       }
     };
