@@ -40,7 +40,13 @@ export const AdminSidebarFooter = () => {
           <AdminSidebarCollapse />
         </div>
         <div className="flex flex-col space-y-2">
-          <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-white hover:bg-white/50 hover:text-black transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=collapsed]:px-3 group-data-[state=collapsed]:py-3"
+          >
+            <ThemeToggle />
+          </Button>
           <Button
             variant="ghost"
             size="sm"
