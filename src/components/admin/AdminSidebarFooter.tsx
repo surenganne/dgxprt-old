@@ -16,11 +16,30 @@ export const AdminSidebarFooter = () => {
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      
+      // If we get a 403 user_not_found error, the user is already signed out
+      // or doesn't exist anymore, so we can just redirect them
+      if (error?.message?.includes('user_not_found')) {
+        console.log('User already signed out or does not exist');
+        navigate("/auth");
+        toast.success("Signed out successfully");
+        return;
+      }
+
+      if (error) {
+        console.error('Error signing out:', error);
+        toast.error("Error signing out");
+        return;
+      }
+
       navigate("/auth");
       toast.success("Signed out successfully");
     } catch (error) {
+      console.error('Error in sign out process:', error);
       toast.error("Error signing out");
+      // Force navigate to auth page if we catch any error
+      navigate("/auth");
     }
   };
 
