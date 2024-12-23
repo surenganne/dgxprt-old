@@ -28,7 +28,7 @@ export const AdminSidebarFooter = () => {
     <SidebarFooter className="p-4 border-t border-white/10">
       <div className="flex flex-col space-y-4">
         <div className="flex flex-col space-y-2">
-          <div className="flex items-center space-x-3 group-data-[state=collapsed]:justify-center">
+          <div className="flex items-center space-x-3">
             <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white group-data-[state=collapsed]:w-6 group-data-[state=collapsed]:h-6">
               {session?.user?.email?.[0].toUpperCase()}
             </div>
@@ -41,36 +41,36 @@ export const AdminSidebarFooter = () => {
           </div>
           <Button
             variant="ghost"
-            className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=collapsed]:justify-center"
+            className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2"
             size="sm"
             asChild
           >
             <SidebarTrigger>
               {state === "collapsed" ? (
-                <>
-                  <PanelRightOpen className="h-4 w-4 mr-2 group-data-[state=collapsed]:mr-0" />
+                <div className="flex items-center w-full">
+                  <PanelRightOpen className="h-4 w-4 mr-2" />
                   <span>Expand</span>
-                </>
+                </div>
               ) : (
-                <>
-                  <PanelLeft className="h-4 w-4 mr-2 group-data-[state=collapsed]:mr-0" />
+                <div className="flex items-center w-full">
+                  <PanelLeft className="h-4 w-4 mr-2" />
                   <span>Collapse</span>
-                </>
+                </div>
               )}
             </SidebarTrigger>
           </Button>
         </div>
-        <div className="flex items-center justify-between group-data-[state=collapsed]:justify-center">
+        <div className="flex items-center justify-between">
           <ThemeToggle />
         </div>
         <Button
           variant="ghost"
           size="sm"
           onClick={handleSignOut}
-          className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=collapsed]:justify-center"
+          className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2"
         >
-          <LogOut className="h-4 w-4 mr-2 group-data-[state=collapsed]:mr-0" />
-          <span className="group-data-[state=collapsed]:hidden">Logout</span>
+          <LogOut className="h-4 w-4 mr-2" />
+          <span>Logout</span>
         </Button>
       </div>
     </SidebarFooter>
