@@ -52,7 +52,6 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
   }, [user]);
 
   const sendWelcomeEmail = async (email: string, password: string) => {
-    const { data: { origin } } = await supabase.auth.getSession();
     const loginLink = `${window.location.origin}/auth`;
 
     const { error } = await supabase.functions.invoke('send-welcome-email', {
