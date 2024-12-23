@@ -12,10 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { UserPlus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { UserFormDialog } from "./UserFormDialog";
 
 export const UserManagement = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
 
   const { data: users, refetch } = useQuery({
     queryKey: ["users"],
@@ -60,11 +63,21 @@ export const UserManagement = () => {
     setIsLoading(false);
   };
 
+  const handleEditUser = (user: any) => {
+    setSelectedUser(user);
+    setDialogOpen(true);
+  };
+
+  const handleAddUser = () => {
+    setSelectedUser(null);
+    setDialogOpen(true);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">User Management</h2>
-        <Button>
+        <Button onClick={handleAddUser}>
           <UserPlus className="mr-2 h-4 w-4" />
           Add User
         </Button>
@@ -95,6 +108,7 @@ export const UserManagement = () => {
                   size="icon"
                   className="mr-2"
                   disabled={isLoading}
+                  onClick={() => handleEditUser(user)}
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -111,6 +125,13 @@ export const UserManagement = () => {
           ))}
         </TableBody>
       </Table>
+
+      <UserFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        user={selectedUser}
+        onSuccess={refetch}
+      />
     </div>
   );
 };
