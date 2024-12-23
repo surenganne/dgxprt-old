@@ -46,7 +46,7 @@ export const AdminSidebarFooter = () => {
             asChild
           >
             <SidebarTrigger>
-              {state.collapsed ? (
+              {state === "collapsed" ? (
                 <>
                   <PanelRightOpen className="h-4 w-4 mr-2 group-data-[state=collapsed]:mr-0" />
                   <span className="group-data-[state=collapsed]:hidden">Expand</span>
