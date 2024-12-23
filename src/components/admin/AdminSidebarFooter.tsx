@@ -36,25 +36,16 @@ export const AdminSidebarFooter = () => {
               </p>
               <p className="text-xs text-white/70">Administrator</p>
             </div>
-            <Button
-              variant="ghost"
-              className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out group-data-[state=collapsed]:hidden"
-              size="icon"
-              asChild
-            >
-              <SidebarTrigger>
-                <PanelLeft className="h-4 w-4 group-data-[state=collapsed]:h-5 group-data-[state=collapsed]:w-5" />
-              </SidebarTrigger>
-            </Button>
           </div>
           <Button
             variant="ghost"
-            className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out hidden group-data-[state=collapsed]:flex group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:ml-0.5"
-            size="icon"
+            className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=expanded]:hidden"
+            size="sm"
             asChild
           >
             <SidebarTrigger>
-              <PanelLeft className="h-5 w-5" />
+              <PanelLeft className="h-4 w-4 mr-2" />
+              <span>Collapse</span>
             </SidebarTrigger>
           </Button>
         </div>
