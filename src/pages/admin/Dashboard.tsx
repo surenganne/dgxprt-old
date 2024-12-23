@@ -17,7 +17,7 @@ import {
   LayoutDashboard,
   Users,
   Building2,
-  Flask,
+  Beaker,
   FileText,
   BarChart3,
   Settings,
@@ -65,7 +65,7 @@ const AdminDashboard = () => {
     { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
     { icon: Users, label: "Users", path: "/admin/users" },
     { icon: Building2, label: "Locations", path: "/admin/locations" },
-    { icon: Flask, label: "Chemicals", path: "/admin/chemicals" },
+    { icon: Beaker, label: "Chemicals", path: "/admin/chemicals" },
     { icon: FileText, label: "SDS", path: "/admin/sds" },
     { icon: BarChart3, label: "Reports", path: "/admin/reports" },
     { icon: Settings, label: "Settings", path: "/admin/settings" },
@@ -129,7 +129,6 @@ const AdminDashboard = () => {
               <SidebarTrigger />
             </div>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {/* Dashboard cards will go here */}
               {menuItems.slice(0, 6).map((item) => (
                 <div
                   key={item.path}
