@@ -75,20 +75,6 @@ const AdminDashboard = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <Sidebar className="border-r border-border">
-          <SidebarHeader className="p-4 border-b border-border">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-full bg-primary-purple flex items-center justify-center text-white">
-                {session?.user?.email?.[0].toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">
-                  {session?.user?.email}
-                </p>
-                <p className="text-xs text-muted-foreground">Administrator</p>
-              </div>
-            </div>
-          </SidebarHeader>
-
           <SidebarContent className="p-2">
             <nav className="space-y-1">
               {menuItems.map((item) => (
@@ -106,16 +92,32 @@ const AdminDashboard = () => {
           </SidebarContent>
 
           <SidebarFooter className="p-4 border-t border-border">
-            <div className="flex items-center justify-between">
-              <ThemeToggle />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleSignOut}
-                className="hover:bg-destructive/10 dark:hover:bg-destructive/20"
-              >
-                <LogOut className="h-4 w-4 text-destructive" />
-              </Button>
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-full bg-primary-purple flex items-center justify-center text-white">
+                  {session?.user?.email?.[0].toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {session?.user?.email}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Administrator</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <ThemeToggle />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleSignOut}
+                  className="hover:bg-destructive/10 dark:hover:bg-destructive/20"
+                >
+                  <LogOut className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
+              <div className="flex justify-center border-t border-border pt-4">
+                <img src="/dg-text-logo.png" alt="DGXPRT Logo" className="h-6 w-auto" />
+              </div>
             </div>
           </SidebarFooter>
         </Sidebar>
