@@ -87,38 +87,38 @@ const AdminDashboard = () => {
                 <Button
                   key={item.path}
                   variant="ghost"
-                  className="w-full justify-start hover:bg-white/10 group-data-[collapsible=icon]:w-12 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+                  className="w-full justify-start hover:bg-primary-purple/10 dark:hover:bg-primary-purple/20"
                   onClick={() => navigate(item.path)}
                 >
-                  <item.icon className="mr-2 h-4 w-4 group-data-[collapsible=icon]:mr-0" />
-                  <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                  <item.icon className="mr-2 h-4 w-4 text-primary-purple" />
+                  {item.label}
                 </Button>
               ))}
             </nav>
           </SidebarContent>
 
-          <SidebarFooter className="p-4 border-t border-white/10">
+          <SidebarFooter className="p-4 border-t border-border">
             <div className="flex flex-col space-y-4">
-              <div className="flex items-center space-x-3 group-data-[collapsible=icon]:justify-center">
-                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-full bg-primary-purple flex items-center justify-center text-white">
                   {session?.user?.email?.[0].toUpperCase()}
                 </div>
-                <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                  <p className="text-sm font-medium text-white truncate">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">
                     {session?.user?.email}
                   </p>
-                  <p className="text-xs text-white/70">Administrator</p>
+                  <p className="text-xs text-muted-foreground">Administrator</p>
                 </div>
               </div>
-              <div className="flex items-center justify-between group-data-[collapsible=icon]:justify-center">
+              <div className="flex items-center justify-between">
                 <ThemeToggle />
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleSignOut}
-                  className="hover:bg-white/10"
+                  className="hover:bg-destructive/10 dark:hover:bg-destructive/20"
                 >
-                  <LogOut className="h-4 w-4 text-white" />
+                  <LogOut className="h-4 w-4 text-destructive" />
                 </Button>
               </div>
             </div>
