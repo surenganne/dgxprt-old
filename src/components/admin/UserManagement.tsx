@@ -59,13 +59,11 @@ export const UserManagement = () => {
 
     setIsLoading(true);
     try {
-      const { error: authError } = await supabase.auth.admin.deleteUser(
-        userToDelete.id
-      );
+      const { error } = await supabase.functions.invoke('delete-user', {
+        body: { userId: userToDelete.id }
+      });
 
-      if (authError) {
-        throw authError;
-      }
+      if (error) throw error;
 
       toast({
         title: "User deleted successfully",
