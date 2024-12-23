@@ -30,7 +30,7 @@ export const AdminSidebarContent = () => {
       >
         <SidebarTrigger>
           <PanelLeft className="h-4 w-4 shrink-0 group-data-[state=collapsed]:mr-0 mr-2" />
-          <span className="group-data-[state=collapsed]:hidden">
+          <span className="text-white group-data-[state=collapsed]:hidden">
             {state === 'collapsed' ? 'Expand' : 'Collapse'}
           </span>
         </SidebarTrigger>
