@@ -16,13 +16,6 @@ const Index = () => {
         <BackgroundEffects />
 
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div 
-            className="inline-flex items-center gap-2 bg-primary-purple/10 dark:bg-primary-purple/20 px-6 py-2 rounded-full text-sm font-medium text-primary-purple mb-8 backdrop-blur-sm hover:bg-primary-purple/20 dark:hover:bg-primary-purple/30 transition-all duration-300 cursor-pointer transform hover:scale-105"
-          >
-            <span>New Features Available</span>
-            <span className="animate-bounce">→</span>
-          </div>
-          
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-primary-purple via-primary-blue to-primary-purple animate-gradient leading-tight">
             Chemical Management
             <br />
