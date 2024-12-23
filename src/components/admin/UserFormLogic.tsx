@@ -116,6 +116,8 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
         } else {
           // Create new user with secure password
           const tempPassword = generateSecurePassword();
+          
+          // Use a custom signup that doesn't automatically sign in
           const { data: authData, error: authError } = await supabase.auth.signUp({
             email: formData.email,
             password: tempPassword,
@@ -123,6 +125,7 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
               data: {
                 full_name: formData.full_name,
               },
+              emailRedirectTo: `${window.location.origin}/auth`,
             },
           });
 
