@@ -42,8 +42,9 @@ export const AdminSidebarFooter = () => {
         <div className="flex flex-col space-y-2">
           <Button
             variant="ghost"
+            className="text-white hover:bg-white/50 hover:text-black transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=collapsed]:px-3 group-data-[state=collapsed]:py-3"
             size="sm"
-            className="text-white hover:bg-white/50 hover:text-black transition-colors duration-200 ease-in-out w-full flex items-center px-2 h-8 group-data-[state=collapsed]:justify-center"
+            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
           >
             <ThemeToggle />
           </Button>
@@ -51,10 +52,12 @@ export const AdminSidebarFooter = () => {
             variant="ghost"
             size="sm"
             onClick={handleSignOut}
-            className="text-white hover:bg-white/50 hover:text-black transition-colors duration-200 ease-in-out w-full flex items-center px-2 h-8 group-data-[state=collapsed]:justify-center"
+            className="text-white hover:bg-white/50 hover:text-black transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=collapsed]:px-3 group-data-[state=collapsed]:py-3"
           >
-            <LogOut className="h-5 w-5" />
-            <span className="ml-2 group-data-[state=collapsed]:hidden">Logout</span>
+            <div className="flex items-center w-full">
+              <LogOut className="h-5 w-5" />
+              <span className="ml-2 group-data-[state=collapsed]:hidden">Logout</span>
+            </div>
           </Button>
         </div>
       </div>
