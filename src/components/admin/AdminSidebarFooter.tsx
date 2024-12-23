@@ -35,15 +35,15 @@ export const AdminSidebarFooter = () => {
             <p className="text-xs text-white/70">Administrator</p>
           </div>
         </div>
-        <div className="flex items-center justify-between group-data-[state=collapsed]:justify-center">
+        <div className="flex items-center justify-between group-data-[state=collapsed]:flex-col group-data-[state=collapsed]:space-y-4">
           <ThemeToggle />
           <Button
             variant="ghost"
             size="icon"
             onClick={handleSignOut}
-            className="hover:bg-white/10 text-white"
+            className="hover:bg-white/10 text-white group-data-[state=collapsed]:mt-auto"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4 group-data-[state=collapsed]:h-5 group-data-[state=collapsed]:w-5" />
           </Button>
         </div>
       </div>
