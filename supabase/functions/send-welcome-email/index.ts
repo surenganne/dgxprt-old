@@ -24,6 +24,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending welcome email to:", to);
 
+    // Replace 'your-verified-domain.com' with your actual verified domain
+    const fromEmail = "noreply@your-verified-domain.com"; 
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -31,7 +34,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "onboarding@resend.dev", // Using Resend's verified domain
+        from: fromEmail,
         to: [to],
         subject: "Welcome to DGXPRT - Your Login Credentials",
         html: `
