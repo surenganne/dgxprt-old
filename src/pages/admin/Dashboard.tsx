@@ -53,7 +53,7 @@ const AdminDashboard = () => {
             <img
               src="/dg-only-logo.png"
               alt="DGXPRT Icon"
-              className="h-[60px] w-[60px] hidden group-data-[state=collapsed]:block object-contain transition-transform duration-200 hover:scale-105"
+              className="h-10 w-10 hidden group-data-[state=collapsed]:block object-contain"
             />
           </SidebarHeader>
 
