@@ -116,33 +116,18 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
         } else {
           // Create new user with secure password
           const tempPassword = generateSecurePassword();
-          const { data: authData, error: authError } = await supabase.auth.signUp({
+          const { data: authData, error: authError } = await supabase.auth.admin.createUser({
             email: formData.email,
             password: tempPassword,
-            options: {
-              data: {
-                full_name: formData.full_name,
-              },
-              emailRedirectTo: `${window.location.origin}/auth`,
+            email_confirm: true,
+            user_metadata: {
+              full_name: formData.full_name,
             },
           });
 
-          if (authError) {
-            if (authError.message === "User already registered") {
-              const { error: signInError } = await supabase.auth.signInWithOtp({
-                email: formData.email,
-              });
+          if (authError) throw authError;
 
-              if (signInError) throw signInError;
-
-              toast({
-                title: "Magic link sent",
-                description: "A login link has been sent to the user's email.",
-              });
-            } else {
-              throw authError;
-            }
-          } else if (authData?.user) {
+          if (authData?.user) {
             // Send welcome email with password
             await sendWelcomeEmail(formData.email, tempPassword);
 
