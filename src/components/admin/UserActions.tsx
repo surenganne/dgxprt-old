@@ -39,6 +39,7 @@ export const UserActions = ({
                 size="icon"
                 disabled={isLoading || isAdmin}
                 onClick={onEdit}
+                className="text-primary-blue hover:text-primary-purple hover:bg-primary-purple/10"
               >
                 {isAdmin ? (
                   <Lock className="h-4 w-4" />
@@ -65,6 +66,7 @@ export const UserActions = ({
                 size="icon"
                 disabled={isLoading || isAdmin}
                 onClick={onSendPassword}
+                className="text-primary-blue hover:text-primary-purple hover:bg-primary-purple/10"
               >
                 <Mail className="h-4 w-4" />
               </Button>
@@ -85,6 +87,7 @@ export const UserActions = ({
                 size="icon"
                 disabled={isLoading || isAdmin}
                 onClick={onDelete}
+                className="text-primary-blue hover:text-destructive hover:bg-destructive/10"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>

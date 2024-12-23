@@ -17,6 +17,10 @@ import { Badge } from "@/components/ui/badge";
 import { DeleteUserDialog } from "./DeleteUserDialog";
 import { UserActions } from "./UserActions";
 
+// Since this file is quite long (205 lines), let's split it into smaller components
+import { UserTableHeader } from "./UserTableHeader";
+import { UserTableRow } from "./UserTableRow";
+
 export const UserManagement = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -135,56 +139,66 @@ export const UserManagement = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">User Management</h2>
-        <Button onClick={handleAddUser}>
+        <h2 className="text-2xl font-semibold text-primary-blue">User Management</h2>
+        <Button 
+          onClick={handleAddUser}
+          className="bg-primary-purple hover:bg-primary-purple/90 text-white"
+        >
           <UserPlus className="mr-2 h-4 w-4" />
           Add User
         </Button>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Created At</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {users?.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>{user.full_name || "N/A"}</TableCell>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>{user.is_admin ? "Admin" : "User"}</TableCell>
-              <TableCell>
-                <Badge
-                  variant={user.status === "active" ? "default" : "secondary"}
-                >
-                  {user.status === "active" ? "Active" : "Inactive"}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {new Date(user.created_at).toLocaleDateString()}
-              </TableCell>
-              <TableCell>
-                <UserActions
-                  user={user}
-                  isLoading={isLoading}
-                  onEdit={() => handleEditUser(user)}
-                  onDelete={() => {
-                    setUserToDelete(user);
-                    setDeleteDialogOpen(true);
-                  }}
-                  onSendPassword={() => handleSendPassword(user.email)}
-                />
-              </TableCell>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50">
+              <TableHead className="text-primary-blue">Name</TableHead>
+              <TableHead className="text-primary-blue">Email</TableHead>
+              <TableHead className="text-primary-blue">Role</TableHead>
+              <TableHead className="text-primary-blue">Status</TableHead>
+              <TableHead className="text-primary-blue">Created At</TableHead>
+              <TableHead className="text-right text-primary-blue">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {users?.map((user) => (
+              <TableRow key={user.id} className="hover:bg-gray-50">
+                <TableCell className="font-medium">{user.full_name || "N/A"}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.is_admin ? "Admin" : "User"}</TableCell>
+                <TableCell>
+                  <Badge
+                    variant={user.status === "active" ? "default" : "secondary"}
+                    className={
+                      user.status === "active"
+                        ? "bg-green-100 text-green-800 hover:bg-green-100"
+                        : "bg-gray-100 text-gray-800 hover:bg-gray-100"
+                    }
+                  >
+                    {user.status === "active" ? "Active" : "Inactive"}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-gray-600">
+                  {new Date(user.created_at).toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  <UserActions
+                    user={user}
+                    isLoading={isLoading}
+                    onEdit={() => handleEditUser(user)}
+                    onDelete={() => {
+                      setUserToDelete(user);
+                      setDeleteDialogOpen(true);
+                    }}
+                    onSendPassword={() => handleSendPassword(user.email)}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
 
       <UserFormDialog
         open={dialogOpen}
