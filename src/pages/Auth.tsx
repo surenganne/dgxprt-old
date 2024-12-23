@@ -25,7 +25,7 @@ const Auth = () => {
             .from('profiles')
             .select('is_admin, status')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
 
           if (error) {
             console.error('Error fetching profile:', error);
@@ -33,15 +33,27 @@ const Auth = () => {
             return;
           }
 
-          if (profile?.status !== 'active') {
+          if (!profile) {
+            console.error('No profile found for user:', session.user.id);
+            toast.error('User profile not found');
+            await supabase.auth.signOut();
+            return;
+          }
+
+          console.log('Profile found:', profile);
+
+          if (profile.status !== 'active') {
+            console.log('User account is inactive');
             toast.error('Your account is not active. Please contact an administrator.');
             await supabase.auth.signOut();
             return;
           }
 
-          if (profile?.is_admin) {
+          if (profile.is_admin) {
+            console.log('Redirecting admin user to dashboard');
             navigate('/admin/dashboard');
           } else {
+            console.log('Redirecting standard user to dashboard');
             navigate('/dashboard');
           }
         } catch (error) {
