@@ -14,8 +14,9 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
   });
 
   useEffect(() => {
+    console.log('useEffect triggered with user:', user);
     if (user) {
-      console.log('Initializing form with existing user:', user);
+      console.log('Setting form data for existing user:', user);
       setFormData({
         email: user.email || "",
         full_name: user.full_name || "",
@@ -31,7 +32,7 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
         status: 'active',
       });
     }
-  }, [user]);
+  }, [user]); // Only depend on user prop
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +48,7 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
           description: "The user's information has been updated.",
         });
       } else {
+        console.log('Checking for existing profile');
         const existingProfile = await checkExistingProfile(formData.email);
 
         if (existingProfile) {
@@ -57,6 +59,7 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
             description: "The existing user's information has been updated.",
           });
         } else {
+          console.log('Creating new user');
           await createNewUser(formData);
           toast({
             title: "User created successfully",
@@ -66,8 +69,13 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
       }
 
       console.log('Form submission completed successfully');
+      // Call onSuccess before closing the dialog
       onSuccess();
-      onOpenChange(false);
+      // Add a small delay before closing the dialog to ensure state updates are processed
+      setTimeout(() => {
+        console.log('Closing dialog');
+        onOpenChange(false);
+      }, 100);
     } catch (error: any) {
       console.error("Error in form submission:", error);
       toast({

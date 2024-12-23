@@ -28,6 +28,8 @@ export const UserFormDialog = ({
   user,
   onSuccess,
 }: UserFormDialogProps) => {
+  console.log('UserFormDialog render - open:', open, 'user:', user);
+  
   const { formData, setFormData, loading, handleSubmit } = useUserForm({
     user,
     onSuccess,
@@ -35,7 +37,13 @@ export const UserFormDialog = ({
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog 
+      open={open} 
+      onOpenChange={(newOpen) => {
+        console.log('Dialog onOpenChange triggered:', newOpen);
+        onOpenChange(newOpen);
+      }}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{user ? "Edit User" : "Add New User"}</DialogTitle>
