@@ -1,7 +1,11 @@
-import { supabase, createClient } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { UserFormData } from "@/types/user";
 import { generateSecurePassword } from "@/utils/passwordUtils";
 import { sendWelcomeEmail } from "./emailService";
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = "https://zrmjzuebsupnwuekzfio.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpybWp6dWVic3Vwbnd1ZWt6ZmlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ5NTE0MjMsImV4cCI6MjA1MDUyNzQyM30.dVW_035b8VhtKaXubqsxHdzc6qGYdLcjF-fQnJfdbnY";
 
 export const createNewUser = async (formData: UserFormData) => {
   console.log('Creating new user - start');
@@ -45,8 +49,8 @@ export const createNewUser = async (formData: UserFormData) => {
 
   // Create a separate client for user creation to avoid session changes
   const anonClient = createClient(
-    supabase.supabaseUrl,
-    supabase.supabaseKey,
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY,
     {
       auth: {
         autoRefreshToken: false,
@@ -75,9 +79,6 @@ export const createNewUser = async (formData: UserFormData) => {
 
   if (authData?.user) {
     console.log('User created successfully:', authData.user.id);
-    
-    // Restore the admin session immediately
-    // Removed this block as per the instructions
 
     await sendWelcomeEmail(formData.email, tempPassword);
 
