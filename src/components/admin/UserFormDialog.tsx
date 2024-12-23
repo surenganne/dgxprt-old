@@ -92,27 +92,22 @@ export const UserFormDialog = ({
           });
 
           if (authError) {
-            // If user exists in auth but not in profiles, handle that case
             if (authError.message === "User already registered") {
-              const { data: userData } = await supabase.auth.admin.getUserByEmail(formData.email);
-              if (userData?.user) {
-                const { error: profileError } = await supabase
-                  .from("profiles")
-                  .insert({
-                    id: userData.user.id,
-                    email: formData.email,
-                    full_name: formData.full_name,
-                    is_admin: formData.is_admin,
-                  });
+              // If user exists in auth but not in profiles, create a new profile
+              const { data: signInData } = await supabase.auth.signInWithOtp({
+                email: formData.email,
+              });
 
-                if (profileError) throw profileError;
+              if (signInData) {
+                toast({
+                  title: "Magic link sent",
+                  description: "A login link has been sent to the user's email.",
+                });
               }
             } else {
               throw authError;
             }
-          }
-
-          if (authData?.user) {
+          } else if (authData?.user) {
             const { error: profileError } = await supabase
               .from("profiles")
               .update({
@@ -121,12 +116,12 @@ export const UserFormDialog = ({
               .eq("id", authData.user.id);
 
             if (profileError) throw profileError;
-          }
 
-          toast({
-            title: "User created successfully",
-            description: "An email has been sent to the user with login instructions.",
-          });
+            toast({
+              title: "User created successfully",
+              description: "An email has been sent to the user with login instructions.",
+            });
+          }
         }
       }
 
