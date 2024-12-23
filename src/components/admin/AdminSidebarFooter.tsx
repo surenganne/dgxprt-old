@@ -39,13 +39,13 @@ export const AdminSidebarFooter = () => {
           </div>
           <Button
             variant="ghost"
-            className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2"
+            className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=collapsed]:justify-center"
             size="sm"
             asChild
           >
             <SidebarTrigger>
               <PanelLeft className="h-4 w-4 mr-2 group-data-[state=collapsed]:mr-0" />
-              <span className="group-data-[state=collapsed]:hidden">Collapse</span>
+              Collapse
             </SidebarTrigger>
           </Button>
         </div>
