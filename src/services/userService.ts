@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, createClient } from "@/integrations/supabase/client";
 import { UserFormData } from "@/types/user";
 import { generateSecurePassword } from "@/utils/passwordUtils";
 import { sendWelcomeEmail } from "./emailService";
@@ -42,14 +42,29 @@ export const createNewUser = async (formData: UserFormData) => {
   // If user doesn't exist, create new
   const tempPassword = generateSecurePassword();
   console.log('Generated temporary password');
+
+  // Create a separate client for user creation to avoid session changes
+  const anonClient = createClient(
+    supabase.supabaseUrl,
+    supabase.supabaseKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+        detectSessionInUrl: false
+      }
+    }
+  );
   
-  const { data: authData, error: authError } = await supabase.auth.signUp({
+  // Create new user with the anonymous client
+  const { data: authData, error: authError } = await anonClient.auth.signUp({
     email: formData.email,
     password: tempPassword,
     options: {
       data: {
         full_name: formData.full_name,
       },
+      emailRedirectTo: `${window.location.origin}/auth`,
     }
   });
 
@@ -60,6 +75,10 @@ export const createNewUser = async (formData: UserFormData) => {
 
   if (authData?.user) {
     console.log('User created successfully:', authData.user.id);
+    
+    // Restore the admin session immediately
+    // Removed this block as per the instructions
+
     await sendWelcomeEmail(formData.email, tempPassword);
 
     // Profile will be created automatically via trigger
