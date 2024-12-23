@@ -75,6 +75,12 @@ const AdminDashboard = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <Sidebar className="border-r border-border">
+          <SidebarHeader className="p-4 border-b border-border">
+            <div className="flex justify-center">
+              <img src="/dg-text-logo.png" alt="DGXPRT Logo" className="h-6 w-auto" />
+            </div>
+          </SidebarHeader>
+
           <SidebarContent className="p-2">
             <nav className="space-y-1">
               {menuItems.map((item) => (
@@ -114,9 +120,6 @@ const AdminDashboard = () => {
                 >
                   <LogOut className="h-4 w-4 text-destructive" />
                 </Button>
-              </div>
-              <div className="flex justify-center border-t border-border pt-4">
-                <img src="/dg-text-logo.png" alt="DGXPRT Logo" className="h-6 w-auto" />
               </div>
             </div>
           </SidebarFooter>
