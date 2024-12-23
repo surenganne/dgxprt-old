@@ -41,37 +41,37 @@ export const AdminSidebarFooter = () => {
           </div>
           <Button
             variant="ghost"
-            className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2"
+            className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=collapsed]:px-3 group-data-[state=collapsed]:py-3"
             size="sm"
             asChild
           >
             <SidebarTrigger>
               {state === "collapsed" ? (
                 <div className="flex items-center w-full">
-                  <PanelRightOpen className="h-4 w-4 mr-2" />
-                  <span>Expand</span>
+                  <PanelRightOpen className="h-5 w-5" />
+                  <span className="ml-2">Expand</span>
                 </div>
               ) : (
                 <div className="flex items-center w-full">
-                  <PanelLeft className="h-4 w-4 mr-2" />
-                  <span>Collapse</span>
+                  <PanelLeft className="h-5 w-5" />
+                  <span className="ml-2">Collapse</span>
                 </div>
               )}
             </SidebarTrigger>
           </Button>
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between space-x-2">
           <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSignOut}
+            className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out flex-1 justify-start pl-2 group-data-[state=collapsed]:px-3 group-data-[state=collapsed]:py-3"
+          >
+            <LogOut className="h-5 w-5" />
+            <span className="ml-2 group-data-[state=collapsed]:hidden">Logout</span>
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleSignOut}
-          className="text-white hover:bg-white/10 transition-colors duration-200 ease-in-out w-full justify-start pl-2"
-        >
-          <LogOut className="h-4 w-4 mr-2" />
-          <span>Logout</span>
-        </Button>
       </div>
     </SidebarFooter>
   );
