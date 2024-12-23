@@ -28,8 +28,7 @@ serve(async (req) => {
 
     console.log("Sending welcome email to:", to);
 
-    // For testing, use the Resend test domain
-    const fromEmail = "onboarding@resend.dev";
+    const fromEmail = "noreply@dgxprt.incepta.ai";
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
