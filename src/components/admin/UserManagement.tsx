@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { UserPlus, Pencil, Trash2 } from "lucide-react";
+import { UserPlus, Pencil, Trash2, Lock } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { UserFormDialog } from "./UserFormDialog";
 import {
@@ -47,7 +47,6 @@ export const UserManagement = () => {
   });
 
   const handleDeleteUser = async (userId: string, email: string) => {
-    // Prevent deletion of admin@dgxprt.ai
     if (email === "admin@dgxprt.ai") {
       toast({
         title: "Cannot delete admin account",
@@ -80,6 +79,14 @@ export const UserManagement = () => {
   };
 
   const handleEditUser = (user: any) => {
+    if (user.email === "admin@dgxprt.ai") {
+      toast({
+        title: "Cannot edit admin account",
+        description: "The main administrator account cannot be modified.",
+        variant: "destructive",
+      });
+      return;
+    }
     setSelectedUser(user);
     setDialogOpen(true);
   };
@@ -119,15 +126,32 @@ export const UserManagement = () => {
                 {new Date(user.created_at).toLocaleDateString()}
               </TableCell>
               <TableCell className="text-right">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="mr-2"
-                  disabled={isLoading}
-                  onClick={() => handleEditUser(user)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="mr-2"
+                          disabled={isLoading || user.email === "admin@dgxprt.ai"}
+                          onClick={() => handleEditUser(user)}
+                        >
+                          {user.email === "admin@dgxprt.ai" ? (
+                            <Lock className="h-4 w-4" />
+                          ) : (
+                            <Pencil className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {user.email === "admin@dgxprt.ai" && (
+                      <TooltipContent>
+                        <p>The main administrator account cannot be modified</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
