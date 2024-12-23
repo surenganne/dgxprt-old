@@ -16,12 +16,12 @@ export const AdminSidebarCollapse = () => {
         {state === "collapsed" ? (
           <div className="flex items-center w-full">
             <PanelRightOpen className="h-5 w-5" />
-            <span className="ml-2 group-data-[state=collapsed]:hidden">Expand</span>
+            <span className="ml-2">Expand</span>
           </div>
         ) : (
           <div className="flex items-center w-full">
             <PanelLeft className="h-5 w-5" />
-            <span className="ml-2 group-data-[state=collapsed]:hidden">Collapse</span>
+            <span className="ml-2">Collapse</span>
           </div>
         )}
       </SidebarTrigger>
