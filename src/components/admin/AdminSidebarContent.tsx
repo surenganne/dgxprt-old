@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { SidebarContent, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { menuItems } from "@/config/admin-menu";
+import { PanelLeft } from "lucide-react";
 
 export const AdminSidebarContent = () => {
   const navigate = useNavigate();
