@@ -3,25 +3,53 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { createBrowserSupabaseClient } from "@supabase/auth-helpers-shared";
+import { SessionContextProvider } from "@supabase/auth-helpers-react";
+import { useState } from "react";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import { useSession } from "@supabase/auth-helpers-react";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="light" storageKey="ui-theme">
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+// Protected route wrapper
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const session = useSession();
+  if (!session) {
+    return <Navigate to="/auth" replace />;
+  }
+  return <>{children}</>;
+};
+
+const App = () => {
+  const [supabaseClient] = useState(() => createBrowserSupabaseClient());
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SessionContextProvider supabaseClient={supabaseClient}>
+        <ThemeProvider defaultTheme="light" storageKey="ui-theme">
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/auth" element={<Auth />} />
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoute>
+                      <Index />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </ThemeProvider>
+      </SessionContextProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
