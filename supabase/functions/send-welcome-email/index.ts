@@ -22,6 +22,8 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { to, password, loginLink } = await req.json() as EmailRequest;
 
+    console.log("Sending welcome email to:", to);
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -29,7 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "DGXPRT <no-reply@yourdomain.com>",
+        from: "onboarding@resend.dev", // Using Resend's verified domain
         to: [to],
         subject: "Welcome to DGXPRT - Your Login Credentials",
         html: `
@@ -47,15 +49,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!res.ok) {
       const error = await res.text();
+      console.error("Resend API error:", error);
       throw new Error(error);
     }
 
     const data = await res.json();
+    console.log("Email sent successfully:", data);
+
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
+    console.error("Error in send-welcome-email function:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
