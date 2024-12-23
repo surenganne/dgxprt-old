@@ -11,7 +11,7 @@ const Index = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="relative py-20 px-4 overflow-hidden">
+      <section className="relative py-20 px-4 overflow-hidden dark:bg-background/50 dark:backdrop-blur-xl">
         <div className="absolute inset-0 bg-gradient-to-r from-primary-purple/10 to-primary-blue/10 -z-10" />
         <div className="absolute inset-0 bg-grid-white/10 -z-10" />
         <div className="max-w-3xl mx-auto text-center">
@@ -38,7 +38,7 @@ const Index = () => {
       </section>
 
       {/* Core Features */}
-      <section className="py-16 px-4 bg-slate-50/50 backdrop-blur-xl border-y">
+      <section className="py-16 px-4 bg-slate-50/50 backdrop-blur-xl border-y dark:bg-background/50 dark:backdrop-blur-xl">
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
           <FeatureCard
             icon={Shield}
@@ -59,7 +59,7 @@ const Index = () => {
       </section>
 
       {/* Comprehensive Features */}
-      <section className="py-16 px-4 relative overflow-hidden">
+      <section className="py-16 px-4 relative overflow-hidden dark:bg-background/50 dark:backdrop-blur-xl">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary-purple/5 to-transparent -z-10" />
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-3xl font-bold mb-4">Comprehensive Chemical Management</h2>
@@ -102,7 +102,7 @@ const Index = () => {
       </section>
 
       {/* Solutions */}
-      <section className="py-16 px-4 bg-slate-50/50 backdrop-blur-xl border-y">
+      <section className="py-16 px-4 bg-slate-50/50 backdrop-blur-xl border-y dark:bg-background/50 dark:backdrop-blur-xl">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-3xl font-bold mb-4">Solutions for Every Need</h2>
           <p className="text-muted-foreground">
@@ -147,7 +147,7 @@ const Index = () => {
       </section>
 
       {/* Compliance Section */}
-      <section className="py-16 px-4 relative overflow-hidden">
+      <section className="py-16 px-4 relative overflow-hidden dark:bg-background/50 dark:backdrop-blur-xl">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary-blue/5 to-transparent -z-10" />
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-3xl font-bold mb-4">Stay Compliant and Secure</h2>
