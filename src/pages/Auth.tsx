@@ -105,11 +105,14 @@ const Auth = () => {
                 padding: '10px 16px',
                 fontSize: '14px',
                 marginBottom: '10px',
-                color: 'rgb(var(--foreground))',
+                color: theme === 'dark' ? '#E5DEFF' : '#333333',
                 '&:focus': {
                   borderColor: '#895AB7',
                   outline: 'none',
                   boxShadow: '0 0 0 2px rgba(137, 90, 183, 0.2)'
+                } as CSSProperties,
+                '&::placeholder': {
+                  color: theme === 'dark' ? '#8E9196' : '#8A898C'
                 } as CSSProperties
               } as CSSProperties,
               label: {
