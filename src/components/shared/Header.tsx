@@ -6,7 +6,10 @@ export function Header() {
     <header className="w-full py-4 px-6">
       <nav className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link to="/" className="text-xl font-bold text-primary">DGXPRT</Link>
+          <Link to="/" className="flex items-center gap-2">
+            <img src="/dg-logo.png" alt="DGXPRT Logo" className="h-8 w-auto" />
+            <span className="text-xl font-bold text-primary">DGXPRT</span>
+          </Link>
           <div className="hidden md:flex items-center gap-6">
             <Link to="#features" className="text-sm text-muted-foreground hover:text-primary">Features</Link>
             <Link to="#solutions" className="text-sm text-muted-foreground hover:text-primary">Solutions</Link>
