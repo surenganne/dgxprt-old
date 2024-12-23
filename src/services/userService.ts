@@ -8,8 +8,6 @@ const SUPABASE_URL = "https://zrmjzuebsupnwuekzfio.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpybWp6dWVic3Vwbnd1ZWt6ZmlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ5NTE0MjMsImV4cCI6MjA1MDUyNzQyM30.dVW_035b8VhtKaXubqsxHdzc6qGYdLcjF-fQnJfdbnY";
 
 export const createNewUser = async (formData: UserFormData) => {
-  console.log('Creating new user - start');
-  
   // First check if user already exists in profiles
   const { data: existingProfile, error: profileError } = await supabase
     .from("profiles")
@@ -17,13 +15,9 @@ export const createNewUser = async (formData: UserFormData) => {
     .eq("email", formData.email)
     .maybeSingle();
 
-  if (profileError) {
-    console.error('Error checking existing profile:', profileError);
-    throw profileError;
-  }
+  if (profileError) throw profileError;
 
   if (existingProfile) {
-    console.log('User already exists in system');
     // Just update their profile
     const { error: updateError } = await supabase
       .from("profiles")
@@ -35,17 +29,12 @@ export const createNewUser = async (formData: UserFormData) => {
       })
       .eq("email", formData.email);
 
-    if (updateError) {
-      console.error('Error updating existing profile:', updateError);
-      throw updateError;
-    }
-    console.log('Profile updated successfully');
+    if (updateError) throw updateError;
     return;
   }
 
   // If user doesn't exist, create new
   const tempPassword = generateSecurePassword();
-  console.log('Generated temporary password');
 
   // Create a separate client for user creation to avoid session changes
   const anonClient = createClient(
@@ -72,14 +61,9 @@ export const createNewUser = async (formData: UserFormData) => {
     }
   });
 
-  if (authError) {
-    console.error('Error in auth creation:', authError);
-    throw authError;
-  }
+  if (authError) throw authError;
 
   if (authData?.user) {
-    console.log('User created successfully:', authData.user.id);
-
     await sendWelcomeEmail(formData.email, tempPassword);
 
     // Profile will be created automatically via trigger
@@ -91,18 +75,13 @@ export const createNewUser = async (formData: UserFormData) => {
       })
       .eq("id", authData.user.id);
 
-    if (profileError) {
-      console.error('Error updating profile:', profileError);
-      throw profileError;
-    }
-    console.log('Profile updated successfully');
+    if (profileError) throw profileError;
   }
 
   return authData;
 };
 
 export const updateExistingUser = async (userId: string, formData: UserFormData) => {
-  console.log('Updating existing user:', userId);
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -113,25 +92,17 @@ export const updateExistingUser = async (userId: string, formData: UserFormData)
     })
     .eq("id", userId);
 
-  if (error) {
-    console.error('Error updating user profile:', error);
-    throw error;
-  }
-  console.log('User updated successfully');
+  if (error) throw error;
 };
 
 export const checkExistingProfile = async (email: string) => {
-  console.log('Checking for existing profile with email:', email);
   const { data: existingProfile, error: profileError } = await supabase
     .from("profiles")
     .select("id")
     .eq("email", email)
     .maybeSingle();
 
-  if (profileError) {
-    console.error('Error checking existing profile:', profileError);
-    throw profileError;
-  }
+  if (profileError) throw profileError;
 
   return existingProfile;
 };

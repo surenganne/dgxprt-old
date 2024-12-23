@@ -1,7 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const sendWelcomeEmail = async (email: string, password: string) => {
-  console.log('Attempting to send welcome email to:', email);
   const loginLink = `${window.location.origin}/auth`;
 
   try {
@@ -13,13 +12,8 @@ export const sendWelcomeEmail = async (email: string, password: string) => {
       },
     });
 
-    if (error) {
-      console.error('Error sending welcome email:', error);
-      throw error;
-    }
-    console.log('Welcome email sent successfully');
+    if (error) throw error;
   } catch (error) {
-    console.error('Error in sendWelcomeEmail:', error);
     throw error;
   }
 };
