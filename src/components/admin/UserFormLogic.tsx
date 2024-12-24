@@ -52,18 +52,6 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
       } else {
         console.log('[UserFormLogic] Creating new user:', formData.email);
         
-        // First check if user exists in profiles
-        const { data: existingProfile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('email', formData.email)
-          .maybeSingle();
-
-        if (existingProfile) {
-          console.error('[UserFormLogic] User already exists in profiles:', formData.email);
-          throw new Error('A user with this email already exists');
-        }
-
         // Create new user and send magic link
         const { data, error: createError } = await supabase.functions.invoke('create-user-with-magic-link', {
           body: { 
@@ -78,7 +66,7 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
           console.error('[UserFormLogic] Error from edge function:', createError);
           let errorMessage;
           try {
-            const errorBody = JSON.parse(createError.message);
+            const errorBody = JSON.parse(createError.body);
             errorMessage = errorBody.error || "Failed to create user";
           } catch (parseError) {
             console.error('[UserFormLogic] Error parsing error response:', parseError);

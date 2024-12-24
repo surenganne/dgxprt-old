@@ -42,7 +42,13 @@ serve(async (req) => {
 
     if (getUserError) {
       console.error("[create-user] Error checking user:", getUserError);
-      throw getUserError;
+      return new Response(
+        JSON.stringify({ error: getUserError.message }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400
+        }
+      );
     }
 
     if (existingAuthUsers?.users && existingAuthUsers.users.length > 0) {
@@ -66,15 +72,24 @@ serve(async (req) => {
 
     if (createError) {
       console.error("[create-user] Error creating user:", createError);
-      throw createError;
+      return new Response(
+        JSON.stringify({ error: createError.message }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400
+        }
+      );
     }
 
     if (!newUser?.user?.id) {
-      throw new Error("No user ID returned from auth");
+      return new Response(
+        JSON.stringify({ error: "No user ID returned from auth" }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400
+        }
+      );
     }
-
-    // The profile will be created automatically by the handle_new_user trigger
-    console.log("[create-user] Profile will be created by trigger for user:", newUser.user.id);
 
     // Send welcome email
     console.log("[create-user] Sending welcome email...");
@@ -123,7 +138,13 @@ serve(async (req) => {
     if (!res.ok) {
       const error = await res.text();
       console.error("[create-user] Error sending email:", error);
-      throw new Error(`Failed to send email: ${error}`);
+      return new Response(
+        JSON.stringify({ error: `Failed to send welcome email: ${error}` }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400
+        }
+      );
     }
 
     console.log("[create-user] Process completed successfully");
