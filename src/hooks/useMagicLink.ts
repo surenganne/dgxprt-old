@@ -38,25 +38,42 @@ export const useMagicLink = (
       try {
         console.log("[useMagicLink] Starting magic link verification");
         
-        // Don't sign out here, let Supabase handle the session
-        const { data, error } = await supabase.auth.getSession();
+        // First check if we already have a session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error("[useMagicLink] Session error:", error);
+        if (sessionError) {
+          console.error("[useMagicLink] Session error:", sessionError);
           toast.error("Error verifying magic link");
           setInitialAuthCheckDone(true);
           return;
         }
 
-        if (!data.session) {
+        if (!session) {
           console.log("[useMagicLink] No session found, attempting to exchange token");
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(token);
           
-          if (exchangeError) {
-            console.error("[useMagicLink] Error exchanging token:", exchangeError);
-            toast.error("Error verifying magic link");
-            setInitialAuthCheckDone(true);
-            return;
+          // If we're using the access_token from the hash, we need to set it
+          if (hashParams.get("access_token")) {
+            const { error: setSessionError } = await supabase.auth.setSession({
+              access_token: hashParams.get("access_token")!,
+              refresh_token: hashParams.get("refresh_token") || ""
+            });
+            
+            if (setSessionError) {
+              console.error("[useMagicLink] Error setting session:", setSessionError);
+              toast.error("Error verifying magic link");
+              setInitialAuthCheckDone(true);
+              return;
+            }
+          } else {
+            // Otherwise exchange the code for a session
+            const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(token);
+            
+            if (exchangeError) {
+              console.error("[useMagicLink] Error exchanging token:", exchangeError);
+              toast.error("Error verifying magic link");
+              setInitialAuthCheckDone(true);
+              return;
+            }
           }
         }
 
