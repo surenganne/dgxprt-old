@@ -11,91 +11,80 @@ export const useAuthRedirect = (
   const location = useLocation();
 
   useEffect(() => {
-    const handleSuccessfulLogin = async (userId: string) => {
+    const params = new URLSearchParams(location.search);
+    const locationState = location.state as { token?: string; type?: string } | null;
+    
+    // Check both URL params and location state for magic link
+    const isMagicLink = (params.get("token") && params.get("type") === "magiclink") ||
+                       (locationState?.token && locationState?.type === "magiclink");
+
+    const checkAuthAndRedirect = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        setInitialAuthCheckDone(true);
+        return;
+      }
+
       try {
         // Don't redirect if we're handling a magic link
-        const params = new URLSearchParams(location.search);
-        if (params.get("token") && params.get("type") === "magiclink") {
+        if (isMagicLink) {
           console.log("Magic link detected, skipping redirect");
+          setInitialAuthCheckDone(true);
           return;
         }
 
         const { data: profile, error } = await supabase
           .from("profiles")
           .select("is_admin, has_reset_password, status")
-          .eq("id", userId)
+          .eq("id", session.user.id)
           .single();
 
         if (error) {
           console.error("Error checking user profile:", error);
           toast.error("Error checking user profile");
+          setInitialAuthCheckDone(true);
           return;
         }
 
         if (!profile) {
           console.error("No profile found for user");
           toast.error("User profile not found");
+          setInitialAuthCheckDone(true);
           return;
         }
 
         if (profile.status !== "active") {
           toast.error("Your account is not active");
           await supabase.auth.signOut();
+          setInitialAuthCheckDone(true);
           return;
         }
 
         if (!profile.has_reset_password) {
-          toast.info("Please reset your password for security reasons.");
-        }
-
-        if (profile.is_admin) {
-          toast.success("Welcome back, admin!");
-          navigate("/admin/dashboard");
-        } else {
-          toast.success("Login successful!");
-          navigate("/dashboard");
-        }
-      } catch (error: any) {
-        console.error("Error checking user profile:", error);
-        toast.error("Error checking user profile");
-      }
-    };
-
-    const checkSession = async () => {
-      try {
-        const {
-          data: { session },
-          error: sessionError,
-        } = await supabase.auth.getSession();
-
-        if (sessionError) {
-          console.error("Session error:", sessionError);
+          // If password hasn't been reset, force them to reset it
+          if (location.pathname !== '/auth/reset-password') {
+            navigate('/auth/reset-password', { replace: true });
+          }
+          setInitialAuthCheckDone(true);
           return;
         }
 
-        if (session?.user) {
-          await handleSuccessfulLogin(session.user.id);
+        // Only redirect if we're on the auth page and not handling a magic link
+        if (location.pathname === '/auth' && !isMagicLink) {
+          if (profile.is_admin) {
+            navigate('/admin/dashboard', { replace: true });
+          } else {
+            navigate('/dashboard', { replace: true });
+          }
         }
       } catch (error) {
-        console.error("Error checking session:", error);
+        console.error("Error in auth redirect:", error);
       } finally {
         setInitialAuthCheckDone(true);
       }
     };
 
-    checkSession();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("Auth state changed:", event, session);
-        if (event === "SIGNED_IN" && session) {
-          await handleSuccessfulLogin(session.user.id);
-        }
-      }
-    );
-
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
-  }, [navigate, supabase, setInitialAuthCheckDone, location.search]);
+    checkAuthAndRedirect();
+  }, [location, navigate, supabase]);
 };
