@@ -47,11 +47,18 @@ serve(async (req) => {
       throw linkError || new Error("Failed to generate magic link");
     }
 
-    // Create profile
-    console.log("[create-user] Creating profile...");
+    // Get user data from the response
+    const userId = linkData.user.id;
+    if (!userId) {
+      throw new Error("No user ID returned from auth");
+    }
+
+    // Create profile with the user ID
+    console.log("[create-user] Creating profile for user:", userId);
     const { error: profileError } = await supabase
       .from('profiles')
       .insert({
+        id: userId,
         email: email,
         full_name: fullName,
         is_admin: isAdmin,
