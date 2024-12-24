@@ -130,6 +130,7 @@ export const SDSTable = ({ documents, isLoading }: SDSTableProps) => {
                         `${doc.chemicals?.name}_SDS_v${doc.version}.pdf`
                       )
                     }
+                    className="text-primary-purple hover:text-primary-purple/80 hover:bg-primary-purple/10"
                   >
                     <Download className="h-4 w-4" />
                   </Button>

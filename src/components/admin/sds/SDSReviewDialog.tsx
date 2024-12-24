@@ -50,7 +50,7 @@ export const SDSReviewDialog = ({ documentId, currentStatus }: SDSReviewDialogPr
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="border-primary-purple/20 text-primary-purple hover:text-primary-purple/80 hover:bg-primary-purple/10">
           <ClipboardCheck className="h-4 w-4 mr-2" />
           Review
         </Button>
@@ -75,7 +75,7 @@ export const SDSReviewDialog = ({ documentId, currentStatus }: SDSReviewDialogPr
             <Button
               variant="outline"
               onClick={() => handleReview("archived")}
-              className="bg-red-50 hover:bg-red-100 text-red-600"
+              className="bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
             >
               <X className="h-4 w-4 mr-2" />
               Reject
@@ -83,7 +83,7 @@ export const SDSReviewDialog = ({ documentId, currentStatus }: SDSReviewDialogPr
             <Button
               variant="outline"
               onClick={() => handleReview("active")}
-              className="bg-green-50 hover:bg-green-100 text-green-600"
+              className="bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
             >
               <Check className="h-4 w-4 mr-2" />
               Approve
