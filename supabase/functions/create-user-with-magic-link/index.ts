@@ -40,6 +40,8 @@ serve(async (req) => {
       }
     });
 
+    console.log("[create-user] Existing auth users:", existingAuthUsers);
+
     if (getUserError) {
       console.error("[create-user] Error checking user:", getUserError);
       return new Response(
@@ -52,9 +54,39 @@ serve(async (req) => {
     }
 
     if (existingAuthUsers?.users && existingAuthUsers.users.length > 0) {
-      console.error("[create-user] User already exists in auth.users");
+      console.error("[create-user] User already exists in auth.users:", existingAuthUsers.users);
       return new Response(
         JSON.stringify({ error: "A user with this email already exists" }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400
+        }
+      );
+    }
+
+    // Check if user exists in profiles table
+    console.log("[create-user] Checking if user exists in profiles...");
+    const { data: existingProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    if (profileError && profileError.code !== 'PGRST116') {
+      console.error("[create-user] Error checking profile:", profileError);
+      return new Response(
+        JSON.stringify({ error: profileError.message }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400
+        }
+      );
+    }
+
+    if (existingProfile) {
+      console.error("[create-user] User already exists in profiles:", existingProfile);
+      return new Response(
+        JSON.stringify({ error: "A user with this email already exists in profiles" }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 400

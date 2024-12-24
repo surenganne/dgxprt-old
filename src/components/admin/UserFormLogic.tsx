@@ -66,8 +66,13 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
           console.error('[UserFormLogic] Error from edge function:', createError);
           let errorMessage;
           try {
-            const errorBody = JSON.parse(createError.body);
-            errorMessage = errorBody.error || "Failed to create user";
+            // Parse the error body if it's a string
+            if (typeof createError.body === 'string') {
+              const errorBody = JSON.parse(createError.body);
+              errorMessage = errorBody.error || "Failed to create user";
+            } else {
+              errorMessage = createError.message || "Failed to create user";
+            }
           } catch (parseError) {
             console.error('[UserFormLogic] Error parsing error response:', parseError);
             errorMessage = createError.message || "Failed to create user";
