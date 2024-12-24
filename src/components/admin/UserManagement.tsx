@@ -5,8 +5,10 @@ import { DeleteUserDialog } from "./DeleteUserDialog";
 import { UserTable } from "./UserTable";
 import { useUsers } from "@/hooks/useUsers";
 import { useUserActions } from "@/hooks/useUserActions";
+import { useToast } from "@/hooks/use-toast";
 
 export const UserManagement = () => {
+  const { toast } = useToast();
   const { users, isLoading, setIsLoading, refetch } = useUsers();
   const {
     dialogOpen,
