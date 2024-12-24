@@ -13,15 +13,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuditLogger } from "@/hooks/useAuditLogger";
 
+interface Category {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 interface CategoryFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
-  category?: {
-    id: string;
-    name: string;
-    description: string | null;
-  };
+  category?: Category;
 }
 
 interface CategoryFormData {
