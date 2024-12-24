@@ -13,23 +13,10 @@ import { AdminSidebarFooter } from "@/components/admin/AdminSidebarFooter";
 import { Button } from "@/components/ui/button";
 import { Plus, Beaker } from "lucide-react";
 import { ChemicalFormDialog } from "@/components/admin/ChemicalFormDialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { useQuery } from "@tanstack/react-query";
+import { ChemicalsTable } from "@/components/admin/chemicals/ChemicalsTable";
+import { ChemicalsPagination } from "@/components/admin/chemicals/ChemicalsPagination";
+import type { ChemicalsResponse } from "@/types/chemical";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -39,10 +26,10 @@ const Chemicals = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: chemicalsData, refetch } = useQuery({
-    queryKey: ["chemicals"],
+  const { data: chemicalsData, refetch } = useQuery<ChemicalsResponse>({
+    queryKey: ["chemicals", currentPage],
     queryFn: async () => {
-      const { data: totalCount } = await supabase
+      const countQuery = await supabase
         .from("chemicals")
         .select("id", { count: "exact", head: true });
 
@@ -51,15 +38,15 @@ const Chemicals = () => {
         .select("*")
         .order("name")
         .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
-      
+
       if (error) {
         toast.error("Failed to fetch chemicals");
         throw error;
       }
-      
+
       return {
-        chemicals,
-        totalCount: totalCount?.count || 0
+        chemicals: chemicals || [],
+        totalCount: countQuery.count || 0,
       };
     },
   });
@@ -153,64 +140,12 @@ const Chemicals = () => {
               </p>
             ) : (
               <>
-                <div className="border rounded-lg">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>CAS Number</TableHead>
-                        <TableHead>Hazard Class</TableHead>
-                        <TableHead>Description</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {chemicalsData?.chemicals?.map((chemical) => (
-                        <TableRow key={chemical.id}>
-                          <TableCell>{chemical.name}</TableCell>
-                          <TableCell>{chemical.cas_number || "-"}</TableCell>
-                          <TableCell className="capitalize">
-                            {chemical.hazard_class.replace("_", " ")}
-                          </TableCell>
-                          <TableCell>{chemical.description || "-"}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-
-                {totalPages > 1 && (
-                  <div className="mt-4">
-                    <Pagination>
-                      <PaginationContent>
-                        <PaginationItem>
-                          <PaginationPrevious 
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                          />
-                        </PaginationItem>
-                        
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                          <PaginationItem key={page}>
-                            <PaginationLink
-                              onClick={() => handlePageChange(page)}
-                              isActive={currentPage === page}
-                              className="cursor-pointer"
-                            >
-                              {page}
-                            </PaginationLink>
-                          </PaginationItem>
-                        ))}
-                        
-                        <PaginationItem>
-                          <PaginationNext
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                          />
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
-                  </div>
-                )}
+                <ChemicalsTable chemicals={chemicalsData?.chemicals || []} />
+                <ChemicalsPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
               </>
             )}
 
