@@ -26,9 +26,8 @@ export const createNewUser = async (formData: UserFormData) => {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
-      emailAuth: {
-        enabled: false
-      }
+      detectSessionInUrl: false,
+      flowType: 'pkce'
     }
   });
 
