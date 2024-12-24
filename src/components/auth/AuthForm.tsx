@@ -34,7 +34,8 @@ export const AuthForm = ({
             value={email}
             onChange={(e) => onEmailChange(e.target.value)}
             required
-            disabled={loading || isEmailReadOnly}
+            disabled={loading}
+            readOnly={isEmailReadOnly}
             className="mt-1"
             placeholder="Enter your email"
           />

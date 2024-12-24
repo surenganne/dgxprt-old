@@ -63,6 +63,10 @@ const Auth = () => {
     );
   }
 
+  // Check if we're processing a magic link by looking at URL parameters
+  const searchParams = new URLSearchParams(window.location.search);
+  const isMagicLink = searchParams.get("token") && searchParams.get("type") === "magiclink";
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
       <BackgroundEffects />
@@ -84,7 +88,7 @@ const Auth = () => {
           onEmailChange={setEmail}
           onPasswordChange={setPassword}
           onSubmit={handleLogin}
-          isEmailReadOnly={!!email}
+          isEmailReadOnly={isMagicLink}
         />
       </div>
     </div>
