@@ -3,6 +3,9 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { UserFormData } from "@/types/user";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSession } from "@supabase/auth-helpers-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UserFormFieldsProps {
   formData: UserFormData;
@@ -17,6 +20,24 @@ export const UserFormFields = ({
   loading,
   isEdit,
 }: UserFormFieldsProps) => {
+  const session = useSession();
+
+  // Fetch current user's profile to check permissions
+  const { data: currentUserProfile } = useQuery({
+    queryKey: ["currentUserProfile"],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("is_owner, is_admin")
+        .eq("id", session.user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <>
       <div className="space-y-2">
@@ -44,17 +65,19 @@ export const UserFormFields = ({
           disabled={loading}
         />
       </div>
-      <div className="flex items-center space-x-2">
-        <Switch
-          id="is_admin"
-          checked={formData.is_admin}
-          onCheckedChange={(checked) =>
-            setFormData({ ...formData, is_admin: checked })
-          }
-          disabled={loading}
-        />
-        <Label htmlFor="is_admin">Admin User</Label>
-      </div>
+      {currentUserProfile?.is_owner && (
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="is_admin"
+            checked={formData.is_admin}
+            onCheckedChange={(checked) =>
+              setFormData({ ...formData, is_admin: checked })
+            }
+            disabled={loading}
+          />
+          <Label htmlFor="is_admin">Admin User</Label>
+        </div>
+      )}
       <div className="space-y-2">
         <Label htmlFor="status">Status</Label>
         <Select
