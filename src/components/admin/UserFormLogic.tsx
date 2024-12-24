@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { UserFormData, UseUserFormProps } from "@/types/user";
-import { createNewUser, updateExistingUser } from "@/services/userService";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps) => {
   const { toast } = useToast();
@@ -30,22 +30,47 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
 
     try {
       if (user) {
-        await updateExistingUser(user.id, formData);
+        // Update existing user
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({
+            email: formData.email,
+            full_name: formData.full_name,
+            is_admin: formData.is_admin,
+            status: formData.status,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", user.id);
+
+        if (updateError) throw updateError;
+
         toast({
           title: "User updated successfully",
           description: "The user's information has been updated.",
         });
       } else {
-        await createNewUser(formData);
+        // Create new user and send magic link
+        const { error: createError } = await supabase.functions.invoke('create-user-with-magic-link', {
+          body: { 
+            email: formData.email,
+            fullName: formData.full_name,
+            isAdmin: formData.is_admin,
+            status: formData.status
+          }
+        });
+
+        if (createError) throw createError;
+
         toast({
           title: "User created successfully",
-          description: "Login credentials have been sent to the user's email.",
+          description: "A login link has been sent to the user's email.",
         });
       }
 
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
+      console.error('Error in handleSubmit:', error);
       toast({
         title: user ? "Error updating user" : "Error creating user",
         description: error.message,
