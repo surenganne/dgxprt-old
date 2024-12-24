@@ -48,22 +48,6 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
         console.log("[MagicLinkHandler] Magic link detected, starting verification process");
         
         try {
-          console.log("[MagicLinkHandler] Attempting to sign out existing session");
-          const { error: signOutError } = await supabaseClient.auth.signOut();
-          if (signOutError) {
-            console.error("[MagicLinkHandler] Error signing out:", signOutError);
-          } else {
-            console.log("[MagicLinkHandler] Successfully signed out existing session");
-          }
-          
-          console.log("[MagicLinkHandler] Clearing auth-related local storage");
-          for (const key of Object.keys(localStorage)) {
-            if (key.startsWith('supabase.auth.')) {
-              localStorage.removeItem(key);
-              console.log("[MagicLinkHandler] Cleared localStorage key:", key);
-            }
-          }
-
           const currentPath = location.pathname;
           if (currentPath !== '/auth') {
             const redirectUrl = `/auth?token=${token}&type=${type}${email ? `&email=${email}` : ''}`;

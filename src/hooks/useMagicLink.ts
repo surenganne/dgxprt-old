@@ -38,23 +38,26 @@ export const useMagicLink = (
       try {
         console.log("[useMagicLink] Starting magic link verification");
         
-        console.log("[useMagicLink] Clearing existing session");
-        const { error: signOutError } = await supabase.auth.signOut();
-        if (signOutError) {
-          console.error("[useMagicLink] Error clearing session:", signOutError);
-        }
+        // Don't sign out here, let Supabase handle the session
+        const { data, error } = await supabase.auth.getSession();
         
-        console.log("[useMagicLink] Verifying OTP token");
-        const { error: verifyError } = await supabase.auth.verifyOtp({
-          token_hash: token,
-          type: "magiclink",
-        });
-
-        if (verifyError) {
-          console.error("[useMagicLink] Error verifying magic link:", verifyError);
-          toast.error("Invalid or expired magic link");
+        if (error) {
+          console.error("[useMagicLink] Session error:", error);
+          toast.error("Error verifying magic link");
           setInitialAuthCheckDone(true);
           return;
+        }
+
+        if (!data.session) {
+          console.log("[useMagicLink] No session found, attempting to exchange token");
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(token);
+          
+          if (exchangeError) {
+            console.error("[useMagicLink] Error exchanging token:", exchangeError);
+            toast.error("Error verifying magic link");
+            setInitialAuthCheckDone(true);
+            return;
+          }
         }
 
         console.log("[useMagicLink] Magic link verified successfully");
