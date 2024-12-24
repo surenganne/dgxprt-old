@@ -37,7 +37,10 @@ serve(async (req) => {
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
       email: email,
       email_confirm: true,
-      user_metadata: { full_name: fullName }
+      user_metadata: { 
+        full_name: fullName,
+        is_admin: isAdmin // Include isAdmin in user metadata
+      }
     });
 
     if (createError) {
@@ -67,6 +70,27 @@ serve(async (req) => {
       console.error("[create-user] No user data returned from creation");
       return new Response(
         JSON.stringify({ error: "Failed to create user - no user data returned" }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400
+        }
+      );
+    }
+
+    // Update the profile to set is_admin
+    console.log("[create-user] Updating profile with admin status...");
+    const { error: profileUpdateError } = await supabase
+      .from('profiles')
+      .update({ 
+        is_admin: isAdmin,
+        status: status 
+      })
+      .eq('id', newUser.user.id);
+
+    if (profileUpdateError) {
+      console.error("[create-user] Error updating profile:", profileUpdateError);
+      return new Response(
+        JSON.stringify({ error: "Failed to update user profile" }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 400
