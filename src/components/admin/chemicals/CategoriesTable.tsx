@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash } from "lucide-react";
+import { Edit, Trash, Inbox, AlertCircle, LoaderCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,12 +33,16 @@ interface CategoriesTableProps {
   categories: Category[];
   onEdit: (category: Category) => void;
   onDelete: () => void;
+  isLoading?: boolean;
+  error?: Error | null;
 }
 
 export const CategoriesTable = ({
   categories,
   onEdit,
   onDelete,
+  isLoading = false,
+  error = null,
 }: CategoriesTableProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -69,6 +73,35 @@ export const CategoriesTable = ({
     setDeleteDialogOpen(false);
     setSelectedCategory(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-muted-foreground">
+        <LoaderCircle className="h-8 w-8 animate-spin mb-4" />
+        <p>Loading categories...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-destructive">
+        <AlertCircle className="h-8 w-8 mb-4" />
+        <p>Error loading categories</p>
+        <p className="text-sm mt-2">{error.message}</p>
+      </div>
+    );
+  }
+
+  if (!categories || categories.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-muted-foreground border rounded-lg">
+        <Inbox className="h-8 w-8 mb-4" />
+        <p>No categories found</p>
+        <p className="text-sm mt-2">Add a category to get started</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -128,9 +161,7 @@ export const CategoriesTable = ({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() =>
-                selectedCategory && handleDelete(selectedCategory)
-              }
+              onClick={() => selectedCategory && handleDelete(selectedCategory)}
             >
               Delete
             </AlertDialogAction>

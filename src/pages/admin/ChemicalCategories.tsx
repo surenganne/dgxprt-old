@@ -26,7 +26,7 @@ const ChemicalCategories = () => {
     description: string | null;
   } | null>(null);
 
-  const { data: categories, refetch } = useQuery({
+  const { data: categories, refetch, isLoading, error } = useQuery({
     queryKey: ["chemical-categories"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -108,9 +108,7 @@ const ChemicalCategories = () => {
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-2">
                 <FolderTree className="h-6 w-6" />
-                <h2 className="text-2xl font-semibold">
-                  Chemical Categories
-                </h2>
+                <h2 className="text-2xl font-semibold">Chemical Categories</h2>
               </div>
               <Button
                 onClick={() => {
@@ -123,20 +121,16 @@ const ChemicalCategories = () => {
               </Button>
             </div>
 
-            {categories?.length === 0 ? (
-              <p className="text-muted-foreground">
-                No categories found. Click the button above to add one.
-              </p>
-            ) : (
-              <CategoriesTable
-                categories={categories || []}
-                onEdit={(category) => {
-                  setSelectedCategory(category);
-                  setDialogOpen(true);
-                }}
-                onDelete={refetch}
-              />
-            )}
+            <CategoriesTable
+              categories={categories || []}
+              onEdit={(category) => {
+                setSelectedCategory(category);
+                setDialogOpen(true);
+              }}
+              onDelete={refetch}
+              isLoading={isLoading}
+              error={error as Error}
+            />
 
             <CategoryFormDialog
               open={dialogOpen}
