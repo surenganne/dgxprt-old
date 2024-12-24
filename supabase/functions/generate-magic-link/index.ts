@@ -34,17 +34,21 @@ serve(async (req) => {
     const { data, error } = await supabaseClient.auth.admin.generateLink({
       type: 'magiclink',
       email: email,
+      options: {
+        redirectTo: `${req.headers.get('origin')}/auth`
+      }
     })
 
     if (error) {
       throw error
     }
 
-    // Construct a simplified magic link URL that works with our auth flow
-    const magicLink = `${req.headers.get('origin')}/auth?email=${encodeURIComponent(email)}&temp=true`
+    if (!data?.properties?.action_link) {
+      throw new Error('No magic link generated')
+    }
 
     return new Response(
-      JSON.stringify({ magicLink }),
+      JSON.stringify({ magicLink: data.properties.action_link }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
