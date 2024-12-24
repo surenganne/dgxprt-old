@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Pencil, Trash2, Power } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +19,9 @@ interface LocationTableProps {
   onDelete: (locationId: string) => void;
   onToggleStatus: (location: any) => void;
   isLoading: boolean;
+  selectedLocations: string[];
+  onSelectLocation: (locationId: string, isSelected: boolean) => void;
+  onSelectAll: (isSelected: boolean) => void;
 }
 
 export const LocationTable = ({
@@ -26,6 +30,9 @@ export const LocationTable = ({
   onDelete,
   onToggleStatus,
   isLoading,
+  selectedLocations,
+  onSelectLocation,
+  onSelectAll,
 }: LocationTableProps) => {
   const { data: hierarchyLevels } = useQuery({
     queryKey: ["locationHierarchy"],
@@ -48,10 +55,19 @@ export const LocationTable = ({
     return level?.custom_label || level?.display_name || type;
   };
 
+  const areAllSelected = locations?.length > 0 && selectedLocations.length === locations.length;
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead className="w-[50px]">
+            <Checkbox
+              checked={areAllSelected}
+              onCheckedChange={(checked) => onSelectAll(checked as boolean)}
+              aria-label="Select all"
+            />
+          </TableHead>
           <TableHead>Name</TableHead>
           <TableHead>Type</TableHead>
           <TableHead>Parent Location</TableHead>
@@ -63,6 +79,13 @@ export const LocationTable = ({
       <TableBody>
         {locations?.map((location) => (
           <TableRow key={location.id}>
+            <TableCell>
+              <Checkbox
+                checked={selectedLocations.includes(location.id)}
+                onCheckedChange={(checked) => onSelectLocation(location.id, checked as boolean)}
+                aria-label={`Select ${location.name}`}
+              />
+            </TableCell>
             <TableCell className="font-medium">{location.name}</TableCell>
             <TableCell>{getTypeLabel(location.type)}</TableCell>
             <TableCell>{location.parent_id ? locations.find(l => l.id === location.parent_id)?.name || "None" : "None"}</TableCell>

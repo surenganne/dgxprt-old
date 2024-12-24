@@ -54,9 +54,41 @@ export const useLocationActions = (refetch: () => void) => {
     setIsLoading(false);
   };
 
+  const handleBatchDelete = async (locationIds: string[]) => {
+    setIsLoading(true);
+    const { error } = await supabase
+      .from("locations")
+      .delete()
+      .in("id", locationIds);
+
+    if (error) {
+      throw error;
+    }
+    
+    refetch();
+    setIsLoading(false);
+  };
+
+  const handleBatchUpdateStatus = async (locationIds: string[], newStatus: string) => {
+    setIsLoading(true);
+    const { error } = await supabase
+      .from("locations")
+      .update({ status: newStatus })
+      .in("id", locationIds);
+
+    if (error) {
+      throw error;
+    }
+    
+    refetch();
+    setIsLoading(false);
+  };
+
   return {
     isLoading,
     handleDeleteLocation,
     handleToggleStatus,
+    handleBatchDelete,
+    handleBatchUpdateStatus,
   };
 };

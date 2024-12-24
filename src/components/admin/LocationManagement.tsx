@@ -22,10 +22,17 @@ export const LocationManagement = () => {
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const itemsPerPage = 10;
 
   const { data: locations, refetch } = useLocations();
-  const { isLoading, handleDeleteLocation, handleToggleStatus } = useLocationActions(refetch);
+  const { 
+    isLoading, 
+    handleDeleteLocation, 
+    handleToggleStatus,
+    handleBatchDelete,
+    handleBatchUpdateStatus
+  } = useLocationActions(refetch);
 
   const handleEdit = (location: any) => {
     setSelectedLocation(location);
@@ -35,6 +42,20 @@ export const LocationManagement = () => {
   const handleAdd = () => {
     setSelectedLocation(null);
     setDialogOpen(true);
+  };
+
+  const handleSelectLocation = (locationId: string, isSelected: boolean) => {
+    setSelectedLocations(prev => 
+      isSelected 
+        ? [...prev, locationId]
+        : prev.filter(id => id !== locationId)
+    );
+  };
+
+  const handleSelectAll = (isSelected: boolean) => {
+    setSelectedLocations(
+      isSelected ? filteredLocations?.map(location => location.id) || [] : []
+    );
   };
 
   // Filter locations based on search term, type filter, and status filter
@@ -64,7 +85,11 @@ export const LocationManagement = () => {
     <div className="space-y-4">
       <LocationHeader onAdd={handleAdd} />
       
-      <LocationBatchActions />
+      <LocationBatchActions 
+        selectedLocations={selectedLocations}
+        onBatchDelete={handleBatchDelete}
+        onBatchUpdateStatus={handleBatchUpdateStatus}
+      />
 
       <LocationFilters
         searchTerm={searchTerm}
@@ -81,6 +106,9 @@ export const LocationManagement = () => {
         onDelete={handleDeleteLocation}
         onToggleStatus={handleToggleStatus}
         isLoading={isLoading}
+        selectedLocations={selectedLocations}
+        onSelectLocation={handleSelectLocation}
+        onSelectAll={handleSelectAll}
       />
 
       {totalPages > 1 && (
