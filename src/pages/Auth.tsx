@@ -22,29 +22,6 @@ const Auth = () => {
   // Handle authentication redirects
   useAuthRedirect(setInitialAuthCheckDone);
 
-  useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("[Auth] Auth state changed:", event, session ? "Session exists" : "No session");
-      
-      if (event === 'SIGNED_IN' && session) {
-        // Check if user is admin
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', session.user.id)
-          .single();
-
-        const redirectPath = profile?.is_admin ? '/admin/dashboard' : '/dashboard';
-        console.log("[Auth] Redirecting to:", redirectPath);
-        navigate(redirectPath);
-      }
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [supabase.auth, navigate]);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -96,7 +73,7 @@ const Auth = () => {
           onEmailChange={setEmail}
           onPasswordChange={setPassword}
           onSubmit={handleLogin}
-          isEmailReadOnly={!!email} // Make email readonly if it's pre-populated
+          isEmailReadOnly={!!email}
         />
       </div>
     </div>

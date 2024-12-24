@@ -81,15 +81,14 @@ export const useAuthRedirect = (
           return;
         }
 
-        // Only redirect if not handling magic link authentication
-        if (!isMagicLink && location.pathname === '/auth') {
+        // Immediate redirect if on auth page and user is authenticated
+        if (location.pathname === '/auth') {
           console.log("[useAuthRedirect] Redirecting to appropriate dashboard");
-          if (profile.is_admin) {
-            navigate('/admin/dashboard', { replace: true });
-          } else {
-            navigate('/dashboard', { replace: true });
-          }
+          const redirectPath = profile.is_admin ? '/admin/dashboard' : '/dashboard';
+          navigate(redirectPath, { replace: true });
         }
+
+        setInitialAuthCheckDone(true);
       } catch (error) {
         console.error("[useAuthRedirect] Error in auth redirect:", error);
       } finally {
