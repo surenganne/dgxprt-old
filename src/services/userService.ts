@@ -8,113 +8,82 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 export const createNewUser = async (formData: UserFormData) => {
   // First check if user already exists in profiles
-  const { data: existingProfile, error: profileError } = await supabase
+  const { data: existingProfile } = await supabase
     .from("profiles")
     .select("*")
     .eq("email", formData.email)
     .maybeSingle();
 
-  if (profileError) throw profileError;
-
   if (existingProfile) {
-    // Just update their profile
-    const { error: updateError } = await supabase
+    throw new Error("A user with this email already exists");
+  }
+
+  // Generate a temporary password
+  const tempPassword = generateSecurePassword();
+
+  // Create a new anonymous Supabase client for user creation
+  const anonClient = createClient({
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    }
+  });
+
+  try {
+    // Create user directly using admin API
+    const { data: authData, error: createUserError } = await anonClient.auth.admin.createUser({
+      email: formData.email,
+      password: tempPassword,
+      email_confirm: true, // Skip email confirmation
+      user_metadata: {
+        full_name: formData.full_name
+      }
+    });
+
+    if (createUserError) throw createUserError;
+
+    if (!authData?.user) {
+      throw new Error("Failed to create user");
+    }
+
+    // Update the profile with additional data
+    const { error: profileUpdateError } = await supabase
       .from("profiles")
       .update({
-        email: formData.email,
         full_name: formData.full_name,
         is_admin: formData.is_admin,
-        status: formData.status,
+        status: "active",
+        has_reset_password: false,
+        updated_at: new Date().toISOString(),
+        email_confirmed_at: new Date().toISOString()
       })
-      .eq("email", formData.email);
+      .eq("id", authData.user.id);
 
-    if (updateError) throw updateError;
-    return;
-  }
+    if (profileUpdateError) throw profileUpdateError;
 
-  // Generate temporary password
-  const tempPassword = generateSecurePassword();
-  console.log('Generated temporary password:', tempPassword);
-
-  // Create a separate client for user creation to avoid session changes
-  const anonClient = createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-        detectSessionInUrl: false
+    // Send welcome email using our custom email service
+    const { error: emailError } = await supabase.functions.invoke('send-welcome-email', {
+      body: {
+        to: formData.email,
+        password: tempPassword,
+        loginLink: `${window.location.origin}/auth?email=${encodeURIComponent(formData.email)}&temp=true`
       }
+    });
+
+    if (emailError) {
+      console.error("Error sending welcome email:", emailError);
+      throw new Error("Failed to send welcome email");
     }
-  );
-  
-  // Create new user with the anonymous client
-  const { data: authData, error: authError } = await anonClient.auth.signUp({
-    email: formData.email,
-    password: tempPassword,
-    options: {
-      data: {
-        full_name: formData.full_name,
-      },
-      // Disable all automatic emails from Supabase
-      emailRedirectTo: null,
-      emailConfirmation: false,
-      shouldCreateUser: true,
-      // Set user as confirmed to bypass email verification
-      authOptions: {
-        skipConfirmation: true
-      }
+
+    return authData;
+  } catch (error) {
+    // If any step fails, attempt to clean up the user if they were created
+    if (error instanceof Error) {
+      console.error("Error creating user:", error.message);
+      throw error;
     }
-  });
-
-  if (authError) throw authError;
-
-  if (!authData.user) {
-    throw new Error("Failed to create user");
+    throw new Error("An unknown error occurred while creating the user");
   }
-
-  // Update the profile with additional data
-  const { error: profileUpdateError } = await supabase
-    .from("profiles")
-    .update({
-      full_name: formData.full_name,
-      is_admin: formData.is_admin,
-      status: "active",
-      has_reset_password: false,
-      updated_at: new Date().toISOString(),
-      email_confirmed_at: new Date().toISOString(), // Mark email as confirmed
-    })
-    .eq("id", authData.user.id);
-
-  if (profileUpdateError) throw profileUpdateError;
-
-  // Send welcome email using our custom email service
-  const { error: emailError } = await supabase.functions.invoke('send-welcome-email', {
-    body: {
-      to: formData.email,
-      password: tempPassword,
-      loginLink: `${window.location.origin}/auth?email=${encodeURIComponent(formData.email)}&temp=true`
-    }
-  });
-
-  if (emailError) {
-    console.error("Error sending welcome email:", emailError);
-    throw new Error("Failed to send welcome email");
-  }
-
-  // Ensure the user is confirmed in auth.users
-  const { error: confirmError } = await anonClient.auth.admin.updateUserById(
-    authData.user.id,
-    { email_confirmed: true }
-  );
-
-  if (confirmError) {
-    console.error("Error confirming user:", confirmError);
-    // Don't throw here as the user is still created successfully
-  }
-
-  return authData;
 };
 
 export const updateExistingUser = async (userId: string, formData: UserFormData) => {
