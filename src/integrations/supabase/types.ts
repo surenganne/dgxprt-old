@@ -208,39 +208,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_locations: {
-        Row: {
-          created_at: string
-          location_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          location_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          location_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_locations_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_locations_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never
