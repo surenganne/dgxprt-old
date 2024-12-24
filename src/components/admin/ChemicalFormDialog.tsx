@@ -15,10 +15,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Database } from "@/integrations/supabase/types";
+import { useAuditLogger } from "@/hooks/useAuditLogger";
+import type { Chemical } from "@/types/chemical";
 
 type ChemicalHazardClass = Database["public"]["Enums"]["chemical_hazard_class"];
 
@@ -26,6 +28,7 @@ interface ChemicalFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  chemical?: Chemical;
 }
 
 interface ChemicalFormData {
@@ -41,8 +44,10 @@ export const ChemicalFormDialog = ({
   open,
   onOpenChange,
   onSuccess,
+  chemical,
 }: ChemicalFormDialogProps) => {
   const [loading, setLoading] = useState(false);
+  const { logUserAction } = useAuditLogger();
   const [formData, setFormData] = useState<ChemicalFormData>({
     name: "",
     cas_number: "",
@@ -52,21 +57,75 @@ export const ChemicalFormDialog = ({
     handling_precautions: "",
   });
 
+  useEffect(() => {
+    if (chemical) {
+      setFormData({
+        name: chemical.name,
+        cas_number: chemical.cas_number || "",
+        hazard_class: chemical.hazard_class,
+        description: chemical.description || "",
+        storage_conditions: chemical.storage_conditions || "",
+        handling_precautions: chemical.handling_precautions || "",
+      });
+    } else {
+      setFormData({
+        name: "",
+        cas_number: "",
+        hazard_class: "non_hazardous",
+        description: "",
+        storage_conditions: "",
+        handling_precautions: "",
+      });
+    }
+  }, [chemical]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { error } = await supabase.from("chemicals").insert(formData);
+      if (chemical) {
+        // Update existing chemical
+        const { error } = await supabase
+          .from("chemicals")
+          .update(formData)
+          .eq("id", chemical.id);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast.success("Chemical added successfully");
+        await logUserAction(
+          "chemicals",
+          chemical.id,
+          `Updated chemical: ${formData.name}`,
+          { chemical_name: formData.name }
+        );
+
+        toast.success("Chemical updated successfully");
+      } else {
+        // Create new chemical
+        const { error, data } = await supabase
+          .from("chemicals")
+          .insert(formData)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        await logUserAction(
+          "chemicals",
+          data.id,
+          `Created chemical: ${formData.name}`,
+          { chemical_name: formData.name }
+        );
+
+        toast.success("Chemical added successfully");
+      }
+
       onSuccess();
       onOpenChange(false);
     } catch (error) {
-      console.error("Error adding chemical:", error);
-      toast.error("Failed to add chemical");
+      console.error("Error saving chemical:", error);
+      toast.error(`Failed to ${chemical ? "update" : "add"} chemical`);
     } finally {
       setLoading(false);
     }
@@ -76,7 +135,9 @@ export const ChemicalFormDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto w-full max-w-lg">
         <DialogHeader>
-          <DialogTitle>Add New Chemical</DialogTitle>
+          <DialogTitle>
+            {chemical ? "Edit Chemical" : "Add New Chemical"}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-4">
@@ -149,7 +210,10 @@ export const ChemicalFormDialog = ({
                 id="handling_precautions"
                 value={formData.handling_precautions}
                 onChange={(e) =>
-                  setFormData({ ...formData, handling_precautions: e.target.value })
+                  setFormData({
+                    ...formData,
+                    handling_precautions: e.target.value,
+                  })
                 }
               />
             </div>
@@ -165,7 +229,13 @@ export const ChemicalFormDialog = ({
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Adding..." : "Add Chemical"}
+              {loading
+                ? chemical
+                  ? "Updating..."
+                  : "Adding..."
+                : chemical
+                ? "Update Chemical"
+                : "Add Chemical"}
             </Button>
           </div>
         </form>

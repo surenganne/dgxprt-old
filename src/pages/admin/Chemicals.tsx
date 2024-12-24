@@ -30,6 +30,7 @@ const Chemicals = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [hazardClass, setHazardClass] = useState<ChemicalHazardClass | "all">("all");
+  const [selectedChemical, setSelectedChemical] = useState<Chemical | null>(null);
 
   const { data: chemicalsData, refetch } = useQuery({
     queryKey: ["chemicals", currentPage, searchQuery, hazardClass],
@@ -84,6 +85,11 @@ const Chemicals = () => {
     setCurrentPage(1); // Reset to first page when filter changes
   };
 
+  const handleEditChemical = (chemical: Chemical) => {
+    setSelectedChemical(chemical);
+    setDialogOpen(true);
+  };
+
   useEffect(() => {
     const checkAdminAccess = async () => {
       if (!session?.user) {
@@ -105,7 +111,7 @@ const Chemicals = () => {
           return;
         }
 
-        if (!profile?.is_admin || profile.status !== 'active') {
+        if (!profile?.is_admin || profile.status !== "active") {
           toast.error("You don't have admin access");
           navigate("/dashboard");
         }
@@ -126,7 +132,7 @@ const Chemicals = () => {
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-background">
-        <Sidebar 
+        <Sidebar
           className="bg-primary-blue transition-all duration-300 ease-in-out"
           variant="sidebar"
           collapsible="icon"
@@ -155,7 +161,10 @@ const Chemicals = () => {
                 <Beaker className="h-6 w-6" />
                 <h2 className="text-2xl font-semibold">Chemical Management</h2>
               </div>
-              <Button onClick={() => setDialogOpen(true)}>
+              <Button onClick={() => {
+                setSelectedChemical(null);
+                setDialogOpen(true);
+              }}>
                 <Plus className="mr-2 h-4 w-4" />
                 Add Chemical
               </Button>
@@ -174,7 +183,11 @@ const Chemicals = () => {
               </p>
             ) : (
               <>
-                <ChemicalsTable chemicals={chemicalsData?.chemicals || []} />
+                <ChemicalsTable
+                  chemicals={chemicalsData?.chemicals || []}
+                  onEdit={handleEditChemical}
+                  onDelete={refetch}
+                />
                 <ChemicalsPagination
                   currentPage={currentPage}
                   totalPages={totalPages}
@@ -187,6 +200,7 @@ const Chemicals = () => {
               open={dialogOpen}
               onOpenChange={setDialogOpen}
               onSuccess={refetch}
+              chemical={selectedChemical}
             />
           </div>
         </main>
