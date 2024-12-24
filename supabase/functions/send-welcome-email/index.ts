@@ -10,7 +10,6 @@ serve(async (req) => {
 
   try {
     const { to, password, loginLink } = await req.json();
-    console.log('Received request with:', { to, passwordReceived: !!password, loginLink });
 
     if (!to || !password || !loginLink) {
       return new Response(
@@ -26,7 +25,7 @@ serve(async (req) => {
       );
     }
 
-    const fromEmail = "noreply@dgxprt.incepta.ai";
+    const fromEmail = "no-reply@dgxprt.incepta.ai";
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -37,28 +36,97 @@ serve(async (req) => {
       body: JSON.stringify({
         from: fromEmail,
         to: [to],
-        subject: "Welcome to DGXPRT - Your Login Credentials",
+        subject: "DGXPRT - User Authentication",
         html: `
-          <h1>Welcome to DGXPRT!</h1>
-          <p>Your account has been created successfully. Here are your login credentials:</p>
-          <p><strong>Email:</strong> ${to}</p>
-          <p><strong>Temporary Password:</strong> ${password}</p>
-          <p>Please follow these steps to access your account:</p>
-          <ol>
-            <li>Click on this link to go to the login page: <a href="${loginLink}">Login to DGXPRT</a></li>
-            <li>Enter your email: ${to}</li>
-            <li>Enter the temporary password shown above</li>
-            <li>After logging in, you'll be prompted to set a new password</li>
-          </ol>
-          <p>For security reasons, please change your password upon first login.</p>
-          <p>If you have any questions, please contact your administrator.</p>
-          <p>Best regards,<br>The DGXPRT Team</p>
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Welcome to DGXPRT</title>
+              <style>
+                body {
+                  font-family: Arial, sans-serif;
+                  line-height: 1.6;
+                  color: #333333;
+                  max-width: 600px;
+                  margin: 0 auto;
+                  padding: 20px;
+                }
+                .header {
+                  background-color: #00005B;
+                  color: white;
+                  padding: 20px;
+                  text-align: center;
+                  border-radius: 5px 5px 0 0;
+                }
+                .content {
+                  background-color: #ffffff;
+                  padding: 20px;
+                  border: 1px solid #dddddd;
+                  border-radius: 0 0 5px 5px;
+                }
+                .credentials {
+                  background-color: #f5f5f5;
+                  padding: 15px;
+                  margin: 15px 0;
+                  border-radius: 5px;
+                }
+                .button {
+                  display: inline-block;
+                  padding: 10px 20px;
+                  background-color: #895AB7;
+                  color: white;
+                  text-decoration: none;
+                  border-radius: 5px;
+                  margin: 15px 0;
+                }
+                .footer {
+                  text-align: center;
+                  margin-top: 20px;
+                  font-size: 12px;
+                  color: #666666;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <h1>Welcome to DGXPRT</h1>
+              </div>
+              <div class="content">
+                <p>Your DGXPRT account has been created successfully. Here are your login credentials:</p>
+                
+                <div class="credentials">
+                  <p><strong>Email:</strong> ${to}</p>
+                  <p><strong>Temporary Password:</strong> ${password}</p>
+                </div>
+
+                <p>To access your account, please follow these steps:</p>
+                <ol>
+                  <li>Click the button below to go to the login page</li>
+                  <li>Enter your email address</li>
+                  <li>Enter the temporary password provided above</li>
+                  <li>You will be prompted to change your password upon first login</li>
+                </ol>
+
+                <a href="${loginLink}" class="button">Login to DGXPRT</a>
+
+                <p><strong>Important:</strong> For security reasons, please change your password immediately after your first login.</p>
+                
+                <p>If you have any questions or need assistance, please contact your system administrator.</p>
+              </div>
+              
+              <div class="footer">
+                <p>This is an automated message from DGXPRT. Please do not reply to this email.</p>
+                <p>&copy; ${new Date().getFullYear()} DGXPRT. All rights reserved.</p>
+              </div>
+            </body>
+          </html>
         `,
       }),
     });
 
     const data = await res.json();
-    console.log('Email sent response:', data);
 
     return new Response(
       JSON.stringify(data),
