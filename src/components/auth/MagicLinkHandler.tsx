@@ -88,3 +88,4 @@ export const MagicLinkHandler = () => {
   }
 
   return null;
+};
