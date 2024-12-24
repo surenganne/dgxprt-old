@@ -7,18 +7,18 @@ export const SDSWidget = () => {
   const { data: sdsStats } = useQuery({
     queryKey: ["sds-stats"],
     queryFn: async () => {
-      const { data: totalCount } = await supabase
+      const { data: totalData, count: totalCount } = await supabase
         .from("sds_documents")
-        .select("*", { count: "exact", head: true });
+        .select("*", { count: "exact" });
 
-      const { data: pendingCount } = await supabase
+      const { data: pendingData, count: pendingCount } = await supabase
         .from("sds_documents")
-        .select("*", { count: "exact", head: true })
+        .select("*", { count: "exact" })
         .eq("status", "pending_review");
 
       return {
-        total: totalCount?.count || 0,
-        pending: pendingCount?.count || 0,
+        total: totalCount || 0,
+        pending: pendingCount || 0,
       };
     },
   });

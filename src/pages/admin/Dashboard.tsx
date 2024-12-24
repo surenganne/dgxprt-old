@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Users, Building2, Beaker, AlertTriangle } from "lucide-react";
+import { SDSWidget } from "@/components/admin/dashboard/SDSWidget";
 
 const AdminDashboard = () => {
   const session = useSession();
