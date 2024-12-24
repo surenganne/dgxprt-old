@@ -41,7 +41,25 @@ export const SDSVersionHistory = ({ chemicalId }: SDSVersionHistoryProps) => {
         throw error;
       }
 
-      return data;
+      // Get the file paths for each version
+      const versionsWithPaths = await Promise.all(
+        data.map(async (version) => {
+          const { data: sdsDoc, error: sdsError } = await supabase
+            .from('sds_documents')
+            .select('file_path')
+            .eq('id', version.id)
+            .single();
+
+          if (sdsError) {
+            console.error('Error fetching SDS document:', sdsError);
+            return { ...version, file_path: '' };
+          }
+
+          return { ...version, file_path: sdsDoc.file_path };
+        })
+      );
+
+      return versionsWithPaths;
     },
   });
 
@@ -86,11 +104,11 @@ export const SDSVersionHistory = ({ chemicalId }: SDSVersionHistoryProps) => {
         <div className="space-y-4">
           {isLoading ? (
             <p>Loading version history...</p>
-          ) : versions?.length === 0 ? (
+          ) : !versions || versions.length === 0 ? (
             <p>No version history available</p>
           ) : (
             <div className="space-y-2">
-              {versions?.map((version) => (
+              {versions.map((version) => (
                 <div
                   key={version.id}
                   className="flex items-center justify-between p-4 rounded-lg border bg-card"
