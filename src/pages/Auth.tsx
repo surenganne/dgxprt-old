@@ -6,13 +6,19 @@ import { BackgroundEffects } from "@/components/shared/BackgroundEffects";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { useMagicLink } from "@/hooks/useMagicLink";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [initialAuthCheckDone, setInitialAuthCheckDone] = useState(false);
   const [isProcessingMagicLink, setIsProcessingMagicLink] = useState(false);
+  const [isSettingPassword, setIsSettingPassword] = useState(false);
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
 
@@ -21,6 +27,25 @@ const Auth = () => {
 
   // Handle authentication redirects
   useAuthRedirect(setInitialAuthCheckDone);
+
+  // Check if user needs to set password
+  useEffect(() => {
+    const checkPasswordStatus = async () => {
+      if (!email) return;
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('has_reset_password')
+        .eq('email', email)
+        .single();
+
+      if (profile && !profile.has_reset_password) {
+        setIsSettingPassword(true);
+      }
+    };
+
+    checkPasswordStatus();
+  }, [email, supabase]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +61,40 @@ const Auth = () => {
       // Success handling is managed by the auth state change listener
     } catch (error: any) {
       toast.error("Error logging in: " + error.message);
+      setLoading(false);
+    }
+  };
+
+  const handleSetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (updateError) throw updateError;
+
+      // Update the profile to indicate password has been set
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ has_reset_password: true })
+        .eq('email', email);
+
+      if (profileError) throw profileError;
+
+      toast.success("Password set successfully");
+      setIsSettingPassword(false);
+    } catch (error: any) {
+      toast.error("Error setting password: " + error.message);
+    } finally {
       setLoading(false);
     }
   };
@@ -63,18 +122,66 @@ const Auth = () => {
             alt="DGXPRT Logo"
             className="mx-auto h-12 w-auto mb-8"
           />
-          <h2 className="text-2xl font-semibold">Sign in to your account</h2>
+          <h2 className="text-2xl font-semibold">
+            {isSettingPassword ? "Set Your Password" : "Sign in to your account"}
+          </h2>
         </div>
 
-        <AuthForm
-          email={email}
-          password={password}
-          loading={loading}
-          onEmailChange={setEmail}
-          onPasswordChange={setPassword}
-          onSubmit={handleLogin}
-          isEmailReadOnly={!!email}
-        />
+        {isSettingPassword ? (
+          <form onSubmit={handleSetPassword} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                disabled
+                className="bg-muted"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                disabled={loading}
+                placeholder="Enter your new password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm Password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                disabled={loading}
+                placeholder="Confirm your new password"
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? "Setting password..." : "Set Password"}
+            </Button>
+          </form>
+        ) : (
+          <AuthForm
+            email={email}
+            password={password}
+            loading={loading}
+            onEmailChange={setEmail}
+            onPasswordChange={setPassword}
+            onSubmit={handleLogin}
+            isEmailReadOnly={!!email}
+          />
+        )}
       </div>
     </div>
   );
