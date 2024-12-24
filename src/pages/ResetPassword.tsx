@@ -28,23 +28,38 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
+      const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword
       });
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
-      // Update the profile to indicate password has been reset
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) throw new Error("User not found");
+
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ has_reset_password: true })
-        .eq('id', (await supabase.auth.getUser()).data.user?.id);
+        .update({ 
+          has_reset_password: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
 
       if (profileError) throw profileError;
 
       toast.success("Password updated successfully");
-      navigate("/dashboard");
+      
+      // Check if user is admin
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+
+      navigate(profile?.is_admin ? '/admin/dashboard' : '/dashboard');
     } catch (error: any) {
+      console.error('Reset password error:', error);
       toast.error("Error updating password: " + error.message);
     } finally {
       setLoading(false);

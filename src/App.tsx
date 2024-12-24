@@ -18,7 +18,6 @@ import { toast } from "sonner";
 
 const queryClient = new QueryClient();
 
-// Magic link handler wrapper
 const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -38,12 +37,25 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
         setIsHandlingMagicLink(true);
         
         try {
-          const currentPath = location.pathname;
-          if (currentPath !== '/auth') {
-            const redirectUrl = `/auth?token=${token}&type=${type}${email ? `&email=${email}` : ''}`;
-            navigate(redirectUrl, { replace: true });
+          const { data: { user }, error } = await supabaseClient.auth.getUser();
+          
+          if (error) throw error;
+          
+          if (user) {
+            const { data: profile } = await supabaseClient
+              .from('profiles')
+              .select('has_reset_password')
+              .eq('id', user.id)
+              .single();
+
+            if (profile && !profile.has_reset_password) {
+              navigate('/reset-password');
+            } else {
+              navigate('/dashboard');
+            }
           }
-        } catch (error) {
+        } catch (error: any) {
+          console.error('Magic link error:', error);
           toast.error("Error processing magic link");
           navigate('/auth');
         } finally {
@@ -52,31 +64,7 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    const handlePostMessage = (event: MessageEvent) => {
-      const currentOrigin = window.location.origin.replace(/^https?:\/\//, '');
-      const eventOrigin = event.origin.replace(/^https?:\/\//, '');
-      
-      const isAllowedOrigin = 
-        currentOrigin === eventOrigin ||
-        eventOrigin.endsWith('.' + currentOrigin) ||
-        currentOrigin.endsWith('.' + eventOrigin) ||
-        eventOrigin === 'zrmjzuebsupnwuekzfio.supabase.co';
-      
-      if (!isAllowedOrigin) {
-        return;
-      }
-
-      if (event.data?.type === 'SUPABASE_AUTH') {
-        handleMagicLink();
-      }
-    };
-
-    window.addEventListener('message', handlePostMessage);
     handleMagicLink();
-
-    return () => {
-      window.removeEventListener('message', handlePostMessage);
-    };
   }, [location, navigate, supabaseClient]);
 
   if (isHandlingMagicLink) {
@@ -94,12 +82,28 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = useSession();
   const location = useLocation();
-  const params = new URLSearchParams(location.search);
+  const navigate = useNavigate();
+  const supabaseClient = useSupabaseClient();
   
-  // Don't redirect if handling magic link
-  if (params.get("token") && params.get("type") === "magiclink") {
-    return null;
-  }
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      
+      if (user) {
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('has_reset_password')
+          .eq('id', user.id)
+          .single();
+
+        if (profile && !profile.has_reset_password && location.pathname !== '/reset-password') {
+          navigate('/reset-password');
+        }
+      }
+    };
+
+    checkAuth();
+  }, [location, navigate, supabaseClient]);
   
   if (!session) {
     return <Navigate to="/auth" replace />;
