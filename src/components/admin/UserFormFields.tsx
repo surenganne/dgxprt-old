@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MapPin } from "lucide-react";
+import { MapPin, Bell } from "lucide-react";
 
 interface UserFormFieldsProps {
   formData: UserFormData;
@@ -41,6 +41,22 @@ export const UserFormFields = ({
     },
   });
 
+  // Fetch notification preferences if editing
+  const { data: notificationPrefs } = useQuery({
+    queryKey: ["notificationPrefs", formData.id],
+    enabled: !!formData.id && (formData.is_compliance_officer || false),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sds_review_notifications")
+        .select("*")
+        .eq("user_id", formData.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      return data;
+    },
+  });
+
   // Fetch all active locations
   const { data: locations } = useQuery({
     queryKey: ["locations"],
@@ -53,21 +69,6 @@ export const UserFormFields = ({
 
       if (error) throw error;
       return data;
-    },
-  });
-
-  // Fetch user's assigned locations if editing
-  const { data: assignedLocations } = useQuery({
-    queryKey: ["assignedLocations", formData.id],
-    enabled: !!formData.id,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("location_assignments")
-        .select("location_id")
-        .eq("user_id", formData.id);
-
-      if (error) throw error;
-      return data.map(assignment => assignment.location_id);
     },
   });
 
@@ -107,16 +108,63 @@ export const UserFormFields = ({
         />
       </div>
       {(currentUserProfile?.is_owner || currentUserProfile?.is_admin) && (
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="is_admin"
-            checked={formData.is_admin}
-            onCheckedChange={(checked) =>
-              setFormData({ ...formData, is_admin: checked })
-            }
-            disabled={loading}
-          />
-          <Label htmlFor="is_admin">Admin User</Label>
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="is_admin"
+              checked={formData.is_admin}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, is_admin: checked })
+              }
+              disabled={loading}
+            />
+            <Label htmlFor="is_admin">Admin User</Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="is_compliance_officer"
+              checked={formData.is_compliance_officer}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, is_compliance_officer: checked })
+              }
+              disabled={loading}
+            />
+            <Label htmlFor="is_compliance_officer">Compliance Officer</Label>
+          </div>
+
+          {formData.is_compliance_officer && (
+            <div className="space-y-2 pl-6 border-l-2 border-gray-200">
+              <Label className="flex items-center gap-2">
+                <Bell className="h-4 w-4" />
+                Notification Preferences
+              </Label>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="notify_upload"
+                    checked={formData.notify_on_upload}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, notify_on_upload: checked as boolean })
+                    }
+                    disabled={loading}
+                  />
+                  <Label htmlFor="notify_upload">Notify on new SDS uploads</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="notify_review"
+                    checked={formData.notify_on_review}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, notify_on_review: checked as boolean })
+                    }
+                    disabled={loading}
+                  />
+                  <Label htmlFor="notify_review">Notify on SDS reviews</Label>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
       <div className="space-y-2">

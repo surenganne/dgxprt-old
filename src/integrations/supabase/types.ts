@@ -261,6 +261,7 @@ export type Database = {
           has_reset_password: boolean | null
           id: string
           is_admin: boolean | null
+          is_compliance_officer: boolean | null
           is_owner: boolean | null
           status: string
           temporary_password_hash: string | null
@@ -274,6 +275,7 @@ export type Database = {
           has_reset_password?: boolean | null
           id: string
           is_admin?: boolean | null
+          is_compliance_officer?: boolean | null
           is_owner?: boolean | null
           status?: string
           temporary_password_hash?: string | null
@@ -287,6 +289,7 @@ export type Database = {
           has_reset_password?: boolean | null
           id?: string
           is_admin?: boolean | null
+          is_compliance_officer?: boolean | null
           is_owner?: boolean | null
           status?: string
           temporary_password_hash?: string | null
@@ -380,6 +383,41 @@ export type Database = {
           },
         ]
       }
+      sds_review_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          notify_on_review: boolean | null
+          notify_on_upload: boolean | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notify_on_review?: boolean | null
+          notify_on_upload?: boolean | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notify_on_review?: boolean | null
+          notify_on_upload?: boolean | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sds_review_notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -400,6 +438,12 @@ export type Database = {
         }[]
       }
       is_admin: {
+        Args: {
+          user_id: string
+        }
+        Returns: boolean
+      }
+      is_compliance_officer: {
         Args: {
           user_id: string
         }
