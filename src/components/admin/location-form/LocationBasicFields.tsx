@@ -30,20 +30,13 @@ export function LocationBasicFields({ form, locations }: LocationBasicFieldsProp
 
   // Get valid parent types based on selected type
   const getValidParentTypes = (type: string): string[] => {
-    switch (type) {
-      case "country":
-        return [];
-      case "state":
-        return ["country"];
-      case "district":
-        return ["state"];
-      case "school":
-        return ["district"];
-      case "site":
-        return ["school"];
-      default:
-        return [];
-    }
+    const currentLevel = hierarchyLevels?.find(level => level.level_name === type);
+    if (!currentLevel) return [];
+    
+    const currentOrder = currentLevel.level_order;
+    return hierarchyLevels
+      ?.filter(level => level.level_order === currentOrder - 1)
+      .map(level => level.level_name) || [];
   };
 
   // Get custom label for type if available
