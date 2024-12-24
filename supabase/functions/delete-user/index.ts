@@ -11,9 +11,15 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
     )
 
     const { userId } = await req.json()
@@ -23,7 +29,7 @@ Deno.serve(async (req) => {
     const {
       data: { user: requestingUser },
       error: authError,
-    } = await supabase.auth.getUser(req.headers.get('Authorization')?.split(' ')[1] ?? '')
+    } = await supabaseAdmin.auth.getUser(req.headers.get('Authorization')?.split(' ')[1] ?? '')
     
     if (authError) {
       console.error("[delete-user] Auth error:", authError);
@@ -31,7 +37,7 @@ Deno.serve(async (req) => {
     }
 
     // Get the requesting user's profile
-    const { data: requestingProfile, error: profileError } = await supabase
+    const { data: requestingProfile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('is_admin, is_owner')
       .eq('id', requestingUser?.id)
@@ -48,7 +54,7 @@ Deno.serve(async (req) => {
     }
 
     // Get the profile of the user to be deleted
-    const { data: targetProfile, error: targetProfileError } = await supabase
+    const { data: targetProfile, error: targetProfileError } = await supabaseAdmin
       .from('profiles')
       .select('is_admin, is_owner, email')
       .eq('id', userId)
@@ -71,15 +77,27 @@ Deno.serve(async (req) => {
       throw new Error('Only owners can delete admin accounts')
     }
 
-    // Delete the auth user first (this will cascade delete the profile due to FK)
+    // First delete from auth.users (this will cascade to profiles due to FK)
     console.log("[delete-user] Deleting auth user:", userId);
-    const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(
+    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(
       userId
     )
 
     if (deleteAuthError) {
       console.error("[delete-user] Error deleting auth user:", deleteAuthError);
       throw deleteAuthError;
+    }
+
+    // Force delete from profiles if still exists (using service role to bypass RLS)
+    console.log("[delete-user] Force deleting profile:", userId);
+    const { error: deleteProfileError } = await supabaseAdmin
+      .from('profiles')
+      .delete()
+      .eq('id', userId)
+
+    if (deleteProfileError) {
+      console.error("[delete-user] Error deleting profile:", deleteProfileError);
+      throw deleteProfileError;
     }
 
     console.log("[delete-user] User deleted successfully");
