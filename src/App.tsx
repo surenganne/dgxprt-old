@@ -42,6 +42,12 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
           if (error) throw error;
           
           if (user) {
+            // For admin user, skip password reset and go directly to admin dashboard
+            if (user.email === 'admin@dgxprt.ai') {
+              navigate('/admin/dashboard');
+              return;
+            }
+
             const { data: profile } = await supabaseClient
               .from('profiles')
               .select('has_reset_password')
