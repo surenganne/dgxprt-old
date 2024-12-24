@@ -61,12 +61,28 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
           throw new Error("A user with this email already exists");
         }
 
+        // If creating an owner, check if one already exists
+        if (formData.is_owner) {
+          const { data: existingOwner, error: ownerCheckError } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("is_owner", true)
+            .maybeSingle();
+
+          if (ownerCheckError) throw ownerCheckError;
+
+          if (existingOwner) {
+            throw new Error("An owner account already exists");
+          }
+        }
+
         // Create new user and send magic link
         const { error: createError } = await supabase.functions.invoke('create-user-with-magic-link', {
           body: { 
             email: formData.email,
             fullName: formData.full_name,
             isAdmin: formData.is_admin,
+            isOwner: formData.is_owner,
             status: formData.status
           }
         });
