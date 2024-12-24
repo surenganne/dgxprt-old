@@ -90,6 +90,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       const { data: { user } } = await supabaseClient.auth.getUser();
       
       if (user) {
+        // Skip password reset check for admin@dgxprt.ai
+        if (user.email === 'admin@dgxprt.ai') {
+          return;
+        }
+
         const { data: profile } = await supabaseClient
           .from('profiles')
           .select('has_reset_password')
