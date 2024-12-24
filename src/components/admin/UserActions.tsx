@@ -1,15 +1,10 @@
-import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, Lock, Mail, Link2 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { UserActionButton } from "./UserActionButton";
+import { generateMagicLink } from "@/services/userMagicLinkService";
 
 interface UserActionsProps {
   user: {
@@ -35,7 +30,6 @@ export const UserActions = ({
   const session = useSession();
   const { toast } = useToast();
 
-  // Fetch current user's profile to check permissions
   const { data: currentUserProfile } = useQuery({
     queryKey: ["currentUserProfile"],
     queryFn: async () => {
@@ -53,20 +47,9 @@ export const UserActions = ({
 
   const canModifyUser = () => {
     if (!currentUserProfile) return false;
-    
-    // Owner accounts cannot be modified by anyone
     if (user.is_owner) return false;
-    
-    // Owner can modify anyone except other owners
-    if (currentUserProfile.is_owner) {
-      return !user.is_owner;
-    }
-    
-    // Admin can only modify non-admin, non-owner users
-    if (currentUserProfile.is_admin) {
-      return !user.is_admin && !user.is_owner;
-    }
-
+    if (currentUserProfile.is_owner) return !user.is_owner;
+    if (currentUserProfile.is_admin) return !user.is_admin && !user.is_owner;
     return false;
   };
 
@@ -79,21 +62,8 @@ export const UserActions = ({
   const handleCopyMagicLink = async () => {
     try {
       console.log("[UserActions] Generating magic link for:", user.email);
-      const { data, error } = await supabase.functions.invoke('create-user-with-magic-link', {
-        body: { 
-          email: user.email,
-          fullName: user.full_name,
-          isAdmin: user.is_admin,
-          status: 'active'
-        }
-      });
-
-      if (error) throw error;
-
-      // Construct the magic link URL
-      const magicLink = `${window.location.origin}/auth?email=${encodeURIComponent(user.email)}&temp=true`;
+      const magicLink = await generateMagicLink(user.email);
       
-      // Copy to clipboard
       await navigator.clipboard.writeText(magicLink);
       
       toast({
@@ -112,97 +82,38 @@ export const UserActions = ({
 
   return (
     <div className="flex justify-end space-x-2">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Button
-                variant="ghost"
-                size="icon"
-                disabled={isLoading || !canModifyUser()}
-                onClick={onEdit}
-                className="text-primary-blue hover:text-primary-purple hover:bg-primary-purple/10"
-              >
-                {user.is_owner ? (
-                  <Lock className="h-4 w-4" />
-                ) : (
-                  <Pencil className="h-4 w-4" />
-                )}
-              </Button>
-            </span>
-          </TooltipTrigger>
-          {!canModifyUser() && (
-            <TooltipContent>
-              <p>{getTooltipMessage()}</p>
-            </TooltipContent>
-          )}
-        </Tooltip>
-      </TooltipProvider>
+      <UserActionButton
+        icon={user.is_owner ? Lock : Pencil}
+        onClick={onEdit}
+        disabled={isLoading || !canModifyUser()}
+        tooltipText="Edit user"
+        showTooltipError={!canModifyUser()}
+        tooltipErrorText={getTooltipMessage()}
+      />
 
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Button
-                variant="ghost"
-                size="icon"
-                disabled={isLoading || !canModifyUser()}
-                onClick={handleCopyMagicLink}
-                className="text-primary-blue hover:text-primary-purple hover:bg-primary-purple/10"
-              >
-                <Link2 className="h-4 w-4" />
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Copy magic link</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <UserActionButton
+        icon={Link2}
+        onClick={handleCopyMagicLink}
+        disabled={isLoading || !canModifyUser()}
+        tooltipText="Copy magic link"
+      />
 
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Button
-                variant="ghost"
-                size="icon"
-                disabled={isLoading || !canModifyUser()}
-                onClick={onSendPassword}
-                className="text-primary-blue hover:text-primary-purple hover:bg-primary-purple/10"
-              >
-                <Mail className="h-4 w-4" />
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Send password reset email</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <UserActionButton
+        icon={Mail}
+        onClick={onSendPassword}
+        disabled={isLoading || !canModifyUser()}
+        tooltipText="Send password reset email"
+      />
 
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Button
-                variant="ghost"
-                size="icon"
-                disabled={isLoading || !canModifyUser()}
-                onClick={onDelete}
-                className="text-primary-blue hover:text-destructive hover:bg-destructive/10"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </span>
-          </TooltipTrigger>
-          {!canModifyUser() && (
-            <TooltipContent>
-              <p>{getTooltipMessage()}</p>
-            </TooltipContent>
-          )}
-        </Tooltip>
-      </TooltipProvider>
+      <UserActionButton
+        icon={Trash2}
+        onClick={onDelete}
+        disabled={isLoading || !canModifyUser()}
+        tooltipText="Delete user"
+        showTooltipError={!canModifyUser()}
+        tooltipErrorText={getTooltipMessage()}
+        variant="destructive"
+      />
     </div>
   );
 };
