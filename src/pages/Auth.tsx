@@ -10,6 +10,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [initialAuthCheckDone, setInitialAuthCheckDone] = useState(false);
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,9 +32,21 @@ const Auth = () => {
   // Check if user is already authenticated
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        handleSuccessfulLogin(session.user.id);
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          return;
+        }
+
+        if (session?.user) {
+          await handleSuccessfulLogin(session.user.id);
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+      } finally {
+        setInitialAuthCheckDone(true);
       }
     };
 
@@ -44,7 +57,7 @@ const Auth = () => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session);
       if (event === 'SIGNED_IN' && session) {
-        handleSuccessfulLogin(session.user.id);
+        await handleSuccessfulLogin(session.user.id);
       }
     });
 
@@ -68,8 +81,15 @@ const Auth = () => {
         return;
       }
 
+      if (!profile) {
+        console.error('No profile found for user');
+        toast.error("User profile not found");
+        return;
+      }
+
       if (profile.status !== 'active') {
         toast.error("Your account is not active");
+        await supabase.auth.signOut();
         return;
       }
 
@@ -79,7 +99,7 @@ const Auth = () => {
       }
 
       // Determine redirect based on admin status
-      if (profile?.is_admin) {
+      if (profile.is_admin) {
         toast.success("Welcome back, admin!");
         navigate("/admin/dashboard");
       } else {
@@ -110,6 +130,11 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  // Show loading state until initial auth check is done
+  if (!initialAuthCheckDone) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">

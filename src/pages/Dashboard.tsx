@@ -11,44 +11,56 @@ const Dashboard = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        console.log("No session found, redirecting to auth");
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          navigate('/auth');
+          return;
+        }
+        
+        if (!session) {
+          console.log("No session found, redirecting to auth");
+          navigate('/auth');
+          return;
+        }
+
+        // Check if user exists in profiles and their status
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_admin, status')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profileError || !profile) {
+          console.error("Error fetching profile:", profileError);
+          toast.error("Error verifying user access");
+          navigate('/auth');
+          return;
+        }
+
+        // Redirect admin users to admin dashboard
+        if (profile.is_admin) {
+          navigate('/admin/dashboard');
+          return;
+        }
+
+        // Check if user is active
+        if (profile.status !== 'active') {
+          toast.error("Your account is not active");
+          await supabase.auth.signOut();
+          navigate('/auth');
+          return;
+        }
+      } catch (error) {
+        console.error("Error in auth check:", error);
         navigate('/auth');
-        return;
-      }
-
-      // Check if user exists in profiles and their status
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('is_admin, status')
-        .eq('id', session.user.id)
-        .single();
-
-      if (error || !profile) {
-        console.error("Error fetching profile:", error);
-        toast.error("Error verifying user access");
-        navigate('/auth');
-        return;
-      }
-
-      // Redirect admin users to admin dashboard
-      if (profile.is_admin) {
-        navigate('/admin/dashboard');
-        return;
-      }
-
-      // Check if user is active
-      if (profile.status !== 'active') {
-        toast.error("Your account is not active");
-        navigate('/auth');
-        return;
       }
     };
 
     checkAuth();
-  }, [session, navigate, supabase]);
+  }, [navigate, supabase]);
 
   const handleSignOut = async () => {
     try {
