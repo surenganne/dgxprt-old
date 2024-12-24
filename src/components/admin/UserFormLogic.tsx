@@ -49,11 +49,13 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
         });
       } else {
         // Check if user already exists
-        const { data: existingUser } = await supabase
+        const { data: existingUser, error: checkError } = await supabase
           .from("profiles")
           .select("id")
           .eq("email", formData.email)
-          .single();
+          .maybeSingle();
+
+        if (checkError) throw checkError;
 
         if (existingUser) {
           throw new Error("A user with this email already exists");
