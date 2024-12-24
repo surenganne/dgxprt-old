@@ -61,7 +61,7 @@ export const createNewUser = async (formData: UserFormData) => {
     redirectUrl = 'https://dgxprt.incepta.ai/auth';
   }
 
-  // Create new user with the anonymous client and disable email confirmation
+  // Create new user with the anonymous client
   const { data: authData, error: authError } = await anonClient.auth.signUp({
     email: formData.email,
     password: tempPassword,
@@ -70,8 +70,6 @@ export const createNewUser = async (formData: UserFormData) => {
         full_name: formData.full_name,
       },
       emailRedirectTo: `${redirectUrl}?email=${encodeURIComponent(formData.email)}&temp=true`,
-      // Disable the default email by setting skipConfirmation to true
-      skipConfirmation: true
     }
   });
 
