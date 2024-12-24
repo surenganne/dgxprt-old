@@ -32,70 +32,8 @@ serve(async (req) => {
       },
     });
 
-    // First check if user exists in auth.users
-    console.log("[create-user] Checking if user exists in auth.users...");
-    const { data: existingAuthUsers, error: getUserError } = await supabase.auth.admin.listUsers({
-      filter: {
-        email: email
-      }
-    });
-
-    console.log("[create-user] Existing auth users:", existingAuthUsers);
-
-    if (getUserError) {
-      console.error("[create-user] Error checking user:", getUserError);
-      return new Response(
-        JSON.stringify({ error: getUserError.message }),
-        { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400
-        }
-      );
-    }
-
-    if (existingAuthUsers?.users && existingAuthUsers.users.length > 0) {
-      console.error("[create-user] User already exists in auth.users:", existingAuthUsers.users);
-      return new Response(
-        JSON.stringify({ error: "A user with this email already exists" }),
-        { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400
-        }
-      );
-    }
-
-    // Check if user exists in profiles table
-    console.log("[create-user] Checking if user exists in profiles...");
-    const { data: existingProfile, error: profileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('email', email)
-      .single();
-
-    if (profileError && profileError.code !== 'PGRST116') {
-      console.error("[create-user] Error checking profile:", profileError);
-      return new Response(
-        JSON.stringify({ error: profileError.message }),
-        { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400
-        }
-      );
-    }
-
-    if (existingProfile) {
-      console.error("[create-user] User already exists in profiles:", existingProfile);
-      return new Response(
-        JSON.stringify({ error: "A user with this email already exists in profiles" }),
-        { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400
-        }
-      );
-    }
-
-    // Create new user
-    console.log("[create-user] Creating new user with magic link...");
+    // Create new user with admin.createUser
+    console.log("[create-user] Attempting to create user in auth.users...");
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
       email: email,
       email_confirm: true,
@@ -104,6 +42,18 @@ serve(async (req) => {
 
     if (createError) {
       console.error("[create-user] Error creating user:", createError);
+      
+      // Check if error is due to existing user
+      if (createError.message.includes("already exists")) {
+        return new Response(
+          JSON.stringify({ error: "A user with this email already exists" }),
+          { 
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400
+          }
+        );
+      }
+      
       return new Response(
         JSON.stringify({ error: createError.message }),
         { 
@@ -113,9 +63,10 @@ serve(async (req) => {
       );
     }
 
-    if (!newUser?.user?.id) {
+    if (!newUser?.user) {
+      console.error("[create-user] No user data returned from creation");
       return new Response(
-        JSON.stringify({ error: "No user ID returned from auth" }),
+        JSON.stringify({ error: "Failed to create user - no user data returned" }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 400
