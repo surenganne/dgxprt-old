@@ -16,8 +16,19 @@ interface SDSVersionHistoryProps {
   chemicalId: string;
 }
 
+interface SDSVersion {
+  id: string;
+  version: string;
+  created_at: string;
+  uploaded_by: string;
+  version_notes: string;
+  is_latest: boolean;
+  previous_version_id: string;
+  file_path: string;
+}
+
 export const SDSVersionHistory = ({ chemicalId }: SDSVersionHistoryProps) => {
-  const { data: versions, isLoading } = useQuery({
+  const { data: versions, isLoading } = useQuery<SDSVersion[]>({
     queryKey: ["sds-versions", chemicalId],
     queryFn: async () => {
       const { data, error } = await supabase.rpc(
