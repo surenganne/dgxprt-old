@@ -52,6 +52,18 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
       } else {
         console.log('[UserFormLogic] Creating new user:', formData.email);
         
+        // First check if user exists in profiles
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', formData.email)
+          .maybeSingle();
+
+        if (existingProfile) {
+          console.error('[UserFormLogic] User already exists in profiles:', formData.email);
+          throw new Error('A user with this email already exists');
+        }
+
         try {
           // Create new user and send magic link
           const { error: createError } = await supabase.functions.invoke('create-user-with-magic-link', {
@@ -63,7 +75,21 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
             }
           });
 
-          if (createError) throw createError;
+          if (createError) {
+            console.error('[UserFormLogic] Error from edge function:', createError);
+            // Try to parse the error message from the edge function
+            let errorMessage = "Failed to create user";
+            try {
+              const errorBody = JSON.parse(createError.message);
+              if (errorBody.error) {
+                errorMessage = errorBody.error;
+              }
+            } catch (parseError) {
+              console.error('[UserFormLogic] Error parsing error message:', parseError);
+              errorMessage = createError.message || errorMessage;
+            }
+            throw new Error(errorMessage);
+          }
 
           toast({
             title: "User created successfully",
@@ -71,17 +97,7 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
           });
         } catch (error: any) {
           console.error('[UserFormLogic] Error in user creation:', error);
-          
-          // Parse the error message from the edge function response
-          let errorMessage = "An unexpected error occurred";
-          try {
-            const errorBody = JSON.parse(error.message);
-            errorMessage = errorBody.error || errorMessage;
-          } catch {
-            errorMessage = error.message || errorMessage;
-          }
-          
-          throw new Error(errorMessage);
+          throw error;
         }
       }
 
