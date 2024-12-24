@@ -19,11 +19,23 @@ import {
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types";
+
+type ChemicalHazardClass = Database["public"]["Enums"]["chemical_hazard_class"];
 
 interface ChemicalFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+}
+
+interface ChemicalFormData {
+  name: string;
+  cas_number: string;
+  hazard_class: ChemicalHazardClass;
+  description: string;
+  storage_conditions: string;
+  handling_precautions: string;
 }
 
 export const ChemicalFormDialog = ({
@@ -32,7 +44,7 @@ export const ChemicalFormDialog = ({
   onSuccess,
 }: ChemicalFormDialogProps) => {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ChemicalFormData>({
     name: "",
     cas_number: "",
     hazard_class: "non_hazardous",
@@ -46,7 +58,7 @@ export const ChemicalFormDialog = ({
     setLoading(true);
 
     try {
-      const { error } = await supabase.from("chemicals").insert([formData]);
+      const { error } = await supabase.from("chemicals").insert(formData);
 
       if (error) throw error;
 
@@ -95,7 +107,7 @@ export const ChemicalFormDialog = ({
             <Label htmlFor="hazard_class">Hazard Class *</Label>
             <Select
               value={formData.hazard_class}
-              onValueChange={(value) =>
+              onValueChange={(value: ChemicalHazardClass) =>
                 setFormData({ ...formData, hazard_class: value })
               }
             >
