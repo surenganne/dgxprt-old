@@ -37,11 +37,15 @@ interface LocationFormData {
   parent_id?: string;
 }
 
+interface LocationData extends LocationFormData {
+  id: string;
+}
+
 interface LocationFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
-  initialData?: LocationFormData;
+  initialData?: LocationData;
 }
 
 export function LocationFormDialog({
