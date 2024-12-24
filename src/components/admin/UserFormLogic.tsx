@@ -65,7 +65,7 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
         }
 
         // Create new user and send magic link
-        const { error: createError } = await supabase.functions.invoke('create-user-with-magic-link', {
+        const { data, error: createError } = await supabase.functions.invoke('create-user-with-magic-link', {
           body: { 
             email: formData.email,
             fullName: formData.full_name,
@@ -78,7 +78,6 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
           console.error('[UserFormLogic] Error from edge function:', createError);
           let errorMessage;
           try {
-            // Try to parse the error message from the response body
             const errorBody = JSON.parse(createError.message);
             errorMessage = errorBody.error || "Failed to create user";
           } catch (parseError) {
