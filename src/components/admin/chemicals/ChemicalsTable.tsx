@@ -114,7 +114,7 @@ export const ChemicalsTable = ({
                   <Checkbox
                     checked={isSelected(chemical)}
                     onCheckedChange={(checked) =>
-                      handleSelectChemical(chemical, checked)
+                      handleSelectChemical(chemical, checked as boolean)
                     }
                     aria-label={`Select ${chemical.name}`}
                   />
