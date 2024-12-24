@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -56,6 +57,28 @@ export function LocationFormDialog({
 }: LocationFormDialogProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch all locations for parent selection
+  const { data: locations } = useQuery({
+    queryKey: ["locations"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("locations")
+        .select("*")
+        .order("name");
+      
+      if (error) {
+        toast({
+          title: "Error fetching locations",
+          description: error.message,
+          variant: "destructive",
+        });
+        return [];
+      }
+      return data;
+    },
+  });
+
   const form = useForm<LocationFormData>({
     defaultValues: initialData || {
       name: "",
@@ -64,6 +87,7 @@ export function LocationFormDialog({
       address: "",
       contact_email: "",
       contact_phone: "",
+      parent_id: "",
     },
   });
 
@@ -146,6 +170,34 @@ export function LocationFormDialog({
                       <SelectItem value="district">District</SelectItem>
                       <SelectItem value="school">School</SelectItem>
                       <SelectItem value="site">Site</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="parent_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Parent Location</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select parent location" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="">None</SelectItem>
+                      {locations?.map((location) => (
+                        <SelectItem key={location.id} value={location.id}>
+                          {location.name} ({location.type})
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
