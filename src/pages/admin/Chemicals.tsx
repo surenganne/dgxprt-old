@@ -17,6 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChemicalsTable } from "@/components/admin/chemicals/ChemicalsTable";
 import { ChemicalsPagination } from "@/components/admin/chemicals/ChemicalsPagination";
 import { ChemicalsFilters } from "@/components/admin/chemicals/ChemicalsFilters";
+import { BulkCategoryUpdateDialog } from "@/components/admin/chemicals/BulkCategoryUpdateDialog";
 import type { Chemical } from "@/types/chemical";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -27,6 +28,7 @@ const Chemicals = () => {
   const session = useSession();
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [bulkUpdateDialogOpen, setBulkUpdateDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [hazardClass, setHazardClass] = useState<ChemicalHazardClass | "all">(
@@ -36,6 +38,7 @@ const Chemicals = () => {
   const [selectedChemical, setSelectedChemical] = useState<Chemical | null>(
     null
   );
+  const [selectedChemicals, setSelectedChemicals] = useState<Chemical[]>([]);
 
   const { data: categories } = useQuery({
     queryKey: ["chemical-categories"],
@@ -124,6 +127,11 @@ const Chemicals = () => {
     setDialogOpen(true);
   };
 
+  const handleBulkUpdateSuccess = () => {
+    refetch();
+    setSelectedChemicals([]);
+  };
+
   useEffect(() => {
     const checkAdminAccess = async () => {
       if (!session?.user) {
@@ -194,6 +202,14 @@ const Chemicals = () => {
                 </h2>
               </div>
               <div className="flex gap-2">
+                {selectedChemicals.length > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setBulkUpdateDialogOpen(true)}
+                  >
+                    Update Category ({selectedChemicals.length})
+                  </Button>
+                )}
                 <Button onClick={() => navigate("/admin/chemical-categories")}>
                   Manage Categories
                 </Button>
@@ -229,6 +245,8 @@ const Chemicals = () => {
                   chemicals={chemicalsData?.chemicals || []}
                   onEdit={handleEditChemical}
                   onDelete={refetch}
+                  selectedChemicals={selectedChemicals}
+                  onSelectionChange={setSelectedChemicals}
                 />
                 <ChemicalsPagination
                   currentPage={currentPage}
@@ -243,6 +261,14 @@ const Chemicals = () => {
               onOpenChange={setDialogOpen}
               onSuccess={refetch}
               chemical={selectedChemical}
+            />
+
+            <BulkCategoryUpdateDialog
+              open={bulkUpdateDialogOpen}
+              onOpenChange={setBulkUpdateDialogOpen}
+              selectedChemicals={selectedChemicals}
+              categories={categories || []}
+              onSuccess={handleBulkUpdateSuccess}
             />
           </div>
         </main>

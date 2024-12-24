@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Edit, Trash } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -28,9 +29,17 @@ interface ChemicalsTableProps {
   chemicals: Chemical[];
   onEdit: (chemical: Chemical) => void;
   onDelete: () => void;
+  selectedChemicals: Chemical[];
+  onSelectionChange: (chemicals: Chemical[]) => void;
 }
 
-export const ChemicalsTable = ({ chemicals, onEdit, onDelete }: ChemicalsTableProps) => {
+export const ChemicalsTable = ({
+  chemicals,
+  onEdit,
+  onDelete,
+  selectedChemicals,
+  onSelectionChange,
+}: ChemicalsTableProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedChemical, setSelectedChemical] = useState<Chemical | null>(null);
   const { logUserAction } = useAuditLogger();
@@ -61,12 +70,36 @@ export const ChemicalsTable = ({ chemicals, onEdit, onDelete }: ChemicalsTablePr
     setSelectedChemical(null);
   };
 
+  const handleSelectAll = (checked: boolean) => {
+    onSelectionChange(checked ? chemicals : []);
+  };
+
+  const handleSelectChemical = (chemical: Chemical, checked: boolean) => {
+    const newSelection = checked
+      ? [...selectedChemicals, chemical]
+      : selectedChemicals.filter((c) => c.id !== chemical.id);
+    onSelectionChange(newSelection);
+  };
+
+  const isSelected = (chemical: Chemical) =>
+    selectedChemicals.some((c) => c.id === chemical.id);
+
   return (
     <>
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={
+                    chemicals.length > 0 &&
+                    selectedChemicals.length === chemicals.length
+                  }
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all chemicals"
+                />
+              </TableHead>
               <TableHead>Name</TableHead>
               <TableHead>CAS Number</TableHead>
               <TableHead>Hazard Class</TableHead>
@@ -77,6 +110,15 @@ export const ChemicalsTable = ({ chemicals, onEdit, onDelete }: ChemicalsTablePr
           <TableBody>
             {chemicals.map((chemical) => (
               <TableRow key={chemical.id}>
+                <TableCell>
+                  <Checkbox
+                    checked={isSelected(chemical)}
+                    onCheckedChange={(checked) =>
+                      handleSelectChemical(chemical, checked)
+                    }
+                    aria-label={`Select ${chemical.name}`}
+                  />
+                </TableCell>
                 <TableCell>{chemical.name}</TableCell>
                 <TableCell>{chemical.cas_number || "-"}</TableCell>
                 <TableCell className="capitalize">
@@ -117,7 +159,8 @@ export const ChemicalsTable = ({ chemicals, onEdit, onDelete }: ChemicalsTablePr
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the chemical
+              This action cannot be undone. This will permanently delete the
+              chemical
               {selectedChemical && `: ${selectedChemical.name}`}.
             </AlertDialogDescription>
           </AlertDialogHeader>
