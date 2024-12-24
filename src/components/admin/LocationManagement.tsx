@@ -2,7 +2,7 @@ import { useState } from "react";
 import { LocationFormDialog } from "./LocationFormDialog";
 import { LocationHeader } from "./location/LocationHeader";
 import { LocationFilters } from "./location/LocationFilters";
-import { LocationTable } from "./location/LocationTable";
+import { LocationTableWrapper } from "./location/LocationTableWrapper";
 import { LocationBatchActions } from "./location/LocationBatchActions";
 import { useLocations } from "@/hooks/useLocations";
 import { useLocationActions } from "@/hooks/useLocationActions";
@@ -145,18 +145,16 @@ export const LocationManagement = () => {
         />
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
-        <LocationTable
-          locations={paginatedLocations}
-          onEdit={handleEdit}
-          onDelete={handleDeleteLocation}
-          onToggleStatus={handleToggleStatus}
-          isLoading={isLoading}
-          selectedLocations={selectedLocations}
-          onSelectLocation={handleSelectLocation}
-          onSelectAll={handleSelectAll}
-        />
-      </div>
+      <LocationTableWrapper
+        locations={paginatedLocations}
+        onEdit={handleEdit}
+        onDelete={handleDeleteLocation}
+        onToggleStatus={handleToggleStatus}
+        isLoading={isLoading}
+        selectedLocations={selectedLocations}
+        onSelectLocation={handleSelectLocation}
+        onSelectAll={handleSelectAll}
+      />
 
       {totalPages > 1 && (
         <div className="flex justify-center mt-6">
@@ -165,7 +163,7 @@ export const LocationManagement = () => {
               <PaginationItem>
                 <PaginationPrevious
                   onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  className={`${currentPage === 1 ? "pointer-events-none opacity-50" : ""} bg-white`}
+                  className={`${currentPage === 1 ? "pointer-events-none opacity-50" : ""} bg-white hover:bg-gray-50/70`}
                 />
               </PaginationItem>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -173,7 +171,11 @@ export const LocationManagement = () => {
                   <PaginationLink
                     onClick={() => setCurrentPage(page)}
                     isActive={currentPage === page}
-                    className={`${currentPage === page ? "bg-primary-purple text-white" : "bg-white"}`}
+                    className={`${
+                      currentPage === page 
+                        ? "bg-primary-purple text-white hover:bg-primary-purple/90" 
+                        : "bg-white hover:bg-gray-50/70"
+                    }`}
                   >
                     {page}
                   </PaginationLink>
@@ -182,7 +184,11 @@ export const LocationManagement = () => {
               <PaginationItem>
                 <PaginationNext
                   onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  className={`${currentPage === totalPages ? "pointer-events-none opacity-50" : ""} bg-white`}
+                  className={`${
+                    currentPage === totalPages 
+                      ? "pointer-events-none opacity-50" 
+                      : ""
+                  } bg-white hover:bg-gray-50/70`}
                 />
               </PaginationItem>
             </PaginationContent>
