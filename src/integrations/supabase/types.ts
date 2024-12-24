@@ -53,6 +53,7 @@ export type Database = {
           has_reset_password: boolean | null
           id: string
           is_admin: boolean | null
+          is_owner: boolean | null
           status: string
           temporary_password_hash: string | null
           updated_at: string
@@ -65,6 +66,7 @@ export type Database = {
           has_reset_password?: boolean | null
           id: string
           is_admin?: boolean | null
+          is_owner?: boolean | null
           status?: string
           temporary_password_hash?: string | null
           updated_at?: string
@@ -77,6 +79,7 @@ export type Database = {
           has_reset_password?: boolean | null
           id?: string
           is_admin?: boolean | null
+          is_owner?: boolean | null
           status?: string
           temporary_password_hash?: string | null
           updated_at?: string
