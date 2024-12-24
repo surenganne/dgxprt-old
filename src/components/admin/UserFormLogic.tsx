@@ -51,43 +51,38 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
         });
       } else {
         console.log('[UserFormLogic] Creating new user:', formData.email);
-        // Check if user already exists
-        const { data: existingUser, error: checkError } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("email", formData.email)
-          .maybeSingle();
+        
+        try {
+          // Create new user and send magic link
+          const { error: createError } = await supabase.functions.invoke('create-user-with-magic-link', {
+            body: { 
+              email: formData.email,
+              fullName: formData.full_name,
+              isAdmin: formData.is_admin,
+              status: formData.status
+            }
+          });
 
-        if (checkError) throw checkError;
+          if (createError) throw createError;
 
-        if (existingUser) {
-          console.log('[UserFormLogic] User already exists:', formData.email);
-          throw new Error("A user with this email already exists");
-        }
-
-        // Create new user and send magic link
-        const { error: createError } = await supabase.functions.invoke('create-user-with-magic-link', {
-          body: { 
-            email: formData.email,
-            fullName: formData.full_name,
-            isAdmin: formData.is_admin,
-            status: formData.status
+          toast({
+            title: "User created successfully",
+            description: "A login link has been sent to the user's email.",
+          });
+        } catch (error: any) {
+          console.error('[UserFormLogic] Error in user creation:', error);
+          
+          // Parse the error message from the edge function response
+          let errorMessage = "An unexpected error occurred";
+          try {
+            const errorBody = JSON.parse(error.message);
+            errorMessage = errorBody.error || errorMessage;
+          } catch {
+            errorMessage = error.message || errorMessage;
           }
-        });
-
-        if (createError) {
-          console.error('[UserFormLogic] Error creating user:', createError);
-          // Check if the error is about existing user
-          if (createError.message.includes("already exists")) {
-            throw new Error("A user with this email already exists. Please use a different email address.");
-          }
-          throw createError;
+          
+          throw new Error(errorMessage);
         }
-
-        toast({
-          title: "User created successfully",
-          description: "A login link has been sent to the user's email.",
-        });
       }
 
       onSuccess();
