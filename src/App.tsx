@@ -35,10 +35,11 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
       const type = searchParams.get("type") || hashParams.get("type");
       const email = searchParams.get("email");
 
+      // Safe logging that doesn't expose sensitive data
       console.log("[MagicLinkHandler] URL Parameters:", {
         token: token ? "present" : "absent",
         type,
-        email,
+        email: email ? "present" : "absent",
         fullUrl: window.location.href,
         hasHash: window.location.hash ? "yes" : "no"
       });
@@ -66,7 +67,33 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
+    // Add event listener for postMessage
+    const handlePostMessage = (event: MessageEvent) => {
+      // Check if the message is from a trusted origin
+      const trustedOrigins = [
+        window.location.origin,
+        'https://preview--dgxprt.lovable.app',
+        'https://dgxprt.lovable.app'
+      ];
+      
+      if (!trustedOrigins.includes(event.origin)) {
+        console.warn('[MagicLinkHandler] Ignored postMessage from untrusted origin:', event.origin);
+        return;
+      }
+
+      // Handle the message
+      if (event.data && event.data.type === 'SUPABASE_AUTH') {
+        console.log('[MagicLinkHandler] Received auth message');
+        handleMagicLink();
+      }
+    };
+
+    window.addEventListener('message', handlePostMessage);
     handleMagicLink();
+
+    return () => {
+      window.removeEventListener('message', handlePostMessage);
+    };
   }, [location, navigate, supabaseClient]);
 
   if (isHandlingMagicLink) {
