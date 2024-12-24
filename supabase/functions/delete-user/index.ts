@@ -71,19 +71,18 @@ Deno.serve(async (req) => {
       throw new Error('Only owners can delete admin accounts')
     }
 
-    // Delete the profile (this will cascade to user_locations due to FK)
-    console.log("[delete-user] Deleting profile for user:", userId);
-    const { error: deleteProfileError } = await supabase
-      .from('profiles')
-      .delete()
-      .eq('id', userId)
+    // Delete the auth user first (this will cascade delete the profile due to FK)
+    console.log("[delete-user] Deleting auth user:", userId);
+    const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(
+      userId
+    )
 
-    if (deleteProfileError) {
-      console.error("[delete-user] Error deleting profile:", deleteProfileError);
-      throw deleteProfileError;
+    if (deleteAuthError) {
+      console.error("[delete-user] Error deleting auth user:", deleteAuthError);
+      throw deleteAuthError;
     }
 
-    console.log("[delete-user] Profile deleted successfully");
+    console.log("[delete-user] User deleted successfully");
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
