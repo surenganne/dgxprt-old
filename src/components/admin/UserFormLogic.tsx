@@ -10,15 +10,18 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
     email: "",
     full_name: "",
     is_admin: false,
+    is_owner: false,
     status: 'active',
   });
 
   useEffect(() => {
+    // Only set form data if we're editing an existing user
     if (user) {
       setFormData({
         email: user.email || "",
         full_name: user.full_name || "",
         is_admin: user.is_admin || false,
+        is_owner: user.is_owner || false,
         status: user.status as 'active' | 'inactive',
       });
     }
