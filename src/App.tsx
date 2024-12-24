@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
 import AdminLocations from "./pages/admin/Locations";
+import AdminChemicals from "./pages/admin/Chemicals";
 import CreateOwner from "./pages/CreateOwner";
 import { supabase } from "@/integrations/supabase/client";
 import { MagicLinkHandler } from "@/components/auth/MagicLinkHandler";
@@ -67,6 +68,14 @@ const App = () => {
                     element={
                       <ProtectedRoute>
                         <AdminLocations />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/chemicals"
+                    element={
+                      <ProtectedRoute>
+                        <AdminChemicals />
                       </ProtectedRoute>
                     }
                   />
