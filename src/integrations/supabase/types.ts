@@ -9,28 +9,76 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      locations: {
+      location_hierarchy: {
         Row: {
           created_at: string
+          display_name: string
           id: string
-          name: string
-          parent_id: string | null
-          type: string
+          level_name: string
+          level_order: number
           updated_at: string
         }
         Insert: {
           created_at?: string
+          display_name: string
           id?: string
-          name: string
-          parent_id?: string | null
-          type: string
+          level_name: string
+          level_order: number
           updated_at?: string
         }
         Update: {
           created_at?: string
+          display_name?: string
           id?: string
+          level_name?: string
+          level_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      locations: {
+        Row: {
+          address: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          custom_label: string | null
+          description: string | null
+          id: string
+          location_type: Database["public"]["Enums"]["location_type"]
+          name: string
+          parent_id: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          custom_label?: string | null
+          description?: string | null
+          id?: string
+          location_type?: Database["public"]["Enums"]["location_type"]
+          name: string
+          parent_id?: string | null
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          custom_label?: string | null
+          description?: string | null
+          id?: string
+          location_type?: Database["public"]["Enums"]["location_type"]
           name?: string
           parent_id?: string | null
+          status?: string
           type?: string
           updated_at?: string
         }
@@ -138,7 +186,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      location_type: "country" | "state" | "district" | "school" | "site"
     }
     CompositeTypes: {
       [_ in never]: never
