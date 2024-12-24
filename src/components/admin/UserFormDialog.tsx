@@ -3,7 +3,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useUserForm } from "./UserFormLogic";
@@ -54,7 +53,7 @@ export const UserFormDialog = ({
         onOpenChange(newOpen);
       }}
     >
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto w-full max-w-lg">
         <DialogHeader>
           <DialogTitle>{user ? "Edit User" : "Add New User"}</DialogTitle>
         </DialogHeader>
@@ -65,7 +64,7 @@ export const UserFormDialog = ({
             loading={loading}
             isEdit={!!user}
           />
-          <DialogFooter>
+          <div className="flex justify-end space-x-2">
             <Button
               type="button"
               variant="outline"
@@ -77,7 +76,7 @@ export const UserFormDialog = ({
             <Button type="submit" disabled={loading}>
               {loading ? "Processing..." : user ? "Update User" : "Create User"}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
