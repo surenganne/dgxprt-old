@@ -47,14 +47,6 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized: Only admins can delete users')
     }
 
-    // First check if the user exists in auth.users
-    const { data: userToDelete, error: userError } = await supabase.auth.admin.getUserById(userId)
-    
-    if (userError || !userToDelete?.user) {
-      console.error("[delete-user] User not found in auth.users:", userError);
-      throw new Error('User not found in authentication system')
-    }
-
     // Get the profile of the user to be deleted
     const { data: targetProfile, error: targetProfileError } = await supabase
       .from('profiles')
@@ -64,7 +56,7 @@ Deno.serve(async (req) => {
 
     if (targetProfileError) {
       console.error("[delete-user] Error fetching target user profile:", targetProfileError);
-      throw targetProfileError;
+      throw new Error('User profile not found')
     }
 
     // Check if trying to delete an owner
@@ -79,12 +71,18 @@ Deno.serve(async (req) => {
       throw new Error('Only owners can delete admin accounts')
     }
 
-    // Delete the user from auth.users first
-    console.log("[delete-user] Deleting auth user:", userId);
-    const { error: deleteError } = await supabase.auth.admin.deleteUser(userId)
-    if (deleteError) {
-      console.error("[delete-user] Error deleting user:", deleteError);
-      throw deleteError;
+    // Check if user exists in auth.users and delete if they do
+    const { data: authUser, error: authUserError } = await supabase.auth.admin.getUserById(userId)
+    if (!authUserError && authUser?.user) {
+      console.log("[delete-user] User found in auth.users, deleting...");
+      const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(userId)
+      if (deleteAuthError) {
+        console.error("[delete-user] Error deleting from auth.users:", deleteAuthError);
+        // Continue with profile deletion even if auth deletion fails
+        console.warn("[delete-user] Continuing with profile deletion despite auth.users deletion failure");
+      }
+    } else {
+      console.log("[delete-user] User not found in auth.users, skipping auth deletion");
     }
 
     // Delete the profile (this will cascade to user_locations due to FK)
@@ -96,8 +94,7 @@ Deno.serve(async (req) => {
 
     if (deleteProfileError) {
       console.error("[delete-user] Error deleting profile:", deleteProfileError);
-      // Note: We don't throw here since the auth user is already deleted
-      console.warn("[delete-user] Profile deletion failed but auth user was deleted:", deleteProfileError);
+      throw deleteProfileError;
     }
 
     console.log("[delete-user] User deleted successfully");
