@@ -9,6 +9,50 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action_type: Database["public"]["Enums"]["audit_log_type"]
+          created_at: string
+          description: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          metadata: Json | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          action_type: Database["public"]["Enums"]["audit_log_type"]
+          created_at?: string
+          description: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          metadata?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: Database["public"]["Enums"]["audit_log_type"]
+          created_at?: string
+          description?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          metadata?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chemical_categories: {
         Row: {
           created_at: string
@@ -267,8 +311,20 @@ export type Database = {
         }
         Returns: boolean
       }
+      log_audit_event: {
+        Args: {
+          p_user_id: string
+          p_action_type: Database["public"]["Enums"]["audit_log_type"]
+          p_entity_type: string
+          p_entity_id: string
+          p_description: string
+          p_metadata?: Json
+        }
+        Returns: string
+      }
     }
     Enums: {
+      audit_log_type: "user_action" | "system_event"
       chemical_hazard_class: "hazardous" | "non_hazardous"
       location_type: "country" | "state" | "district" | "school" | "site"
     }

@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useUserForm } from "./UserFormLogic";
 import { UserFormFields } from "./UserFormFields";
+import { useAuditLogger } from "@/hooks/useAuditLogger";
 
 interface UserFormDialogProps {
   open: boolean;
@@ -29,10 +30,19 @@ export const UserFormDialog = ({
   onSuccess,
 }: UserFormDialogProps) => {
   console.log('UserFormDialog render - open:', open, 'user:', user);
+  const { logUserAction } = useAuditLogger();
   
-  const { formData, setFormData, loading, handleSubmit } = useUserForm({
+  const { formData, setFormData, loading, handleSubmit: originalHandleSubmit } = useUserForm({
     user,
-    onSuccess,
+    onSuccess: async () => {
+      await logUserAction(
+        'user',
+        user?.id || null,
+        user ? `Updated user: ${formData.email}` : `Created user: ${formData.email}`,
+        { ...formData }
+      );
+      onSuccess();
+    },
     onOpenChange,
   });
 
@@ -48,7 +58,7 @@ export const UserFormDialog = ({
         <DialogHeader>
           <DialogTitle>{user ? "Edit User" : "Add New User"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={originalHandleSubmit} className="space-y-4">
           <UserFormFields
             formData={formData}
             setFormData={setFormData}

@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuditLogger } from "./useAuditLogger";
 
 export const useUserActions = (refetchUsers: () => void) => {
   const { toast } = useToast();
+  const { logUserAction } = useAuditLogger();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -42,6 +44,13 @@ export const useUserActions = (refetchUsers: () => void) => {
         }
         throw new Error(errorMessage);
       }
+
+      await logUserAction(
+        'user',
+        userToDelete.id,
+        `Deleted user: ${userToDelete.email}`,
+        { email: userToDelete.email }
+      );
 
       toast({
         title: "User deleted successfully",
@@ -85,6 +94,13 @@ export const useUserActions = (refetchUsers: () => void) => {
         console.error("[UserActions] Error sending password reset:", error);
         throw error;
       }
+
+      await logUserAction(
+        'user',
+        null,
+        `Sent password reset to: ${email}`,
+        { email }
+      );
 
       console.log("[UserActions] Password reset email sent successfully to:", email);
       toast({
