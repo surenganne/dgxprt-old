@@ -125,6 +125,7 @@ export type Database = {
       location_hierarchy: {
         Row: {
           created_at: string
+          custom_label: string | null
           display_name: string
           id: string
           level_name: string
@@ -133,6 +134,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          custom_label?: string | null
           display_name: string
           id?: string
           level_name: string
@@ -141,6 +143,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          custom_label?: string | null
           display_name?: string
           id?: string
           level_name?: string

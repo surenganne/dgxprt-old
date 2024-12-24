@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
 import { LocationFormData } from "./types";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LocationBasicFieldsProps {
   form: UseFormReturn<LocationFormData>;
@@ -10,6 +12,22 @@ interface LocationBasicFieldsProps {
 }
 
 export function LocationBasicFields({ form, locations }: LocationBasicFieldsProps) {
+  const { data: hierarchyLevels } = useQuery({
+    queryKey: ["locationHierarchy"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("location_hierarchy")
+        .select("*")
+        .order("level_order");
+      
+      if (error) {
+        console.error("Error fetching hierarchy levels:", error);
+        return [];
+      }
+      return data;
+    },
+  });
+
   // Get valid parent types based on selected type
   const getValidParentTypes = (type: string): string[] => {
     switch (type) {
@@ -26,6 +44,12 @@ export function LocationBasicFields({ form, locations }: LocationBasicFieldsProp
       default:
         return [];
     }
+  };
+
+  // Get custom label for type if available
+  const getTypeLabel = (type: string) => {
+    const level = hierarchyLevels?.find(level => level.level_name === type);
+    return level?.custom_label || level?.display_name || type;
   };
 
   // Filter locations based on selected type
@@ -69,11 +93,11 @@ export function LocationBasicFields({ form, locations }: LocationBasicFieldsProp
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="country">Country</SelectItem>
-                <SelectItem value="state">State</SelectItem>
-                <SelectItem value="district">District</SelectItem>
-                <SelectItem value="school">School</SelectItem>
-                <SelectItem value="site">Site</SelectItem>
+                {hierarchyLevels?.map((level) => (
+                  <SelectItem key={level.level_name} value={level.level_name}>
+                    {level.custom_label || level.display_name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <FormMessage />
@@ -85,21 +109,21 @@ export function LocationBasicFields({ form, locations }: LocationBasicFieldsProp
         name="parent_id"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Parent Location</FormLabel>
+            <FormLabel>Parent {getTypeLabel(getValidParentTypes(form.watch("type"))[0] || "Location")}</FormLabel>
             <Select
               onValueChange={field.onChange}
               defaultValue={field.value || "none"}
             >
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select parent location" />
+                  <SelectValue placeholder={`Select parent ${getTypeLabel(getValidParentTypes(form.watch("type"))[0] || "location").toLowerCase()}`} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent className="max-h-[200px] overflow-y-auto">
                 <SelectItem value="none">None</SelectItem>
                 {filteredLocations?.map((location) => (
                   <SelectItem key={location.id} value={location.id}>
-                    {location.name} ({location.type})
+                    {location.name} ({getTypeLabel(location.type)})
                   </SelectItem>
                 ))}
               </SelectContent>

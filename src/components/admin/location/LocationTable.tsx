@@ -9,6 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Trash2, Power } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LocationTableProps {
   locations: any[];
@@ -25,6 +27,27 @@ export const LocationTable = ({
   onToggleStatus,
   isLoading,
 }: LocationTableProps) => {
+  const { data: hierarchyLevels } = useQuery({
+    queryKey: ["locationHierarchy"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("location_hierarchy")
+        .select("*")
+        .order("level_order");
+      
+      if (error) {
+        console.error("Error fetching hierarchy levels:", error);
+        return [];
+      }
+      return data;
+    },
+  });
+
+  const getTypeLabel = (type: string) => {
+    const level = hierarchyLevels?.find(level => level.level_name === type);
+    return level?.custom_label || level?.display_name || type;
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -41,8 +64,8 @@ export const LocationTable = ({
         {locations?.map((location) => (
           <TableRow key={location.id}>
             <TableCell className="font-medium">{location.name}</TableCell>
-            <TableCell>{location.type}</TableCell>
-            <TableCell>{location.parent_id || "None"}</TableCell>
+            <TableCell>{getTypeLabel(location.type)}</TableCell>
+            <TableCell>{location.parent_id ? locations.find(l => l.id === location.parent_id)?.name || "None" : "None"}</TableCell>
             <TableCell>
               <Badge
                 variant={location.status === "active" ? "default" : "secondary"}
