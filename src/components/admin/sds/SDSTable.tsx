@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { SDSVersionHistory } from "./SDSVersionHistory";
+import { SDSReviewDialog } from "./SDSReviewDialog";
 
 interface SDSTableProps {
   documents: any[];
@@ -61,7 +62,9 @@ export const SDSTable = ({ documents, isLoading }: SDSTableProps) => {
 
     const today = new Date();
     const expiry = new Date(expiryDate);
-    const daysUntilExpiry = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const daysUntilExpiry = Math.ceil(
+      (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    );
 
     if (daysUntilExpiry < 0) {
       return <Badge variant="destructive">Expired</Badge>;
@@ -131,6 +134,7 @@ export const SDSTable = ({ documents, isLoading }: SDSTableProps) => {
                     <Download className="h-4 w-4" />
                   </Button>
                   <SDSVersionHistory chemicalId={doc.chemical_id} />
+                  <SDSReviewDialog documentId={doc.id} currentStatus={doc.status} />
                 </div>
               </TableCell>
             </TableRow>

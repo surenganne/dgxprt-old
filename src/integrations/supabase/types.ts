@@ -303,7 +303,10 @@ export type Database = {
           id: string
           is_latest: boolean | null
           previous_version_id: string | null
+          review_comment: string | null
           review_date: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: Database["public"]["Enums"]["sds_status"] | null
           updated_at: string
           uploaded_by: string | null
@@ -318,7 +321,10 @@ export type Database = {
           id?: string
           is_latest?: boolean | null
           previous_version_id?: string | null
+          review_comment?: string | null
           review_date?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["sds_status"] | null
           updated_at?: string
           uploaded_by?: string | null
@@ -333,7 +339,10 @@ export type Database = {
           id?: string
           is_latest?: boolean | null
           previous_version_id?: string | null
+          review_comment?: string | null
           review_date?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["sds_status"] | null
           updated_at?: string
           uploaded_by?: string | null
@@ -353,6 +362,13 @@ export type Database = {
             columns: ["previous_version_id"]
             isOneToOne: false
             referencedRelation: "sds_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sds_documents_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -405,6 +421,15 @@ export type Database = {
           p_metadata?: Json
         }
         Returns: string
+      }
+      review_sds_document: {
+        Args: {
+          p_document_id: string
+          p_reviewer_id: string
+          p_status: Database["public"]["Enums"]["sds_status"]
+          p_comment: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

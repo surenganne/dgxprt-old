@@ -22,6 +22,9 @@ export const SDSManagement = () => {
           ),
           profiles (
             full_name
+          ),
+          reviewer:reviewed_by (
+            full_name
           )
         `);
 
