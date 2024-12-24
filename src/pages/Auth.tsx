@@ -15,11 +15,25 @@ const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check URL parameters for email and temp flag
+  // Check URL parameters for email, temp flag, and magic link token
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const emailFromUrl = params.get('email');
     const isTemp = params.get('temp') === 'true';
+    const token = params.get('token');
+    const type = params.get('type');
+
+    // If coming from magic link, invalidate any existing session
+    const handleMagicLink = async () => {
+      if (token && type === 'magiclink') {
+        console.log('Magic link detected, signing out existing session');
+        await supabase.auth.signOut();
+        setInitialAuthCheckDone(true);
+        return;
+      }
+    };
+
+    handleMagicLink();
 
     if (emailFromUrl) {
       setEmail(emailFromUrl);
@@ -27,7 +41,7 @@ const Auth = () => {
         toast.info("Please use the temporary password sent to your email to log in.");
       }
     }
-  }, [location]);
+  }, [location, supabase.auth]);
 
   // Check if user is already authenticated
   useEffect(() => {
