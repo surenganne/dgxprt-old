@@ -26,6 +26,9 @@ export const useMagicLink = (
       try {
         console.log("Verifying magic link token");
         
+        // Clear any existing session first
+        await supabase.auth.signOut();
+        
         const { error: verifyError } = await supabase.auth.verifyOtp({
           token_hash: token,
           type: "magiclink",

@@ -13,6 +13,7 @@ import AdminUsers from "./pages/admin/Users";
 import AdminLocations from "./pages/admin/Locations";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const queryClient = new QueryClient();
 
@@ -28,13 +29,14 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
       const params = new URLSearchParams(window.location.search);
       const token = params.get("token");
       const type = params.get("type");
+      const email = params.get("email");
 
       if (token && type === "magiclink") {
         setIsHandlingMagicLink(true);
         console.log("Magic link detected, handling verification");
         
         try {
-          // Clear any existing session first
+          // Sign out any existing session
           await supabaseClient.auth.signOut();
           
           // Clear all auth-related local storage
@@ -44,14 +46,16 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
             }
           }
 
-          // Force navigation to auth page with token
+          // Always redirect to auth page with all parameters
           const currentPath = location.pathname;
           if (currentPath !== '/auth') {
-            console.log("Redirecting to auth page with token");
-            navigate(`/auth?token=${token}&type=${type}`, { replace: true });
+            console.log("Redirecting to auth page with token and email");
+            const redirectUrl = `/auth?token=${token}&type=${type}${email ? `&email=${email}` : ''}`;
+            navigate(redirectUrl, { replace: true });
           }
         } catch (error) {
           console.error("Error handling magic link:", error);
+          toast.error("Error processing magic link");
           navigate('/auth');
         } finally {
           setIsHandlingMagicLink(false);
@@ -63,7 +67,12 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
   }, [location, navigate, supabaseClient]);
 
   if (isHandlingMagicLink) {
-    return <div>Processing magic link...</div>;
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <h2 className="text-lg font-semibold mb-2">Processing Magic Link</h2>
+        <p className="text-muted-foreground">Please wait while we verify your access...</p>
+      </div>
+    </div>;
   }
 
   return <>{children}</>;

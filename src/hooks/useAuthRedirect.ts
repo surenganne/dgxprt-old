@@ -23,8 +23,14 @@ export const useAuthRedirect = (
 
     const checkAuthAndRedirect = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          setInitialAuthCheckDone(true);
+          return;
+        }
+        
         if (!session) {
           console.log("No session found");
           setInitialAuthCheckDone(true);
@@ -37,14 +43,14 @@ export const useAuthRedirect = (
           return;
         }
 
-        const { data: profile, error } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("is_admin, has_reset_password, status")
           .eq("id", session.user.id)
           .single();
 
-        if (error) {
-          console.error("Error checking user profile:", error);
+        if (profileError) {
+          console.error("Error checking user profile:", profileError);
           toast.error("Error checking user profile");
           setInitialAuthCheckDone(true);
           return;
