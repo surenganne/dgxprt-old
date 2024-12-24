@@ -50,17 +50,6 @@ export const createNewUser = async (formData: UserFormData) => {
     }
   );
   
-  // Determine the correct redirect URL based on the current domain
-  const currentDomain = window.location.hostname;
-  let redirectUrl = `${window.location.origin}/auth`;
-  
-  // If we're on the preview domain, use the preview URL
-  if (currentDomain.includes('lovable.app')) {
-    redirectUrl = 'https://preview--dgxprt.lovable.app/auth';
-  } else if (currentDomain.includes('incepta.ai')) {
-    redirectUrl = 'https://dgxprt.incepta.ai/auth';
-  }
-
   // Create new user with the anonymous client
   const { data: authData, error: authError } = await anonClient.auth.signUp({
     email: formData.email,
@@ -68,8 +57,7 @@ export const createNewUser = async (formData: UserFormData) => {
     options: {
       data: {
         full_name: formData.full_name,
-      },
-      emailRedirectTo: `${redirectUrl}?email=${encodeURIComponent(formData.email)}&temp=true`,
+      }
     }
   });
 
