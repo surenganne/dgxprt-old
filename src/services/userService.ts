@@ -70,8 +70,8 @@ export const createNewUser = async (formData: UserFormData) => {
         full_name: formData.full_name,
       },
       emailRedirectTo: `${redirectUrl}?email=${encodeURIComponent(formData.email)}&temp=true`,
-      // Disable the default email
-      emailConfirm: false
+      // Disable the default email by setting skipConfirmation to true
+      skipConfirmation: true
     }
   });
 
