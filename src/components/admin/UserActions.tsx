@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Lock, Mail } from "lucide-react";
+import { Pencil, Trash2, Lock, Mail, Link2 } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -9,6 +9,7 @@ import {
 import { useSession } from "@supabase/auth-helpers-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface UserActionsProps {
   user: {
@@ -32,6 +33,7 @@ export const UserActions = ({
   onSendPassword,
 }: UserActionsProps) => {
   const session = useSession();
+  const { toast } = useToast();
 
   // Fetch current user's profile to check permissions
   const { data: currentUserProfile } = useQuery({
@@ -74,6 +76,40 @@ export const UserActions = ({
     return "This action is not allowed";
   };
 
+  const handleCopyMagicLink = async () => {
+    try {
+      console.log("[UserActions] Generating magic link for:", user.email);
+      const { data, error } = await supabase.functions.invoke('create-user-with-magic-link', {
+        body: { 
+          email: user.email,
+          fullName: user.full_name,
+          isAdmin: user.is_admin,
+          status: 'active'
+        }
+      });
+
+      if (error) throw error;
+
+      // Construct the magic link URL
+      const magicLink = `${window.location.origin}/auth?email=${encodeURIComponent(user.email)}&temp=true`;
+      
+      // Copy to clipboard
+      await navigator.clipboard.writeText(magicLink);
+      
+      toast({
+        title: "Magic link copied!",
+        description: "The login link has been copied to your clipboard.",
+      });
+    } catch (error: any) {
+      console.error("[UserActions] Error generating magic link:", error);
+      toast({
+        title: "Error generating magic link",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="flex justify-end space-x-2">
       <TooltipProvider>
@@ -100,6 +136,27 @@ export const UserActions = ({
               <p>{getTooltipMessage()}</p>
             </TooltipContent>
           )}
+        </Tooltip>
+      </TooltipProvider>
+
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span>
+              <Button
+                variant="ghost"
+                size="icon"
+                disabled={isLoading || !canModifyUser()}
+                onClick={handleCopyMagicLink}
+                className="text-primary-blue hover:text-primary-purple hover:bg-primary-purple/10"
+              >
+                <Link2 className="h-4 w-4" />
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Copy magic link</p>
+          </TooltipContent>
         </Tooltip>
       </TooltipProvider>
 
