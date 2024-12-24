@@ -64,19 +64,6 @@ export const UserFormFields = ({
           disabled={loading}
         />
       </div>
-      {currentUserProfile?.is_owner && !isEdit && (
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="is_owner"
-            checked={formData.is_owner}
-            onCheckedChange={(checked) =>
-              setFormData({ ...formData, is_owner: checked })
-            }
-            disabled={loading}
-          />
-          <Label htmlFor="is_owner">Owner User</Label>
-        </div>
-      )}
       {(currentUserProfile?.is_owner || currentUserProfile?.is_admin) && (
         <div className="flex items-center space-x-2">
           <Switch
