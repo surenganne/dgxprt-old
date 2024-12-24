@@ -3,7 +3,7 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
+export const MagicLinkHandler = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const supabaseClient = useSupabaseClient();
@@ -63,7 +63,7 @@ export const MagicLinkHandler = ({ children }: { children: React.ReactNode }) =>
           if (!profile.has_reset_password) {
             navigate('/reset-password');
           } else {
-            navigate(profile.is_admin ? '/admin/dashboard' : '/dashboard');
+            navigate(profile.is_admin ? '/admin' : '/dashboard');
           }
         }
       } catch (error: any) {
@@ -87,5 +87,4 @@ export const MagicLinkHandler = ({ children }: { children: React.ReactNode }) =>
     </div>;
   }
 
-  return <>{children}</>;
-};
+  return null;
