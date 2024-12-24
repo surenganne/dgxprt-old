@@ -20,36 +20,46 @@ const AdminDashboard = () => {
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
 
-  // Fetch dashboard data
-  const { data: dashboardData } = useQuery({
-    queryKey: ["dashboard-data"],
+  // Fetch dashboard data with error handling
+  const { data: dashboardData, error: dashboardError } = useQuery({
+    queryKey: ["admin", "dashboard-data"],
     queryFn: async () => {
-      const [
-        { count: usersCount },
-        { count: locationsCount },
-        { data: chemicalsData },
-      ] = await Promise.all([
-        supabase.from("profiles").select("*", { count: "exact", head: true }),
-        supabase.from("locations").select("*", { count: "exact", head: true }),
-        supabase.from("chemicals").select("hazard_class"),
-      ]);
+      try {
+        const [
+          { count: usersCount, error: usersError },
+          { count: locationsCount, error: locationsError },
+          { data: chemicalsData, error: chemicalsError },
+        ] = await Promise.all([
+          supabase.from("profiles").select("*", { count: "exact", head: true }),
+          supabase.from("locations").select("*", { count: "exact", head: true }),
+          supabase.from("chemicals").select("hazard_class"),
+        ]);
 
-      // Calculate hazardous vs non-hazardous chemicals
-      const hazardousCount = chemicalsData?.filter(c => c.hazard_class === 'hazardous').length || 0;
-      const nonHazardousCount = chemicalsData?.filter(c => c.hazard_class === 'non_hazardous').length || 0;
+        if (usersError) throw usersError;
+        if (locationsError) throw locationsError;
+        if (chemicalsError) throw chemicalsError;
 
-      const chartData = [
-        { name: 'Hazardous', value: hazardousCount },
-        { name: 'Non-Hazardous', value: nonHazardousCount },
-      ];
+        // Calculate hazardous vs non-hazardous chemicals
+        const hazardousCount = chemicalsData?.filter(c => c.hazard_class === 'hazardous').length || 0;
+        const nonHazardousCount = chemicalsData?.filter(c => c.hazard_class === 'non_hazardous').length || 0;
 
-      return {
-        usersCount: usersCount || 0,
-        locationsCount: locationsCount || 0,
-        totalChemicals: (chemicalsData?.length || 0),
-        hazardousCount,
-        chartData,
-      };
+        const chartData = [
+          { name: 'Hazardous', value: hazardousCount },
+          { name: 'Non-Hazardous', value: nonHazardousCount },
+        ];
+
+        return {
+          usersCount: usersCount || 0,
+          locationsCount: locationsCount || 0,
+          totalChemicals: (chemicalsData?.length || 0),
+          hazardousCount,
+          chartData,
+        };
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        toast.error("Error loading dashboard data");
+        throw error;
+      }
     },
   });
 
@@ -87,6 +97,11 @@ const AdminDashboard = () => {
 
     checkAdminAccess();
   }, [session, navigate, supabase]);
+
+  if (dashboardError) {
+    toast.error("Error loading dashboard data");
+    return null;
+  }
 
   if (!session) {
     return null;

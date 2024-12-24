@@ -16,8 +16,16 @@ import Users from "@/pages/admin/Users";
 import Locations from "@/pages/admin/Locations";
 import Chemicals from "@/pages/admin/Chemicals";
 import ChemicalCategories from "@/pages/admin/ChemicalCategories";
+import { Navigate } from "react-router-dom";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
   return (
@@ -41,8 +49,18 @@ function App() {
                 }
               />
               
+              {/* Admin Routes */}
               <Route
                 path="/admin"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Navigate to="/admin/dashboard" replace />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/admin/dashboard"
                 element={
                   <ProtectedRoute adminOnly>
                     <AdminDashboard />
