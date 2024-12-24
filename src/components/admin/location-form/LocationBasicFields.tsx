@@ -64,7 +64,7 @@ export function LocationBasicFields({ form, locations }: LocationBasicFieldsProp
                   <SelectValue placeholder="Select parent location" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent>
+              <SelectContent className="max-h-[200px] overflow-y-auto">
                 <SelectItem value="none">None</SelectItem>
                 {locations?.map((location) => (
                   <SelectItem key={location.id} value={location.id}>
