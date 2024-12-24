@@ -59,20 +59,34 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
         if (userError) throw userError;
 
         if (user) {
-          const { data: profile } = await supabaseClient
+          console.log("[MagicLinkHandler] User authenticated:", user.email);
+          const { data: profile, error: profileError } = await supabaseClient
             .from('profiles')
             .select('has_reset_password, is_admin')
             .eq('id', user.id)
-            .single();
+            .maybeSingle();
 
-          if (!profile?.has_reset_password) {
+          if (profileError) {
+            console.error("[MagicLinkHandler] Error fetching profile:", profileError);
+            throw profileError;
+          }
+
+          if (!profile) {
+            console.error("[MagicLinkHandler] No profile found for user:", user.email);
+            toast.error("User profile not found. Please contact support.");
+            navigate('/auth');
+            return;
+          }
+
+          console.log("[MagicLinkHandler] Profile found:", profile);
+          if (!profile.has_reset_password) {
             navigate('/reset-password');
           } else {
-            navigate(profile?.is_admin ? '/admin/dashboard' : '/dashboard');
+            navigate(profile.is_admin ? '/admin/dashboard' : '/dashboard');
           }
         }
       } catch (error: any) {
-        console.error('Magic link error:', error);
+        console.error('[MagicLinkHandler] Magic link error:', error);
         toast.error("Error processing magic link");
         navigate('/auth');
       } finally {
