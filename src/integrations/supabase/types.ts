@@ -9,6 +9,80 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      chemical_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      chemicals: {
+        Row: {
+          cas_number: string | null
+          category_id: string | null
+          created_at: string
+          description: string | null
+          handling_precautions: string | null
+          hazard_class: Database["public"]["Enums"]["chemical_hazard_class"]
+          id: string
+          name: string
+          status: string
+          storage_conditions: string | null
+          updated_at: string
+        }
+        Insert: {
+          cas_number?: string | null
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          handling_precautions?: string | null
+          hazard_class?: Database["public"]["Enums"]["chemical_hazard_class"]
+          id?: string
+          name: string
+          status?: string
+          storage_conditions?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cas_number?: string | null
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          handling_precautions?: string | null
+          hazard_class?: Database["public"]["Enums"]["chemical_hazard_class"]
+          id?: string
+          name?: string
+          status?: string
+          storage_conditions?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chemicals_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "chemical_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       location_hierarchy: {
         Row: {
           created_at: string
@@ -186,6 +260,7 @@ export type Database = {
       }
     }
     Enums: {
+      chemical_hazard_class: "hazardous" | "non_hazardous"
       location_type: "country" | "state" | "district" | "school" | "site"
     }
     CompositeTypes: {
