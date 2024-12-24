@@ -31,7 +31,6 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
       
       const token = searchParams.get("token") || hashParams.get("access_token");
       const type = searchParams.get("type") || hashParams.get("type");
-      const email = searchParams.get("email");
 
       if (token && (type === "magiclink" || type === "recovery")) {
         setIsHandlingMagicLink(true);
@@ -42,22 +41,16 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
           if (error) throw error;
           
           if (user) {
-            // For admin user, skip password reset and go directly to admin dashboard
-            if (user.email === 'admin@dgxprt.ai') {
-              navigate('/admin/dashboard');
-              return;
-            }
-
             const { data: profile } = await supabaseClient
               .from('profiles')
-              .select('has_reset_password')
+              .select('has_reset_password, is_admin')
               .eq('id', user.id)
               .single();
 
-            if (profile && !profile.has_reset_password) {
+            if (!profile?.has_reset_password) {
               navigate('/reset-password');
             } else {
-              navigate('/dashboard');
+              navigate(profile?.is_admin ? '/admin/dashboard' : '/dashboard');
             }
           }
         } catch (error: any) {
@@ -93,28 +86,24 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      
-      if (user) {
-        // Skip password reset check for admin@dgxprt.ai
-        if (user.email === 'admin@dgxprt.ai') {
-          return;
-        }
+      if (!session?.user) {
+        navigate("/auth");
+        return;
+      }
 
-        const { data: profile } = await supabaseClient
-          .from('profiles')
-          .select('has_reset_password')
-          .eq('id', user.id)
-          .single();
+      const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("has_reset_password, is_admin")
+        .eq("id", session.user.id)
+        .single();
 
-        if (profile && !profile.has_reset_password && location.pathname !== '/reset-password') {
-          navigate('/reset-password');
-        }
+      if (!profile?.has_reset_password && location.pathname !== '/reset-password') {
+        navigate('/reset-password');
       }
     };
 
     checkAuth();
-  }, [location, navigate, supabaseClient]);
+  }, [session, location, navigate, supabaseClient]);
   
   if (!session) {
     return <Navigate to="/auth" replace />;
