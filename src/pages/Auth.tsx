@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { BackgroundEffects } from "@/components/shared/BackgroundEffects";
 import { AuthForm } from "@/components/auth/AuthForm";
@@ -11,13 +12,38 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [initialAuthCheckDone, setInitialAuthCheckDone] = useState(false);
+  const [isProcessingMagicLink, setIsProcessingMagicLink] = useState(false);
   const supabase = useSupabaseClient();
+  const navigate = useNavigate();
 
   // Handle magic link and URL parameters
   useMagicLink(setEmail, setInitialAuthCheckDone);
 
   // Handle authentication redirects
   useAuthRedirect(setInitialAuthCheckDone);
+
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("[Auth] Auth state changed:", event, session ? "Session exists" : "No session");
+      
+      if (event === 'SIGNED_IN' && session) {
+        // Check if user is admin
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+
+        const redirectPath = profile?.is_admin ? '/admin/dashboard' : '/dashboard';
+        console.log("[Auth] Redirecting to:", redirectPath);
+        navigate(redirectPath);
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase.auth, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,8 +64,15 @@ const Auth = () => {
   };
 
   // Show loading state until initial auth check is done
-  if (!initialAuthCheckDone) {
-    return null;
+  if (!initialAuthCheckDone || isProcessingMagicLink) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <h2 className="text-lg font-semibold mb-2">Verifying your access...</h2>
+          <p className="text-muted-foreground">Please wait while we process your login.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
