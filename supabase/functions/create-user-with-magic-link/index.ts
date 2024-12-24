@@ -47,37 +47,7 @@ serve(async (req) => {
 
     if (existingAuthUsers?.users && existingAuthUsers.users.length > 0) {
       console.error("[create-user] User already exists in auth.users");
-      return new Response(
-        JSON.stringify({ error: "A user with this email already exists" }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        }
-      );
-    }
-
-    // Check if user exists in profiles
-    console.log("[create-user] Checking if user exists in profiles...");
-    const { data: existingProfile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('email', email)
-      .maybeSingle();
-
-    if (profileError) {
-      console.error("[create-user] Error checking profile:", profileError);
-      throw profileError;
-    }
-
-    if (existingProfile) {
-      console.error("[create-user] User already exists in profiles");
-      return new Response(
-        JSON.stringify({ error: "A user with this email already exists" }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        }
-      );
+      throw new Error("A user with this email already exists");
     }
 
     // Create new user
@@ -97,24 +67,8 @@ serve(async (req) => {
       throw new Error("No user ID returned from auth");
     }
 
-    // Create profile data
-    console.log("[create-user] Creating profile for user:", newUser.user.id);
-    const { error: profileCreateError } = await supabase
-      .from('profiles')
-      .insert({
-        id: newUser.user.id,
-        email: email,
-        full_name: fullName,
-        is_admin: isAdmin,
-        is_owner: false,
-        status: status,
-        updated_at: new Date().toISOString()
-      });
-
-    if (profileCreateError) {
-      console.error("[create-user] Error creating profile:", profileCreateError);
-      throw profileCreateError;
-    }
+    // The profile will be created automatically by the handle_new_user trigger
+    console.log("[create-user] Profile will be created by trigger for user:", newUser.user.id);
 
     // Send welcome email
     console.log("[create-user] Sending welcome email...");
