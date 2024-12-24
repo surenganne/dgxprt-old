@@ -67,25 +67,20 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    // Add event listener for postMessage
+    // Add event listener for postMessage with origin checking
     const handlePostMessage = (event: MessageEvent) => {
-      // Check if the message is from a trusted origin
-      const trustedOrigins = [
-        window.location.origin,
-        'https://preview--dgxprt.lovable.app',
-        'https://dgxprt.lovable.app',
-        'https://zrmjzuebsupnwuekzfio.supabase.co'
-      ];
+      // Get the current origin without protocol
+      const currentOrigin = window.location.origin.replace(/^https?:\/\//, '');
+      const eventOrigin = event.origin.replace(/^https?:\/\//, '');
       
-      // Check if origin is in our trusted list or is a subdomain of a trusted origin
-      const isTrustedOrigin = trustedOrigins.some(origin => {
-        const originWithoutProtocol = origin.replace('https://', '');
-        return event.origin === origin || 
-               event.origin.endsWith('.' + originWithoutProtocol) ||
-               originWithoutProtocol.endsWith('.' + event.origin.replace('https://', ''));
-      });
+      // Check if origins match or if it's a subdomain
+      const isAllowedOrigin = 
+        currentOrigin === eventOrigin ||
+        eventOrigin.endsWith('.' + currentOrigin) ||
+        currentOrigin.endsWith('.' + eventOrigin) ||
+        eventOrigin === 'zrmjzuebsupnwuekzfio.supabase.co';
       
-      if (!isTrustedOrigin) {
+      if (!isAllowedOrigin) {
         console.warn('[MagicLinkHandler] Ignored postMessage from untrusted origin:', event.origin);
         return;
       }
