@@ -47,6 +47,7 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
               .eq('id', user.id)
               .single();
 
+            // If user hasn't reset password and came through magic link, send to reset password
             if (!profile?.has_reset_password) {
               navigate('/reset-password');
             } else {
@@ -91,14 +92,25 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
-      const { data: profile } = await supabaseClient
-        .from("profiles")
-        .select("has_reset_password, is_admin")
-        .eq("id", session.user.id)
-        .single();
+      // Only check reset password status if user is on the reset password page
+      if (location.pathname === '/reset-password') {
+        const { data: profile } = await supabaseClient
+          .from("profiles")
+          .select("has_reset_password")
+          .eq("id", session.user.id)
+          .single();
 
-      if (!profile?.has_reset_password && location.pathname !== '/reset-password') {
-        navigate('/reset-password');
+        // If user has already reset password or didn't come through magic link,
+        // redirect them to their appropriate dashboard
+        if (profile?.has_reset_password) {
+          const { data: userProfile } = await supabaseClient
+            .from("profiles")
+            .select("is_admin")
+            .eq("id", session.user.id)
+            .single();
+          
+          navigate(userProfile?.is_admin ? '/admin/dashboard' : '/dashboard');
+        }
       }
     };
 
