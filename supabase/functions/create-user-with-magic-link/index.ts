@@ -21,8 +21,8 @@ serve(async (req) => {
       throw new Error("Missing Supabase environment variables");
     }
 
-    const { email, fullName, isAdmin, status } = await req.json();
-    console.log("[create-user] Creating/updating user:", { email, fullName, isAdmin, status });
+    const { email, fullName, isAdmin, isOwner, status } = await req.json();
+    console.log("[create-user] Creating user:", { email, fullName, isAdmin, isOwner, status });
 
     // Create Supabase admin client
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -46,14 +46,9 @@ serve(async (req) => {
     }
 
     let userId;
-    let isNewUser = true;
 
-    if (users && users.length > 0) {
-      console.log("[create-user] User exists in auth.users");
-      userId = users[0].id;
-      isNewUser = false;
-    } else {
-      // Create new user with magic link
+    // If user doesn't exist in auth.users, create them
+    if (!users || users.length === 0) {
       console.log("[create-user] Creating new user with magic link...");
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
         email: email,
@@ -71,78 +66,78 @@ serve(async (req) => {
       }
 
       userId = newUser.user.id;
+    } else {
+      console.error("[create-user] User already exists in auth.users");
+      throw new Error("User already exists");
     }
 
-    // Upsert profile data
-    console.log("[create-user] Upserting profile for user:", userId);
+    // Create profile data
+    console.log("[create-user] Creating profile for user:", userId);
     const { error: profileError } = await supabase
       .from('profiles')
-      .upsert({
+      .insert({
         id: userId,
         email: email,
         full_name: fullName,
         is_admin: isAdmin,
+        is_owner: isOwner,
         status: status,
         updated_at: new Date().toISOString()
-      }, {
-        onConflict: 'id'
       });
 
     if (profileError) {
-      console.error("[create-user] Error upserting profile:", profileError);
+      console.error("[create-user] Error creating profile:", profileError);
       throw profileError;
     }
 
-    if (isNewUser) {
-      // Send welcome email for new users
-      console.log("[create-user] Sending welcome email...");
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${RESEND_API_KEY}`,
-        },
-        body: JSON.stringify({
-          from: "no-reply@incepta.ai",
-          to: [email],
-          subject: "Welcome to DGXPRT - Set Up Your Account",
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h1 style="color: #00005B; text-align: center;">Welcome to DGXPRT</h1>
-              
-              <p>Hello ${fullName},</p>
-              
-              <p>Your DGXPRT account has been created. To get started, please click the button below to set up your password and access your account:</p>
-              
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${req.headers.get('origin')}/auth?email=${encodeURIComponent(email)}&temp=true" 
-                   style="background-color: #895AB7; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px;">
-                  Set Up Your Account
-                </a>
-              </div>
-              
-              <p><strong>Important Security Notice:</strong></p>
-              <ul>
-                <li>This link will expire in 24 hours</li>
-                <li>Keep your credentials confidential</li>
-                <li>If you did not request this account, please contact your system administrator</li>
-              </ul>
-              
-              <p>If you have any questions, please contact your system administrator.</p>
-              
-              <div style="text-align: center; margin-top: 30px; color: #666;">
-                <p>This is an automated message from DGXPRT. Please do not reply.</p>
-              </div>
+    // Send welcome email
+    console.log("[create-user] Sending welcome email...");
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "no-reply@incepta.ai",
+        to: [email],
+        subject: "Welcome to DGXPRT - Set Up Your Account",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #00005B; text-align: center;">Welcome to DGXPRT</h1>
+            
+            <p>Hello ${fullName},</p>
+            
+            <p>Your DGXPRT account has been created. To get started, please click the button below to set up your password and access your account:</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${req.headers.get('origin')}/auth?email=${encodeURIComponent(email)}&temp=true" 
+                 style="background-color: #895AB7; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px;">
+                Set Up Your Account
+              </a>
             </div>
-          `,
-        }),
-      });
+            
+            <p><strong>Important Security Notice:</strong></p>
+            <ul>
+              <li>This link will expire in 24 hours</li>
+              <li>Keep your credentials confidential</li>
+              <li>If you did not request this account, please contact your system administrator</li>
+            </ul>
+            
+            <p>If you have any questions, please contact your system administrator.</p>
+            
+            <div style="text-align: center; margin-top: 30px; color: #666;">
+              <p>This is an automated message from DGXPRT. Please do not reply.</p>
+            </div>
+          </div>
+        `,
+      }),
+    });
 
-      if (!res.ok) {
-        const error = await res.text();
-        console.error("[create-user] Error sending email:", error);
-        throw new Error(`Failed to send email: ${error}`);
-      }
+    if (!res.ok) {
+      const error = await res.text();
+      console.error("[create-user] Error sending email:", error);
+      throw new Error(`Failed to send email: ${error}`);
     }
 
     console.log("[create-user] Process completed successfully");
