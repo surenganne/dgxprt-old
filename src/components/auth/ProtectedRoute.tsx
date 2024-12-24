@@ -2,7 +2,12 @@ import { useEffect } from "react";
 import { useLocation, Navigate, useNavigate } from "react-router-dom";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 
-export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  adminOnly?: boolean;
+}
+
+export const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) => {
   const session = useSession();
   const location = useLocation();
   const navigate = useNavigate();
@@ -13,6 +18,20 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       if (!session?.user) {
         navigate("/auth");
         return;
+      }
+
+      // Check admin status if adminOnly is true
+      if (adminOnly) {
+        const { data: profile } = await supabaseClient
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", session.user.id)
+          .single();
+        
+        if (!profile?.is_admin) {
+          navigate("/dashboard");
+          return;
+        }
       }
 
       // Only check reset password status if user is on the reset password page
@@ -31,13 +50,13 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
             .eq("id", session.user.id)
             .single();
           
-          navigate(userProfile?.is_admin ? '/admin/dashboard' : '/dashboard');
+          navigate(userProfile?.is_admin ? '/admin' : '/dashboard');
         }
       }
     };
 
     checkAuth();
-  }, [session, location, navigate, supabaseClient]);
+  }, [session, location, navigate, supabaseClient, adminOnly]);
   
   if (!session) {
     return <Navigate to="/auth" replace />;
