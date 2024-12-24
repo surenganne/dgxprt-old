@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,21 +12,69 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Check URL parameters for email and temp flag
-  const urlParams = new URLSearchParams(window.location.search);
-  const emailFromUrl = urlParams.get('email');
-  const isTemp = urlParams.get('temp') === 'true';
-
-  // If email is provided in URL, set it
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const emailFromUrl = params.get('email');
+    const isTemp = params.get('temp') === 'true';
+
     if (emailFromUrl) {
       setEmail(emailFromUrl);
       if (isTemp) {
         toast.info("Please use the temporary password sent to your email to log in.");
       }
     }
-  }, [emailFromUrl, isTemp]);
+  }, [location]);
+
+  // Check if user is already authenticated
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        handleSuccessfulLogin(session.user.id);
+      }
+    });
+
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        handleSuccessfulLogin(session.user.id);
+      }
+    });
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleSuccessfulLogin = async (userId: string) => {
+    try {
+      // Check if the user is an admin and their password reset status
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin, has_reset_password')
+        .eq('id', userId)
+        .single();
+
+      if (profile && !profile.has_reset_password) {
+        toast.info("Please reset your password for security reasons.");
+        // Here you would typically redirect to a password reset page
+      }
+
+      // Determine redirect based on admin status
+      if (profile?.is_admin) {
+        toast.success("Welcome back, admin!");
+        navigate("/admin/dashboard");
+      } else {
+        toast.success("Login successful!");
+        navigate("/dashboard");
+      }
+    } catch (error: any) {
+      console.error('Error checking user profile:', error);
+      toast.error("Error checking user profile");
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,30 +88,9 @@ const Auth = () => {
 
       if (error) throw error;
 
-      // Check if the user is an admin and their password reset status
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin, has_reset_password')
-        .eq('id', authData.user.id)
-        .single();
-
-      if (profile && !profile.has_reset_password) {
-        toast.info("Please reset your password for security reasons.");
-        // Here you would typically redirect to a password reset page
-        // For now, we'll just show a toast
-      }
-
-      // Determine redirect based on admin status
-      if (profile?.is_admin) {
-        toast.success("Welcome back, admin!");
-        navigate("/admin/dashboard");
-      } else {
-        toast.success("Login successful!");
-        navigate("/dashboard");
-      }
+      // handleSuccessfulLogin will be called by the auth state change listener
     } catch (error: any) {
       toast.error("Error logging in: " + error.message);
-    } finally {
       setLoading(false);
     }
   };
@@ -94,7 +121,7 @@ const Auth = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={!!emailFromUrl}
+                disabled={loading}
                 className="mt-1"
                 placeholder="Enter your email"
               />
@@ -109,6 +136,7 @@ const Auth = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loading}
                 className="mt-1"
                 placeholder="Enter your password"
               />
