@@ -13,12 +13,26 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Plus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { LocationFormDialog } from "./LocationFormDialog";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from "@/components/ui/pagination";
 
 export const LocationManagement = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const { data: locations, refetch } = useQuery({
     queryKey: ["locations"],
@@ -73,6 +87,26 @@ export const LocationManagement = () => {
     setDialogOpen(true);
   };
 
+  // Filter locations based on search term and type filter
+  const filteredLocations = locations?.filter((location) => {
+    const matchesSearch =
+      !searchTerm ||
+      location.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesType =
+      typeFilter === "all" || location.type === typeFilter;
+
+    return matchesSearch && matchesType;
+  });
+
+  // Calculate pagination
+  const totalPages = Math.ceil((filteredLocations?.length || 0) / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedLocations = filteredLocations?.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -81,6 +115,28 @@ export const LocationManagement = () => {
           <Plus className="mr-2 h-4 w-4" />
           Add Location
         </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Input
+          placeholder="Search locations..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full"
+        />
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger>
+            <SelectValue placeholder="Filter by type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="country">Country</SelectItem>
+            <SelectItem value="state">State</SelectItem>
+            <SelectItem value="district">District</SelectItem>
+            <SelectItem value="school">School</SelectItem>
+            <SelectItem value="site">Site</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <Table>
@@ -94,7 +150,7 @@ export const LocationManagement = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {locations?.map((location) => (
+          {paginatedLocations?.map((location) => (
             <TableRow key={location.id}>
               <TableCell className="font-medium">{location.name}</TableCell>
               <TableCell>{location.type}</TableCell>
@@ -125,6 +181,35 @@ export const LocationManagement = () => {
           ))}
         </TableBody>
       </Table>
+
+      {totalPages > 1 && (
+        <Pagination className="mt-4">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  onClick={() => setCurrentPage(page)}
+                  isActive={currentPage === page}
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
 
       <LocationFormDialog
         open={dialogOpen}
