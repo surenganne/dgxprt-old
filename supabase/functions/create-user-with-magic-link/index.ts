@@ -34,7 +34,7 @@ serve(async (req) => {
 
     // First check if user exists in auth.users
     console.log("[create-user] Checking if user exists in auth.users...");
-    const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers({
+    const { data: existingAuthUsers, error: getUserError } = await supabase.auth.admin.listUsers({
       filter: {
         email: email
       }
@@ -45,38 +45,72 @@ serve(async (req) => {
       throw getUserError;
     }
 
-    let userId;
-
-    // If user doesn't exist in auth.users, create them
-    if (!users || users.length === 0) {
-      console.log("[create-user] Creating new user with magic link...");
-      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-        email: email,
-        email_confirm: true,
-        user_metadata: { full_name: fullName }
-      });
-
-      if (createError) {
-        console.error("[create-user] Error creating user:", createError);
-        throw createError;
-      }
-
-      if (!newUser?.user?.id) {
-        throw new Error("No user ID returned from auth");
-      }
-
-      userId = newUser.user.id;
-    } else {
+    if (existingAuthUsers?.users && existingAuthUsers.users.length > 0) {
       console.error("[create-user] User already exists in auth.users");
-      throw new Error("User already exists");
+      throw new Error("A user with this email already exists");
+    }
+
+    // Check if user exists in profiles
+    console.log("[create-user] Checking if user exists in profiles...");
+    const { data: existingProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error("[create-user] Error checking profile:", profileError);
+      throw profileError;
+    }
+
+    if (existingProfile) {
+      console.error("[create-user] User already exists in profiles");
+      throw new Error("A user with this email already exists");
+    }
+
+    // If creating an owner, check if one already exists
+    if (isOwner) {
+      console.log("[create-user] Checking for existing owner...");
+      const { data: existingOwner, error: ownerCheckError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("is_owner", true)
+        .maybeSingle();
+
+      if (ownerCheckError) {
+        console.error("[create-user] Error checking owner:", ownerCheckError);
+        throw ownerCheckError;
+      }
+
+      if (existingOwner) {
+        console.error("[create-user] Owner already exists");
+        throw new Error("An owner account already exists");
+      }
+    }
+
+    // Create new user
+    console.log("[create-user] Creating new user with magic link...");
+    const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+      email: email,
+      email_confirm: true,
+      user_metadata: { full_name: fullName }
+    });
+
+    if (createError) {
+      console.error("[create-user] Error creating user:", createError);
+      throw createError;
+    }
+
+    if (!newUser?.user?.id) {
+      throw new Error("No user ID returned from auth");
     }
 
     // Create profile data
-    console.log("[create-user] Creating profile for user:", userId);
-    const { error: profileError } = await supabase
+    console.log("[create-user] Creating profile for user:", newUser.user.id);
+    const { error: profileCreateError } = await supabase
       .from('profiles')
       .insert({
-        id: userId,
+        id: newUser.user.id,
         email: email,
         full_name: fullName,
         is_admin: isAdmin,
@@ -85,9 +119,9 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       });
 
-    if (profileError) {
-      console.error("[create-user] Error creating profile:", profileError);
-      throw profileError;
+    if (profileCreateError) {
+      console.error("[create-user] Error creating profile:", profileCreateError);
+      throw profileCreateError;
     }
 
     // Send welcome email
@@ -152,7 +186,7 @@ serve(async (req) => {
       JSON.stringify({ error: error.message }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
+        status: 400,
       }
     );
   }
