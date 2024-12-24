@@ -10,9 +10,14 @@ export const createClient = (options?: any) => {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: false,
+      detectSessionInUrl: true, // Changed to true to properly handle auth redirects
       flowType: 'pkce',
-      debug: false // Disabled debug mode to remove console logs
+      debug: true // Enabled debug mode temporarily to help diagnose issues
+    },
+    global: {
+      headers: {
+        'X-Client-Info': 'supabase-js-web'
+      }
     }
   });
 
