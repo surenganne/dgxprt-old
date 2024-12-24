@@ -14,35 +14,43 @@ export const useAuthRedirect = (
     const params = new URLSearchParams(location.search);
     const isMagicLink = params.get("token") && params.get("type") === "magiclink";
     
+    console.log("[useAuthRedirect] Current path:", location.pathname);
+    console.log("[useAuthRedirect] Magic link detected:", isMagicLink);
+    
     // Skip auth check if handling magic link
     if (isMagicLink) {
-      console.log("Magic link detected, skipping auth redirect");
+      console.log("[useAuthRedirect] Magic link detected, skipping auth redirect");
       setInitialAuthCheckDone(true);
       return;
     }
 
     const checkAuthAndRedirect = async () => {
       try {
+        console.log("[useAuthRedirect] Checking session");
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
-          console.error("Session error:", sessionError);
+          console.error("[useAuthRedirect] Session error:", sessionError);
           setInitialAuthCheckDone(true);
           return;
         }
         
         if (!session) {
-          console.log("No session found");
+          console.log("[useAuthRedirect] No session found");
           setInitialAuthCheckDone(true);
           return;
         }
+
+        console.log("[useAuthRedirect] Session found for user:", session.user.id);
 
         // Skip profile check if on auth page with magic link
         if (location.pathname === '/auth' && isMagicLink) {
+          console.log("[useAuthRedirect] On auth page with magic link, skipping profile check");
           setInitialAuthCheckDone(true);
           return;
         }
 
+        console.log("[useAuthRedirect] Checking user profile");
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("is_admin, has_reset_password, status")
@@ -50,20 +58,25 @@ export const useAuthRedirect = (
           .single();
 
         if (profileError) {
-          console.error("Error checking user profile:", profileError);
+          console.error("[useAuthRedirect] Error checking user profile:", profileError);
           toast.error("Error checking user profile");
           setInitialAuthCheckDone(true);
           return;
         }
 
         if (!profile) {
-          console.error("No profile found for user");
+          console.error("[useAuthRedirect] No profile found for user");
           toast.error("User profile not found");
           setInitialAuthCheckDone(true);
           return;
         }
 
+        console.log("[useAuthRedirect] Profile status:", profile.status);
+        console.log("[useAuthRedirect] Is admin:", profile.is_admin);
+        console.log("[useAuthRedirect] Has reset password:", profile.has_reset_password);
+
         if (profile.status !== "active") {
+          console.log("[useAuthRedirect] Account not active");
           toast.error("Your account is not active");
           await supabase.auth.signOut();
           setInitialAuthCheckDone(true);
@@ -71,6 +84,7 @@ export const useAuthRedirect = (
         }
 
         if (!profile.has_reset_password) {
+          console.log("[useAuthRedirect] Password reset required");
           if (location.pathname !== '/auth/reset-password') {
             navigate('/auth/reset-password', { replace: true });
           }
@@ -80,6 +94,7 @@ export const useAuthRedirect = (
 
         // Only redirect if we're on the auth page and not handling a magic link
         if (location.pathname === '/auth' && !isMagicLink) {
+          console.log("[useAuthRedirect] Redirecting to appropriate dashboard");
           if (profile.is_admin) {
             navigate('/admin/dashboard', { replace: true });
           } else {
@@ -87,7 +102,7 @@ export const useAuthRedirect = (
           }
         }
       } catch (error) {
-        console.error("Error in auth redirect:", error);
+        console.error("[useAuthRedirect] Error in auth redirect:", error);
       } finally {
         setInitialAuthCheckDone(true);
       }

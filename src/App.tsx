@@ -31,30 +31,44 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
       const type = params.get("type");
       const email = params.get("email");
 
+      console.log("[MagicLinkHandler] URL Parameters:", {
+        token: token ? "present" : "absent",
+        type,
+        email,
+        fullUrl: window.location.href
+      });
+
       if (token && type === "magiclink") {
         setIsHandlingMagicLink(true);
-        console.log("Magic link detected, handling verification");
+        console.log("[MagicLinkHandler] Magic link detected, starting verification process");
         
         try {
-          // Sign out any existing session
-          await supabaseClient.auth.signOut();
+          console.log("[MagicLinkHandler] Attempting to sign out existing session");
+          const { error: signOutError } = await supabaseClient.auth.signOut();
+          if (signOutError) {
+            console.error("[MagicLinkHandler] Error signing out:", signOutError);
+          } else {
+            console.log("[MagicLinkHandler] Successfully signed out existing session");
+          }
           
-          // Clear all auth-related local storage
+          console.log("[MagicLinkHandler] Clearing auth-related local storage");
           for (const key of Object.keys(localStorage)) {
             if (key.startsWith('supabase.auth.')) {
               localStorage.removeItem(key);
+              console.log("[MagicLinkHandler] Cleared localStorage key:", key);
             }
           }
 
-          // Always redirect to auth page with all parameters
           const currentPath = location.pathname;
           if (currentPath !== '/auth') {
-            console.log("Redirecting to auth page with token and email");
             const redirectUrl = `/auth?token=${token}&type=${type}${email ? `&email=${email}` : ''}`;
+            console.log("[MagicLinkHandler] Redirecting to auth page:", redirectUrl);
             navigate(redirectUrl, { replace: true });
+          } else {
+            console.log("[MagicLinkHandler] Already on auth page, no redirect needed");
           }
         } catch (error) {
-          console.error("Error handling magic link:", error);
+          console.error("[MagicLinkHandler] Error in magic link handling:", error);
           toast.error("Error processing magic link");
           navigate('/auth');
         } finally {
