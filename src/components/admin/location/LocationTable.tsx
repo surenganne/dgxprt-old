@@ -56,6 +56,7 @@ export const LocationTable = ({
   };
 
   const areAllSelected = locations?.length > 0 && selectedLocations.length === locations.length;
+  const areSomeSelected = selectedLocations.length > 0 && selectedLocations.length < locations?.length;
 
   return (
     <Table>
@@ -64,6 +65,7 @@ export const LocationTable = ({
           <TableHead className="w-[50px]">
             <Checkbox
               checked={areAllSelected}
+              indeterminate={areSomeSelected}
               onCheckedChange={(checked) => onSelectAll(checked as boolean)}
               aria-label="Select all"
             />
