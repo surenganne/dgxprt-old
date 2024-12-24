@@ -21,8 +21,8 @@ serve(async (req) => {
       throw new Error("Missing Supabase environment variables");
     }
 
-    const { email, fullName, isAdmin, isOwner, status } = await req.json();
-    console.log("[create-user] Creating user:", { email, fullName, isAdmin, isOwner, status });
+    const { email, fullName, isAdmin, status } = await req.json();
+    console.log("[create-user] Creating user:", { email, fullName, isAdmin, status });
 
     // Create Supabase admin client
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -68,26 +68,6 @@ serve(async (req) => {
       throw new Error("A user with this email already exists");
     }
 
-    // If creating an owner, check if one already exists
-    if (isOwner) {
-      console.log("[create-user] Checking for existing owner...");
-      const { data: existingOwner, error: ownerCheckError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("is_owner", true)
-        .maybeSingle();
-
-      if (ownerCheckError) {
-        console.error("[create-user] Error checking owner:", ownerCheckError);
-        throw ownerCheckError;
-      }
-
-      if (existingOwner) {
-        console.error("[create-user] Owner already exists");
-        throw new Error("An owner account already exists");
-      }
-    }
-
     // Create new user
     console.log("[create-user] Creating new user with magic link...");
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
@@ -114,7 +94,7 @@ serve(async (req) => {
         email: email,
         full_name: fullName,
         is_admin: isAdmin,
-        is_owner: isOwner,
+        is_owner: false, // Owner can only be created through create-owner function
         status: status,
         updated_at: new Date().toISOString()
       });
