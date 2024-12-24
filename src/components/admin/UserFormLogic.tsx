@@ -64,41 +64,34 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
           throw new Error('A user with this email already exists');
         }
 
-        try {
-          // Create new user and send magic link
-          const { error: createError } = await supabase.functions.invoke('create-user-with-magic-link', {
-            body: { 
-              email: formData.email,
-              fullName: formData.full_name,
-              isAdmin: formData.is_admin,
-              status: formData.status
-            }
-          });
-
-          if (createError) {
-            console.error('[UserFormLogic] Error from edge function:', createError);
-            // Try to parse the error message from the edge function
-            let errorMessage = "Failed to create user";
-            try {
-              const errorBody = JSON.parse(createError.message);
-              if (errorBody.error) {
-                errorMessage = errorBody.error;
-              }
-            } catch (parseError) {
-              console.error('[UserFormLogic] Error parsing error message:', parseError);
-              errorMessage = createError.message || errorMessage;
-            }
-            throw new Error(errorMessage);
+        // Create new user and send magic link
+        const { error: createError } = await supabase.functions.invoke('create-user-with-magic-link', {
+          body: { 
+            email: formData.email,
+            fullName: formData.full_name,
+            isAdmin: formData.is_admin,
+            status: formData.status
           }
+        });
 
-          toast({
-            title: "User created successfully",
-            description: "A login link has been sent to the user's email.",
-          });
-        } catch (error: any) {
-          console.error('[UserFormLogic] Error in user creation:', error);
-          throw error;
+        if (createError) {
+          console.error('[UserFormLogic] Error from edge function:', createError);
+          let errorMessage;
+          try {
+            // Try to parse the error message from the response body
+            const errorBody = JSON.parse(createError.message);
+            errorMessage = errorBody.error || "Failed to create user";
+          } catch (parseError) {
+            console.error('[UserFormLogic] Error parsing error response:', parseError);
+            errorMessage = createError.message || "Failed to create user";
+          }
+          throw new Error(errorMessage);
         }
+
+        toast({
+          title: "User created successfully",
+          description: "A login link has been sent to the user's email.",
+        });
       }
 
       onSuccess();

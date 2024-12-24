@@ -106,7 +106,7 @@ serve(async (req) => {
         email: email,
         full_name: fullName,
         is_admin: isAdmin,
-        is_owner: false, // Owner can only be created through create-owner function
+        is_owner: false,
         status: status,
         updated_at: new Date().toISOString()
       });
