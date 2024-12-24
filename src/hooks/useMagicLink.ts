@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { toast } from "sonner";
 
@@ -8,7 +8,6 @@ export const useMagicLink = (
   setInitialAuthCheckDone: (value: boolean) => void
 ) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const supabase = useSupabaseClient();
 
   useEffect(() => {
@@ -21,37 +20,9 @@ export const useMagicLink = (
     const handleMagicLink = async () => {
       if (token && type === "magiclink") {
         try {
-          console.log("Magic link detected, handling auth flow");
+          console.log("Handling magic link verification on auth page");
           
-          // First, ensure we're on the auth page
-          if (location.pathname !== '/auth') {
-            console.log("Redirecting to auth page for magic link handling");
-            navigate('/auth', { 
-              replace: true,
-              state: { token, type, email: emailFromUrl, isTemp }
-            });
-            return;
-          }
-
-          // Get the current session if any
-          const { data: { session: currentSession } } = await supabase.auth.getSession();
-          
-          // If there's a session and it's for a different user, sign out first
-          if (currentSession && currentSession.user.email !== emailFromUrl) {
-            await supabase.auth.signOut();
-            
-            // Clear all auth-related local storage
-            for (const key of Object.keys(localStorage)) {
-              if (key.startsWith('supabase.auth.')) {
-                localStorage.removeItem(key);
-              }
-            }
-            
-            // Wait to ensure cleanup is complete
-            await new Promise((resolve) => setTimeout(resolve, 500));
-          }
-          
-          // Now verify the magic link token
+          // Verify the magic link token
           const { error: verifyError } = await supabase.auth.verifyOtp({
             token_hash: token,
             type: "magiclink",
@@ -72,13 +43,12 @@ export const useMagicLink = (
               .single();
 
             if (!profile?.has_reset_password) {
-              // Redirect to password reset
-              navigate("/auth/reset-password", { replace: true });
+              toast.info("Please reset your password");
               return;
             }
           }
 
-          // Set the email for the login form
+          // Set the email for the login form if available
           if (emailFromUrl) {
             setEmail(emailFromUrl);
           }
@@ -102,5 +72,5 @@ export const useMagicLink = (
         toast.info("Please use the temporary password sent to your email to log in.");
       }
     }
-  }, [location, navigate, supabase, setEmail, setInitialAuthCheckDone]);
+  }, [location, supabase.auth, setEmail, setInitialAuthCheckDone]);
 };

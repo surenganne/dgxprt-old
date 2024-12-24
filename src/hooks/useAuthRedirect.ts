@@ -12,11 +12,14 @@ export const useAuthRedirect = (
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const locationState = location.state as { token?: string; type?: string } | null;
+    const isMagicLink = params.get("token") && params.get("type") === "magiclink";
     
-    // Check both URL params and location state for magic link
-    const isMagicLink = (params.get("token") && params.get("type") === "magiclink") ||
-                       (locationState?.token && locationState?.type === "magiclink");
+    // Skip auth check if handling magic link
+    if (isMagicLink) {
+      console.log("Magic link detected, skipping auth redirect");
+      setInitialAuthCheckDone(true);
+      return;
+    }
 
     const checkAuthAndRedirect = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -27,13 +30,6 @@ export const useAuthRedirect = (
       }
 
       try {
-        // Don't redirect if we're handling a magic link
-        if (isMagicLink) {
-          console.log("Magic link detected, skipping redirect");
-          setInitialAuthCheckDone(true);
-          return;
-        }
-
         const { data: profile, error } = await supabase
           .from("profiles")
           .select("is_admin, has_reset_password, status")
@@ -62,7 +58,6 @@ export const useAuthRedirect = (
         }
 
         if (!profile.has_reset_password) {
-          // If password hasn't been reset, force them to reset it
           if (location.pathname !== '/auth/reset-password') {
             navigate('/auth/reset-password', { replace: true });
           }

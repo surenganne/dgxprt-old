@@ -3,25 +3,72 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { SessionContextProvider } from "@supabase/auth-helpers-react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { SessionContextProvider, useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
 import AdminLocations from "./pages/admin/Locations";
-import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
+
+// Magic link handler wrapper
+const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const supabaseClient = useSupabaseClient();
+
+  useEffect(() => {
+    const handleMagicLink = async () => {
+      const params = new URLSearchParams(location.search);
+      const token = params.get("token");
+      const type = params.get("type");
+
+      if (token && type === "magiclink") {
+        // Clear any existing session
+        await supabaseClient.auth.signOut();
+        
+        // Clear all auth-related local storage
+        for (const key of Object.keys(localStorage)) {
+          if (key.startsWith('supabase.auth.')) {
+            localStorage.removeItem(key);
+          }
+        }
+
+        // Redirect to auth page with parameters
+        if (location.pathname !== '/auth') {
+          const redirectUrl = `/auth?token=${token}&type=${type}`;
+          navigate(redirectUrl, { replace: true });
+          return;
+        }
+      }
+    };
+
+    handleMagicLink();
+  }, [location, navigate, supabaseClient]);
+
+  return <>{children}</>;
+};
 
 // Protected route wrapper
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = useSession();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  
+  // Don't redirect if handling magic link
+  if (params.get("token") && params.get("type") === "magiclink") {
+    return null;
+  }
+  
   if (!session) {
     return <Navigate to="/auth" replace />;
   }
+  
   return <>{children}</>;
 };
 
@@ -34,42 +81,44 @@ const App = () => {
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/users"
-                  element={
-                    <ProtectedRoute>
-                      <AdminUsers />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/locations"
-                  element={
-                    <ProtectedRoute>
-                      <AdminLocations />
-                    </ProtectedRoute>
-                  }
-                />
-              </Routes>
+              <MagicLinkHandler>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <AdminDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/users"
+                    element={
+                      <ProtectedRoute>
+                        <AdminUsers />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/locations"
+                    element={
+                      <ProtectedRoute>
+                        <AdminLocations />
+                      </ProtectedRoute>
+                    }
+                  />
+                </Routes>
+              </MagicLinkHandler>
             </BrowserRouter>
           </TooltipProvider>
         </ThemeProvider>
