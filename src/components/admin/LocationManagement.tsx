@@ -12,10 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { MapPin, Plus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { LocationFormDialog } from "./LocationFormDialog";
 
 export const LocationManagement = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<any>(null);
 
   const { data: locations, refetch } = useQuery({
     queryKey: ["locations"],
@@ -60,11 +63,21 @@ export const LocationManagement = () => {
     setIsLoading(false);
   };
 
+  const handleEdit = (location: any) => {
+    setSelectedLocation(location);
+    setDialogOpen(true);
+  };
+
+  const handleAdd = () => {
+    setSelectedLocation(null);
+    setDialogOpen(true);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Location Management</h2>
-        <Button>
+        <Button onClick={handleAdd}>
           <Plus className="mr-2 h-4 w-4" />
           Add Location
         </Button>
@@ -95,6 +108,7 @@ export const LocationManagement = () => {
                   size="icon"
                   className="mr-2"
                   disabled={isLoading}
+                  onClick={() => handleEdit(location)}
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -111,6 +125,13 @@ export const LocationManagement = () => {
           ))}
         </TableBody>
       </Table>
+
+      <LocationFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSuccess={refetch}
+        initialData={selectedLocation}
+      />
     </div>
   );
 };
