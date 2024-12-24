@@ -4,7 +4,7 @@ import { generateSecurePassword } from "@/utils/passwordUtils";
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = "https://zrmjzuebsupnwuekzfio.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpybWp6dWVic3Vpbmd1ZWt6ZmlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ5NTE0MjMsImV4cCI6MjA1MDUyNzQyM30.dVW_035b8VhtKaXubqsxHdzc6qGYdLcjF-fQnJfdbnY";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpybWp6dWVic3Vwbnd1ZWt6ZmlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ5NTE0MjMsImV4cCI6MjA1MDUyNzQyM30.dVW_035b8VhtKaXubqsxHdzc6qGYdLcjF-fQnJfdbnY";
 
 export const createNewUser = async (formData: UserFormData) => {
   // First check if user already exists in profiles
@@ -22,7 +22,7 @@ export const createNewUser = async (formData: UserFormData) => {
   const tempPassword = generateSecurePassword();
 
   // Create a new anonymous Supabase client for user creation
-  const anonClient = createClient({
+  const anonClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
