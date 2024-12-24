@@ -116,7 +116,7 @@ export const LocationManagement = () => {
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 p-6 bg-white rounded-lg shadow-sm">
       <LocationHeader onAdd={handleAdd} />
       
       <LocationBatchActions 
@@ -125,60 +125,66 @@ export const LocationManagement = () => {
         onBatchUpdateStatus={handleBatchUpdateStatus}
       />
 
-      <LocationFilters
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        typeFilter={typeFilter}
-        onTypeFilterChange={setTypeFilter}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        parentFilter={parentFilter}
-        onParentFilterChange={setParentFilter}
-        contactFilter={contactFilter}
-        onContactFilterChange={setContactFilter}
-        dateRange={dateRange}
-        onDateRangeChange={setDateRange}
-        locations={locations || []}
-      />
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <LocationFilters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          typeFilter={typeFilter}
+          onTypeFilterChange={setTypeFilter}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          parentFilter={parentFilter}
+          onParentFilterChange={setParentFilter}
+          contactFilter={contactFilter}
+          onContactFilterChange={setContactFilter}
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
+          locations={locations || []}
+        />
+      </div>
 
-      <LocationTable
-        locations={paginatedLocations}
-        onEdit={handleEdit}
-        onDelete={handleDeleteLocation}
-        onToggleStatus={handleToggleStatus}
-        isLoading={isLoading}
-        selectedLocations={selectedLocations}
-        onSelectLocation={handleSelectLocation}
-        onSelectAll={handleSelectAll}
-      />
+      <div className="bg-white rounded-lg border">
+        <LocationTable
+          locations={paginatedLocations}
+          onEdit={handleEdit}
+          onDelete={handleDeleteLocation}
+          onToggleStatus={handleToggleStatus}
+          isLoading={isLoading}
+          selectedLocations={selectedLocations}
+          onSelectLocation={handleSelectLocation}
+          onSelectAll={handleSelectAll}
+        />
+      </div>
 
       {totalPages > 1 && (
-        <Pagination className="mt-4">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  onClick={() => setCurrentPage(page)}
-                  isActive={currentPage === page}
-                >
-                  {page}
-                </PaginationLink>
+        <div className="flex justify-center mt-6">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                />
               </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    onClick={() => setCurrentPage(page)}
+                    isActive={currentPage === page}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
       )}
 
       <LocationFormDialog
