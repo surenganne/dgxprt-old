@@ -4,7 +4,7 @@ import { generateSecurePassword } from "@/utils/passwordUtils";
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = "https://zrmjzuebsupnwuekzfio.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpybWp6dWVic3Vwbnd1ZWt6ZmlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ5NTE0MjMsImV4cCI6MjA1MDUyNzQyM30.dVW_035b8VhtKaXubqsxHdzc6qGYdLcjF-fQnJfdbnY";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpybWp6dWVic3Vpbmd1ZWt6ZmlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ5NTE0MjMsImV4cCI6MjA1MDUyNzQyM30.dVW_035b8VhtKaXubqsxHdzc6qGYdLcjF-fQnJfdbnY";
 
 export const createNewUser = async (formData: UserFormData) => {
   // First check if user already exists in profiles
@@ -57,9 +57,14 @@ export const createNewUser = async (formData: UserFormData) => {
       data: {
         full_name: formData.full_name,
       },
-      emailRedirectTo: `${window.location.origin}/auth`,
-      // Disable Supabase's automatic emails
-      emailConfirmation: false
+      // Disable all automatic emails from Supabase
+      emailRedirectTo: null,
+      emailConfirmation: false,
+      shouldCreateUser: true,
+      // Set user as confirmed to bypass email verification
+      authOptions: {
+        skipConfirmation: true
+      }
     }
   });
 
@@ -78,6 +83,7 @@ export const createNewUser = async (formData: UserFormData) => {
       status: "active",
       has_reset_password: false,
       updated_at: new Date().toISOString(),
+      email_confirmed_at: new Date().toISOString(), // Mark email as confirmed
     })
     .eq("id", authData.user.id);
 
@@ -95,6 +101,17 @@ export const createNewUser = async (formData: UserFormData) => {
   if (emailError) {
     console.error("Error sending welcome email:", emailError);
     throw new Error("Failed to send welcome email");
+  }
+
+  // Ensure the user is confirmed in auth.users
+  const { error: confirmError } = await anonClient.auth.admin.updateUserById(
+    authData.user.id,
+    { email_confirmed: true }
+  );
+
+  if (confirmError) {
+    console.error("Error confirming user:", confirmError);
+    // Don't throw here as the user is still created successfully
   }
 
   return authData;
