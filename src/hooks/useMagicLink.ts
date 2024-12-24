@@ -51,6 +51,18 @@ export const useMagicLink = (
 
       try {
         console.log("[useMagicLink] Starting magic link verification");
+
+        // Extract email from token if not in URL
+        if (!emailFromUrl && token) {
+          const decodedToken = decodeJWT(token);
+          if (decodedToken?.email) {
+            console.log("[useMagicLink] Setting email from token:", decodedToken.email);
+            setEmail(decodedToken.email);
+          }
+        } else if (emailFromUrl) {
+          console.log("[useMagicLink] Setting email from URL:", emailFromUrl);
+          setEmail(emailFromUrl);
+        }
         
         // First check if we already have a session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -92,18 +104,6 @@ export const useMagicLink = (
         }
 
         console.log("[useMagicLink] Magic link verified successfully");
-
-        // Extract email from token if not in URL
-        if (!emailFromUrl && token) {
-          const decodedToken = decodeJWT(token);
-          if (decodedToken?.email) {
-            console.log("[useMagicLink] Setting email from token:", decodedToken.email);
-            setEmail(decodedToken.email);
-          }
-        } else if (emailFromUrl) {
-          console.log("[useMagicLink] Setting email from URL:", emailFromUrl);
-          setEmail(emailFromUrl);
-        }
           
         if (isTemp) {
           console.log("[useMagicLink] Checking password reset status");
