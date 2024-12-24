@@ -77,10 +77,13 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
         'https://zrmjzuebsupnwuekzfio.supabase.co'
       ];
       
-      // Check if origin is in our trusted list
-      const isTrustedOrigin = trustedOrigins.some(origin => 
-        event.origin === origin || event.origin.endsWith(origin.replace('https://', ''))
-      );
+      // Check if origin is in our trusted list or is a subdomain of a trusted origin
+      const isTrustedOrigin = trustedOrigins.some(origin => {
+        const originWithoutProtocol = origin.replace('https://', '');
+        return event.origin === origin || 
+               event.origin.endsWith('.' + originWithoutProtocol) ||
+               originWithoutProtocol.endsWith('.' + event.origin.replace('https://', ''));
+      });
       
       if (!isTrustedOrigin) {
         console.warn('[MagicLinkHandler] Ignored postMessage from untrusted origin:', event.origin);
