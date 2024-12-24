@@ -175,10 +175,15 @@ export function LocationFormDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 disabled={isLoading}
+                className="border-primary-purple/20 text-primary-purple hover:text-primary-purple/80 hover:bg-primary-purple/10"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+                className="bg-primary-purple hover:bg-primary-purple/90 text-white"
+              >
                 {initialData ? "Update" : "Create"}
               </Button>
             </div>

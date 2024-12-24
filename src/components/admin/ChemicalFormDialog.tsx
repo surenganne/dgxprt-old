@@ -170,10 +170,15 @@ export const ChemicalFormDialog = ({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading}
+              className="border-primary-purple/20 text-primary-purple hover:text-primary-purple/80 hover:bg-primary-purple/10"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="bg-primary-purple hover:bg-primary-purple/90 text-white"
+            >
               {loading
                 ? chemical
                   ? "Updating..."
