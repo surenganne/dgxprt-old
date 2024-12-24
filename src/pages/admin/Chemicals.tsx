@@ -231,7 +231,7 @@ const Chemicals = () => {
                 </p>
               ) : (
                 <>
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+                  <div className="bg-white/50 backdrop-blur-sm rounded-lg border border-gray-100 shadow-sm overflow-hidden">
                     <ChemicalsTable
                       chemicals={chemicalsData?.chemicals || []}
                       onEdit={handleEditChemical}
