@@ -14,6 +14,7 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination";
+import { isWithinInterval, parseISO } from "date-fns";
 
 export const LocationManagement = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -21,6 +22,12 @@ export const LocationManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [parentFilter, setParentFilter] = useState("all");
+  const [contactFilter, setContactFilter] = useState("");
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const itemsPerPage = 10;
@@ -58,7 +65,7 @@ export const LocationManagement = () => {
     );
   };
 
-  // Filter locations based on search term, type filter, and status filter
+  // Filter locations based on all criteria
   const filteredLocations = locations?.filter((location) => {
     const matchesSearch =
       !searchTerm ||
@@ -70,7 +77,34 @@ export const LocationManagement = () => {
     const matchesStatus =
       statusFilter === "all" || location.status === statusFilter;
 
-    return matchesSearch && matchesType && matchesStatus;
+    const matchesParent =
+      parentFilter === "all" ||
+      (parentFilter === "none" && !location.parent_id) ||
+      location.parent_id === parentFilter;
+
+    const matchesContact =
+      !contactFilter ||
+      (location.contact_email &&
+        location.contact_email.toLowerCase().includes(contactFilter.toLowerCase())) ||
+      (location.contact_phone &&
+        location.contact_phone.includes(contactFilter));
+
+    const matchesDateRange =
+      !dateRange.from ||
+      !dateRange.to ||
+      isWithinInterval(parseISO(location.created_at), {
+        start: dateRange.from,
+        end: dateRange.to,
+      });
+
+    return (
+      matchesSearch &&
+      matchesType &&
+      matchesStatus &&
+      matchesParent &&
+      matchesContact &&
+      matchesDateRange
+    );
   });
 
   // Calculate pagination
@@ -98,6 +132,13 @@ export const LocationManagement = () => {
         onTypeFilterChange={setTypeFilter}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
+        parentFilter={parentFilter}
+        onParentFilterChange={setParentFilter}
+        contactFilter={contactFilter}
+        onContactFilterChange={setContactFilter}
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        locations={locations || []}
       />
 
       <LocationTable
