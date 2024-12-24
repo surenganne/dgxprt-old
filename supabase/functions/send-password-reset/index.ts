@@ -26,13 +26,19 @@ serve(async (req) => {
     }
 
     if (!RESEND_API_KEY) {
+      console.error("[send-password-reset] RESEND_API_KEY is not configured");
       throw new Error("RESEND_API_KEY is not configured");
+    }
+
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("[send-password-reset] Supabase configuration missing");
+      throw new Error("Supabase configuration is incomplete");
     }
 
     // Create a Supabase client with the service role key
     const supabase = createClient(
-      SUPABASE_URL!,
-      SUPABASE_SERVICE_ROLE_KEY!,
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY,
       {
         auth: {
           autoRefreshToken: false,
@@ -41,6 +47,8 @@ serve(async (req) => {
       }
     );
 
+    console.log("[send-password-reset] Generating magic link...");
+    
     // Generate a magic link
     const { data, error: signInError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
@@ -57,12 +65,14 @@ serve(async (req) => {
 
     const { properties } = data;
     if (!properties?.action_link) {
+      console.error("[send-password-reset] No action link in response:", data);
       throw new Error("No action link generated");
     }
 
     console.log("[send-password-reset] Generated magic link successfully");
 
     // Send email using Resend
+    console.log("[send-password-reset] Sending email via Resend...");
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -86,10 +96,11 @@ serve(async (req) => {
     if (!res.ok) {
       const error = await res.text();
       console.error("[send-password-reset] Error sending email:", error);
-      throw new Error("Failed to send password reset email");
+      throw new Error(`Failed to send email: ${error}`);
     }
 
-    console.log("[send-password-reset] Email sent successfully");
+    const resendResponse = await res.json();
+    console.log("[send-password-reset] Email sent successfully:", resendResponse);
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
