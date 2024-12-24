@@ -1,9 +1,11 @@
 export interface UserFormData {
+  id?: string;
   email: string;
   full_name: string;
   is_admin: boolean;
   is_owner?: boolean;
   status: 'active' | 'inactive';
+  assigned_locations?: string[];
 }
 
 export interface UseUserFormProps {

@@ -12,19 +12,36 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
     is_admin: false,
     is_owner: false,
     status: 'active',
+    assigned_locations: [],
   });
 
   useEffect(() => {
-    // Only set form data if we're editing an existing user
-    if (user) {
+    const loadUserData = async () => {
+      if (!user) return;
+
+      // Fetch user's assigned locations
+      const { data: locationAssignments, error: locationError } = await supabase
+        .from("location_assignments")
+        .select("location_id")
+        .eq("user_id", user.id);
+
+      if (locationError) {
+        console.error('[UserFormLogic] Error fetching location assignments:', locationError);
+        return;
+      }
+
       setFormData({
+        id: user.id,
         email: user.email || "",
         full_name: user.full_name || "",
         is_admin: user.is_admin || false,
         is_owner: user.is_owner || false,
         status: user.status as 'active' | 'inactive',
+        assigned_locations: locationAssignments.map(assignment => assignment.location_id),
       });
-    }
+    };
+
+    loadUserData();
   }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,6 +65,29 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
 
         if (updateError) throw updateError;
 
+        // Update location assignments
+        // First, remove all existing assignments
+        const { error: deleteError } = await supabase
+          .from("location_assignments")
+          .delete()
+          .eq("user_id", user.id);
+
+        if (deleteError) throw deleteError;
+
+        // Then, add new assignments
+        if (formData.assigned_locations && formData.assigned_locations.length > 0) {
+          const { error: insertError } = await supabase
+            .from("location_assignments")
+            .insert(
+              formData.assigned_locations.map(locationId => ({
+                user_id: user.id,
+                location_id: locationId,
+              }))
+            );
+
+          if (insertError) throw insertError;
+        }
+
         toast({
           title: "User updated successfully",
           description: "The user's information has been updated.",
@@ -61,7 +101,8 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
             email: formData.email,
             fullName: formData.full_name,
             isAdmin: formData.is_admin,
-            status: formData.status
+            status: formData.status,
+            assignedLocations: formData.assigned_locations
           }
         });
 
@@ -69,7 +110,6 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
           console.error('[UserFormLogic] Error from edge function:', createError);
           let errorMessage;
           try {
-            // Parse the error body if it's a string
             if (typeof createError.body === 'string') {
               const errorBody = JSON.parse(createError.body);
               errorMessage = errorBody.error || "Failed to create user";
