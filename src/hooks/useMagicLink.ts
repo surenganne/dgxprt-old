@@ -22,7 +22,7 @@ export const useMagicLink = (
       isTemp,
       hasToken: token ? "yes" : "no",
       type,
-      fullUrl: location.href
+      fullUrl: window.location.href // Fixed: Using window.location.href instead of location.href
     });
 
     const handleMagicLink = async () => {
