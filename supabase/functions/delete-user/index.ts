@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       throw new Error('Only owners can delete admin accounts')
     }
 
-    // First delete from auth.users (this will cascade to profiles due to FK)
+    // Delete from auth.users first (this will cascade to profiles due to FK)
     console.log("[delete-user] Deleting auth user:", userId);
     const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(
       userId
@@ -98,6 +98,19 @@ Deno.serve(async (req) => {
     if (deleteProfileError) {
       console.error("[delete-user] Error deleting profile:", deleteProfileError);
       throw deleteProfileError;
+    }
+
+    // Also clean up any user_locations entries
+    console.log("[delete-user] Cleaning up user_locations:", userId);
+    const { error: deleteLocationsError } = await supabaseAdmin
+      .from('user_locations')
+      .delete()
+      .eq('user_id', userId)
+
+    if (deleteLocationsError) {
+      console.error("[delete-user] Error deleting user locations:", deleteLocationsError);
+      // Don't throw here as this is cleanup and the main deletion was successful
+      console.warn("[delete-user] Failed to clean up user locations:", deleteLocationsError);
     }
 
     console.log("[delete-user] User deleted successfully");
