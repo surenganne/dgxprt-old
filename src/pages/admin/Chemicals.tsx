@@ -16,26 +16,43 @@ import { ChemicalFormDialog } from "@/components/admin/ChemicalFormDialog";
 import { useQuery } from "@tanstack/react-query";
 import { ChemicalsTable } from "@/components/admin/chemicals/ChemicalsTable";
 import { ChemicalsPagination } from "@/components/admin/chemicals/ChemicalsPagination";
+import { ChemicalsFilters } from "@/components/admin/chemicals/ChemicalsFilters";
 import type { ChemicalsResponse } from "@/types/chemical";
+import type { Database } from "@/integrations/supabase/types";
 
 const ITEMS_PER_PAGE = 10;
+type ChemicalHazardClass = Database["public"]["Enums"]["chemical_hazard_class"];
 
 const Chemicals = () => {
   const session = useSession();
   const navigate = useNavigate();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [hazardClass, setHazardClass] = useState<ChemicalHazardClass | "all">("all");
 
   const { data: chemicalsData, refetch } = useQuery<ChemicalsResponse>({
-    queryKey: ["chemicals", currentPage],
+    queryKey: ["chemicals", currentPage, searchQuery, hazardClass],
     queryFn: async () => {
-      const countQuery = await supabase
+      let query = supabase
         .from("chemicals")
-        .select("id", { count: "exact", head: true });
+        .select("*", { count: "exact" });
 
-      const { data: chemicals, error } = await supabase
-        .from("chemicals")
-        .select("*")
+      // Apply search filter if search query exists
+      if (searchQuery) {
+        query = query.ilike("name", `%${searchQuery}%`);
+      }
+
+      // Apply hazard class filter if selected
+      if (hazardClass !== "all") {
+        query = query.eq("hazard_class", hazardClass);
+      }
+
+      // Get total count
+      const countQuery = await query;
+
+      // Get paginated results
+      const { data: chemicals, error } = await query
         .order("name")
         .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
 
@@ -55,6 +72,16 @@ const Chemicals = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1); // Reset to first page when search changes
+  };
+
+  const handleHazardClassChange = (value: ChemicalHazardClass | "all") => {
+    setHazardClass(value);
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   useEffect(() => {
@@ -133,6 +160,13 @@ const Chemicals = () => {
                 Add Chemical
               </Button>
             </div>
+
+            <ChemicalsFilters
+              searchQuery={searchQuery}
+              onSearchChange={handleSearchChange}
+              hazardClass={hazardClass}
+              onHazardClassChange={handleHazardClassChange}
+            />
 
             {chemicalsData?.chemicals?.length === 0 ? (
               <p className="text-muted-foreground">
