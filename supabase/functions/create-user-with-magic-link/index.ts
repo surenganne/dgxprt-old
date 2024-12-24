@@ -47,7 +47,13 @@ serve(async (req) => {
 
     if (existingAuthUsers?.users && existingAuthUsers.users.length > 0) {
       console.error("[create-user] User already exists in auth.users");
-      throw new Error("A user with this email already exists");
+      return new Response(
+        JSON.stringify({ error: "A user with this email already exists" }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
     }
 
     // Check if user exists in profiles
@@ -65,7 +71,13 @@ serve(async (req) => {
 
     if (existingProfile) {
       console.error("[create-user] User already exists in profiles");
-      throw new Error("A user with this email already exists");
+      return new Response(
+        JSON.stringify({ error: "A user with this email already exists" }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
     }
 
     // Create new user

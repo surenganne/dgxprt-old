@@ -27,10 +27,12 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log('[UserFormLogic] Starting form submission');
 
     try {
       if (user) {
         // Update existing user
+        console.log('[UserFormLogic] Updating existing user:', user.id);
         const { error: updateError } = await supabase
           .from("profiles")
           .update({
@@ -48,6 +50,7 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
           description: "The user's information has been updated.",
         });
       } else {
+        console.log('[UserFormLogic] Creating new user:', formData.email);
         // Check if user already exists
         const { data: existingUser, error: checkError } = await supabase
           .from("profiles")
@@ -58,22 +61,8 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
         if (checkError) throw checkError;
 
         if (existingUser) {
+          console.log('[UserFormLogic] User already exists:', formData.email);
           throw new Error("A user with this email already exists");
-        }
-
-        // If creating an owner, check if one already exists
-        if (formData.is_owner) {
-          const { data: existingOwner, error: ownerCheckError } = await supabase
-            .from("profiles")
-            .select("id")
-            .eq("is_owner", true)
-            .maybeSingle();
-
-          if (ownerCheckError) throw ownerCheckError;
-
-          if (existingOwner) {
-            throw new Error("An owner account already exists");
-          }
         }
 
         // Create new user and send magic link
@@ -82,12 +71,18 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
             email: formData.email,
             fullName: formData.full_name,
             isAdmin: formData.is_admin,
-            isOwner: formData.is_owner,
             status: formData.status
           }
         });
 
-        if (createError) throw createError;
+        if (createError) {
+          console.error('[UserFormLogic] Error creating user:', createError);
+          // Check if the error is about existing user
+          if (createError.message.includes("already exists")) {
+            throw new Error("A user with this email already exists. Please use a different email address.");
+          }
+          throw createError;
+        }
 
         toast({
           title: "User created successfully",
@@ -98,10 +93,10 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
-      console.error('Error in handleSubmit:', error);
+      console.error('[UserFormLogic] Error in handleSubmit:', error);
       toast({
         title: user ? "Error updating user" : "Error creating user",
-        description: error.message,
+        description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
