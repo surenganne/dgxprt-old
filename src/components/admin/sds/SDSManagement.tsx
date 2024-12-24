@@ -20,7 +20,7 @@ export const SDSManagement = () => {
             name,
             cas_number
           ),
-          profiles (
+          uploader:uploaded_by (
             full_name
           ),
           reviewer:reviewed_by (
