@@ -3,6 +3,20 @@ import { useLocation } from "react-router-dom";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { toast } from "sonner";
 
+const decodeJWT = (token: string) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error("[useMagicLink] Error decoding JWT:", error);
+    return null;
+  }
+};
+
 export const useMagicLink = (
   setEmail: (value: string) => void,
   setInitialAuthCheckDone: (value: boolean) => void
@@ -79,24 +93,31 @@ export const useMagicLink = (
 
         console.log("[useMagicLink] Magic link verified successfully");
 
-        if (emailFromUrl) {
+        // Extract email from token if not in URL
+        if (!emailFromUrl && token) {
+          const decodedToken = decodeJWT(token);
+          if (decodedToken?.email) {
+            console.log("[useMagicLink] Setting email from token:", decodedToken.email);
+            setEmail(decodedToken.email);
+          }
+        } else if (emailFromUrl) {
           console.log("[useMagicLink] Setting email from URL:", emailFromUrl);
           setEmail(emailFromUrl);
+        }
           
-          if (isTemp) {
-            console.log("[useMagicLink] Checking password reset status");
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("has_reset_password")
-              .eq("email", emailFromUrl)
-              .single();
+        if (isTemp) {
+          console.log("[useMagicLink] Checking password reset status");
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("has_reset_password")
+            .eq("email", emailFromUrl)
+            .single();
 
-            if (!profile?.has_reset_password) {
-              toast.info("Please reset your password");
-            }
-            
-            toast.info("Please use the temporary password sent to your email to log in");
+          if (!profile?.has_reset_password) {
+            toast.info("Please reset your password");
           }
+          
+          toast.info("Please use the temporary password sent to your email to log in");
         }
 
       } catch (error) {
