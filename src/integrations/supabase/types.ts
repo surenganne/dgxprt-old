@@ -301,11 +301,14 @@ export type Database = {
           expiry_date: string | null
           file_path: string
           id: string
+          is_latest: boolean | null
+          previous_version_id: string | null
           review_date: string | null
           status: Database["public"]["Enums"]["sds_status"] | null
           updated_at: string
           uploaded_by: string | null
           version: string
+          version_notes: string | null
         }
         Insert: {
           chemical_id?: string | null
@@ -313,11 +316,14 @@ export type Database = {
           expiry_date?: string | null
           file_path: string
           id?: string
+          is_latest?: boolean | null
+          previous_version_id?: string | null
           review_date?: string | null
           status?: Database["public"]["Enums"]["sds_status"] | null
           updated_at?: string
           uploaded_by?: string | null
           version: string
+          version_notes?: string | null
         }
         Update: {
           chemical_id?: string | null
@@ -325,11 +331,14 @@ export type Database = {
           expiry_date?: string | null
           file_path?: string
           id?: string
+          is_latest?: boolean | null
+          previous_version_id?: string | null
           review_date?: string | null
           status?: Database["public"]["Enums"]["sds_status"] | null
           updated_at?: string
           uploaded_by?: string | null
           version?: string
+          version_notes?: string | null
         }
         Relationships: [
           {
@@ -337,6 +346,13 @@ export type Database = {
             columns: ["chemical_id"]
             isOneToOne: false
             referencedRelation: "chemicals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sds_documents_previous_version_id_fkey"
+            columns: ["previous_version_id"]
+            isOneToOne: false
+            referencedRelation: "sds_documents"
             referencedColumns: ["id"]
           },
           {
@@ -353,6 +369,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_sds_version_history: {
+        Args: {
+          p_chemical_id: string
+        }
+        Returns: {
+          id: string
+          version: string
+          created_at: string
+          uploaded_by: string
+          version_notes: string
+          is_latest: boolean
+          previous_version_id: string
+        }[]
+      }
       is_admin: {
         Args: {
           user_id: string
