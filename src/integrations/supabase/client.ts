@@ -10,9 +10,9 @@ export const createClient = (options?: any) => {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true, // Changed to true to properly handle auth redirects
+      detectSessionInUrl: true,
       flowType: 'pkce',
-      debug: true // Enabled debug mode temporarily to help diagnose issues
+      debug: true
     },
     global: {
       headers: {

@@ -27,25 +27,35 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      console.log("Attempting to sign in with:", email);
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Login error:", error);
+        throw error;
+      }
 
       // Check if user needs to reset password
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('has_reset_password')
         .eq('email', email)
         .single();
+
+      if (profileError) {
+        console.error("Profile fetch error:", profileError);
+        throw profileError;
+      }
 
       if (profile && !profile.has_reset_password) {
         navigate('/reset-password');
       }
       // Success handling is managed by the auth state change listener
     } catch (error: any) {
+      console.error("Login process error:", error);
       toast.error("Error logging in: " + error.message);
       setLoading(false);
     }
