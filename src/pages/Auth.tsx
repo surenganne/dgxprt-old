@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { BackgroundEffects } from "@/components/shared/BackgroundEffects";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { useMagicLink } from "@/hooks/useMagicLink";
+import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -13,7 +13,6 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [initialAuthCheckDone, setInitialAuthCheckDone] = useState(false);
   const [isProcessingMagicLink, setIsProcessingMagicLink] = useState(false);
-  const supabase = useSupabaseClient();
   const navigate = useNavigate();
 
   // Handle magic link and URL parameters
