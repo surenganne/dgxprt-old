@@ -120,9 +120,7 @@ const Chemicals = () => {
   };
 
   const handleEditChemical = (chemical: Chemical) => {
-    set
-
-SelectedChemical(chemical);
+    setSelectedChemical(chemical);
     setDialogOpen(true);
   };
 
