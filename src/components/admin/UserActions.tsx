@@ -52,9 +52,12 @@ export const UserActions = ({
   const canModifyUser = () => {
     if (!currentUserProfile) return false;
     
+    // Owner accounts cannot be modified by anyone
+    if (user.is_owner) return false;
+    
     // Owner can modify anyone except other owners
     if (currentUserProfile.is_owner) {
-      return !user.is_owner || user.id === session?.user?.id;
+      return !user.is_owner;
     }
     
     // Admin can only modify non-admin, non-owner users
