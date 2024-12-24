@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import {
   Dialog,
   DialogContent,
@@ -12,8 +14,15 @@ import { Form } from "@/components/ui/form";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LocationBasicFields } from "./location-form/LocationBasicFields";
-import { LocationContactFields } from "./location-form/LocationContactFields";
+import { LocationContactFields, locationContactSchema } from "./location-form/LocationContactFields";
 import { LocationFormData, LocationData } from "./location-form/types";
+
+// Combine with any other validation schemas you might have
+const formSchema = locationContactSchema.extend({
+  name: z.string().min(1, "Name is required"),
+  type: z.string().min(1, "Type is required"),
+  parent_id: z.string().nullable(),
+});
 
 interface LocationFormDialogProps {
   open: boolean;
@@ -62,10 +71,10 @@ export function LocationFormDialog({
   };
 
   const form = useForm<LocationFormData>({
+    resolver: zodResolver(formSchema),
     defaultValues: initialData || defaultValues,
   });
 
-  // Reset form when dialog opens/closes or when initialData changes
   useEffect(() => {
     if (open) {
       form.reset(initialData || defaultValues);

@@ -3,6 +3,24 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
 import { LocationFormData } from "./types";
+import * as z from "zod";
+
+// Validation schema for contact information
+export const locationContactSchema = z.object({
+  description: z.string().optional(),
+  address: z.string().min(1, "Address is required"),
+  contact_email: z
+    .string()
+    .email("Invalid email format")
+    .min(1, "Contact email is required"),
+  contact_phone: z
+    .string()
+    .regex(
+      /^\+?[\d\s-()]{10,}$/,
+      "Invalid phone number format. Must contain at least 10 digits."
+    )
+    .min(1, "Contact phone is required"),
+});
 
 interface LocationContactFieldsProps {
   form: UseFormReturn<LocationFormData>;
@@ -29,7 +47,7 @@ export function LocationContactFields({ form }: LocationContactFieldsProps) {
         name="address"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Address</FormLabel>
+            <FormLabel>Address <span className="text-red-500">*</span></FormLabel>
             <FormControl>
               <Input {...field} placeholder="Enter address" />
             </FormControl>
@@ -42,7 +60,7 @@ export function LocationContactFields({ form }: LocationContactFieldsProps) {
         name="contact_email"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Contact Email</FormLabel>
+            <FormLabel>Contact Email <span className="text-red-500">*</span></FormLabel>
             <FormControl>
               <Input {...field} type="email" placeholder="Enter contact email" />
             </FormControl>
@@ -55,7 +73,7 @@ export function LocationContactFields({ form }: LocationContactFieldsProps) {
         name="contact_phone"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Contact Phone</FormLabel>
+            <FormLabel>Contact Phone <span className="text-red-500">*</span></FormLabel>
             <FormControl>
               <Input {...field} placeholder="Enter contact phone" />
             </FormControl>
