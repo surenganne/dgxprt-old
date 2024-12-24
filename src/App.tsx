@@ -29,21 +29,24 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
       const type = params.get("type");
 
       if (token && type === "magiclink") {
-        // Clear any existing session
-        await supabaseClient.auth.signOut();
+        console.log("Magic link detected, clearing session and redirecting to auth");
         
-        // Clear all auth-related local storage
-        for (const key of Object.keys(localStorage)) {
-          if (key.startsWith('supabase.auth.')) {
-            localStorage.removeItem(key);
+        try {
+          // Clear any existing session
+          await supabaseClient.auth.signOut();
+          
+          // Clear all auth-related local storage
+          for (const key of Object.keys(localStorage)) {
+            if (key.startsWith('supabase.auth.')) {
+              localStorage.removeItem(key);
+            }
           }
-        }
 
-        // Redirect to auth page with parameters
-        if (location.pathname !== '/auth') {
+          // Force redirect to auth page with parameters
           const redirectUrl = `/auth?token=${token}&type=${type}`;
           navigate(redirectUrl, { replace: true });
-          return;
+        } catch (error) {
+          console.error("Error handling magic link:", error);
         }
       }
     };

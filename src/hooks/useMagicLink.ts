@@ -31,11 +31,12 @@ export const useMagicLink = (
           if (verifyError) {
             console.error("Error verifying magic link:", verifyError);
             toast.error("Invalid or expired magic link");
+            setInitialAuthCheckDone(true);
             return;
           }
 
           // If this is a temporary password login, check if password needs to be reset
-          if (isTemp) {
+          if (isTemp && emailFromUrl) {
             const { data: profile } = await supabase
               .from("profiles")
               .select("has_reset_password")
@@ -44,13 +45,15 @@ export const useMagicLink = (
 
             if (!profile?.has_reset_password) {
               toast.info("Please reset your password");
-              return;
             }
           }
 
           // Set the email for the login form if available
           if (emailFromUrl) {
             setEmail(emailFromUrl);
+            if (isTemp) {
+              toast.info("Please use the temporary password sent to your email to log in.");
+            }
           }
 
         } catch (error) {
@@ -65,12 +68,5 @@ export const useMagicLink = (
     };
 
     handleMagicLink();
-
-    if (emailFromUrl) {
-      setEmail(emailFromUrl);
-      if (isTemp) {
-        toast.info("Please use the temporary password sent to your email to log in.");
-      }
-    }
   }, [location, supabase.auth, setEmail, setInitialAuthCheckDone]);
 };
