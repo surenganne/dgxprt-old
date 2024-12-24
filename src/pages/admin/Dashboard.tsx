@@ -9,11 +9,48 @@ import {
 } from "@/components/ui/sidebar";
 import { AdminSidebarContent } from "@/components/admin/AdminSidebarContent";
 import { AdminSidebarFooter } from "@/components/admin/AdminSidebarFooter";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Users, Building2, Beaker, AlertTriangle } from "lucide-react";
 
 const AdminDashboard = () => {
   const session = useSession();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
+
+  // Fetch dashboard data
+  const { data: dashboardData } = useQuery({
+    queryKey: ["dashboard-data"],
+    queryFn: async () => {
+      const [
+        { count: usersCount },
+        { count: locationsCount },
+        { data: chemicalsData },
+      ] = await Promise.all([
+        supabase.from("profiles").select("*", { count: "exact", head: true }),
+        supabase.from("locations").select("*", { count: "exact", head: true }),
+        supabase.from("chemicals").select("hazard_class"),
+      ]);
+
+      // Calculate hazardous vs non-hazardous chemicals
+      const hazardousCount = chemicalsData?.filter(c => c.hazard_class === 'hazardous').length || 0;
+      const nonHazardousCount = chemicalsData?.filter(c => c.hazard_class === 'non_hazardous').length || 0;
+
+      const chartData = [
+        { name: 'Hazardous', value: hazardousCount },
+        { name: 'Non-Hazardous', value: nonHazardousCount },
+      ];
+
+      return {
+        usersCount: usersCount || 0,
+        locationsCount: locationsCount || 0,
+        totalChemicals: (chemicalsData?.length || 0),
+        hazardousCount,
+        chartData,
+      };
+    },
+  });
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -81,8 +118,68 @@ const AdminDashboard = () => {
 
         <main className="flex-1 overflow-auto">
           <div className="container mx-auto px-4 py-6">
-            <h2 className="text-2xl font-semibold">Admin Dashboard</h2>
-            {/* Dashboard content will go here */}
+            <h2 className="text-2xl font-semibold mb-6">Admin Dashboard</h2>
+            
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{dashboardData?.usersCount || 0}</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Locations</CardTitle>
+                  <Building2 className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{dashboardData?.locationsCount || 0}</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Chemicals</CardTitle>
+                  <Beaker className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{dashboardData?.totalChemicals || 0}</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Hazardous Chemicals</CardTitle>
+                  <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{dashboardData?.hazardousCount || 0}</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Chemical Distribution Chart */}
+            <Card className="col-span-4">
+              <CardHeader>
+                <CardTitle>Chemical Distribution</CardTitle>
+              </CardHeader>
+              <CardContent className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dashboardData?.chartData || []}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
           </div>
         </main>
       </div>
