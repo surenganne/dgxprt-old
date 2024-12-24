@@ -10,6 +10,30 @@ interface LocationBasicFieldsProps {
 }
 
 export function LocationBasicFields({ form, locations }: LocationBasicFieldsProps) {
+  // Get valid parent types based on selected type
+  const getValidParentTypes = (type: string): string[] => {
+    switch (type) {
+      case "country":
+        return [];
+      case "state":
+        return ["country"];
+      case "district":
+        return ["state"];
+      case "school":
+        return ["district"];
+      case "site":
+        return ["school"];
+      default:
+        return [];
+    }
+  };
+
+  // Filter locations based on selected type
+  const filteredLocations = locations?.filter(location => {
+    const validParentTypes = getValidParentTypes(form.watch("type"));
+    return validParentTypes.includes(location.type);
+  });
+
   return (
     <>
       <FormField
@@ -31,7 +55,14 @@ export function LocationBasicFields({ form, locations }: LocationBasicFieldsProp
         render={({ field }) => (
           <FormItem>
             <FormLabel>Type</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select 
+              onValueChange={(value) => {
+                field.onChange(value);
+                // Reset parent_id when type changes
+                form.setValue("parent_id", "none");
+              }} 
+              defaultValue={field.value}
+            >
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select location type" />
@@ -66,7 +97,7 @@ export function LocationBasicFields({ form, locations }: LocationBasicFieldsProp
               </FormControl>
               <SelectContent className="max-h-[200px] overflow-y-auto">
                 <SelectItem value="none">None</SelectItem>
-                {locations?.map((location) => (
+                {filteredLocations?.map((location) => (
                   <SelectItem key={location.id} value={location.id}>
                     {location.name} ({location.type})
                   </SelectItem>
