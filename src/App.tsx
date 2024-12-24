@@ -26,39 +26,23 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const handleMagicLink = async () => {
-      // Parse both search params and hash params
       const searchParams = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
       
-      // Check both locations for magic link parameters
       const token = searchParams.get("token") || hashParams.get("access_token");
       const type = searchParams.get("type") || hashParams.get("type");
       const email = searchParams.get("email");
 
-      // Safe logging that doesn't expose sensitive data
-      console.log("[MagicLinkHandler] URL Parameters:", {
-        token: token ? "present" : "absent",
-        type,
-        email: email ? "present" : "absent",
-        fullUrl: window.location.href,
-        hasHash: window.location.hash ? "yes" : "no"
-      });
-
       if (token && (type === "magiclink" || type === "recovery")) {
         setIsHandlingMagicLink(true);
-        console.log("[MagicLinkHandler] Magic link detected, starting verification process");
         
         try {
           const currentPath = location.pathname;
           if (currentPath !== '/auth') {
             const redirectUrl = `/auth?token=${token}&type=${type}${email ? `&email=${email}` : ''}`;
-            console.log("[MagicLinkHandler] Redirecting to auth page:", redirectUrl);
             navigate(redirectUrl, { replace: true });
-          } else {
-            console.log("[MagicLinkHandler] Already on auth page, no redirect needed");
           }
         } catch (error) {
-          console.error("[MagicLinkHandler] Error in magic link handling:", error);
           toast.error("Error processing magic link");
           navigate('/auth');
         } finally {
@@ -67,13 +51,10 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    // Add event listener for postMessage with origin checking
     const handlePostMessage = (event: MessageEvent) => {
-      // Get the current origin without protocol
       const currentOrigin = window.location.origin.replace(/^https?:\/\//, '');
       const eventOrigin = event.origin.replace(/^https?:\/\//, '');
       
-      // Check if origins match or if it's a subdomain
       const isAllowedOrigin = 
         currentOrigin === eventOrigin ||
         eventOrigin.endsWith('.' + currentOrigin) ||
@@ -81,13 +62,10 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
         eventOrigin === 'zrmjzuebsupnwuekzfio.supabase.co';
       
       if (!isAllowedOrigin) {
-        console.warn('[MagicLinkHandler] Ignored postMessage from untrusted origin:', event.origin);
         return;
       }
 
-      // Handle the message
       if (event.data?.type === 'SUPABASE_AUTH') {
-        console.log('[MagicLinkHandler] Received auth message from:', event.origin);
         handleMagicLink();
       }
     };
@@ -112,7 +90,6 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Protected route wrapper
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = useSession();
   const location = useLocation();
