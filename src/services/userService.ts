@@ -57,36 +57,44 @@ export const createNewUser = async (formData: UserFormData) => {
       data: {
         full_name: formData.full_name,
       },
-      emailRedirectTo: `${window.location.origin}/auth`
+      emailRedirectTo: `${window.location.origin}/auth`,
+      // Disable Supabase's automatic emails
+      emailConfirmation: false
     }
   });
 
   if (authError) throw authError;
 
-  if (authData?.user) {
-    // Store the temporary password hash in the profile
-    const { error: profileUpdateError } = await supabase
-      .from("profiles")
-      .update({
-        is_admin: formData.is_admin,
-        status: formData.status,
-        temporary_password_hash: tempPassword,
-        has_reset_password: false
-      })
-      .eq("id", authData.user.id);
+  if (!authData.user) {
+    throw new Error("Failed to create user");
+  }
 
-    if (profileUpdateError) throw profileUpdateError;
+  // Update the profile with additional data
+  const { error: profileUpdateError } = await supabase
+    .from("profiles")
+    .update({
+      full_name: formData.full_name,
+      is_admin: formData.is_admin,
+      status: "active",
+      has_reset_password: false,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", authData.user.id);
 
-    // Send welcome email using our custom email service
-    const { error: emailError } = await supabase.functions.invoke('send-welcome-email', {
-      body: {
-        to: formData.email,
-        password: tempPassword,
-        loginLink: `${window.location.origin}/auth`
-      }
-    });
+  if (profileUpdateError) throw profileUpdateError;
 
-    if (emailError) throw emailError;
+  // Send welcome email using our custom email service
+  const { error: emailError } = await supabase.functions.invoke('send-welcome-email', {
+    body: {
+      to: formData.email,
+      password: tempPassword,
+      loginLink: `${window.location.origin}/auth?email=${encodeURIComponent(formData.email)}&temp=true`
+    }
+  });
+
+  if (emailError) {
+    console.error("Error sending welcome email:", emailError);
+    throw new Error("Failed to send welcome email");
   }
 
   return authData;
