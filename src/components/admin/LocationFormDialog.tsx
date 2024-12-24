@@ -16,8 +16,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { LocationBasicFields } from "./location-form/LocationBasicFields";
 import { LocationContactFields, locationContactSchema } from "./location-form/LocationContactFields";
 import { LocationFormData, LocationData } from "./location-form/types";
+import { useAuditLogger } from "@/hooks/useAuditLogger";
 
-// Combine with any other validation schemas you might have
 const formSchema = locationContactSchema.extend({
   name: z.string().min(1, "Name is required"),
   type: z.string().min(1, "Type is required"),
@@ -38,6 +38,7 @@ export function LocationFormDialog({
   initialData,
 }: LocationFormDialogProps) {
   const { toast } = useToast();
+  const { logUserAction } = useAuditLogger();
   const [isLoading, setIsLoading] = useState(false);
 
   const { data: locations } = useQuery({
@@ -96,13 +97,48 @@ export function LocationFormDialog({
           .eq("id", initialData.id);
 
         if (error) throw error;
+
+        await logUserAction(
+          'location',
+          initialData.id,
+          `Updated location details`,
+          {
+            action: 'update',
+            changes: Object.keys(formData).filter(key => 
+              formData[key] !== initialData[key]
+            ),
+            previous_values: Object.fromEntries(
+              Object.keys(formData)
+                .filter(key => formData[key] !== initialData[key])
+                .map(key => [key, initialData[key]])
+            )
+          }
+        );
+
         toast({
           title: "Location updated",
           description: "The location has been updated successfully.",
         });
       } else {
-        const { error } = await supabase.from("locations").insert(formData);
+        const { error, data: newLocation } = await supabase
+          .from("locations")
+          .insert(formData)
+          .select()
+          .single();
+
         if (error) throw error;
+
+        await logUserAction(
+          'location',
+          newLocation.id,
+          `Created new location`,
+          {
+            action: 'create',
+            location_type: formData.type,
+            parent_id: formData.parent_id
+          }
+        );
+
         toast({
           title: "Location created",
           description: "The location has been created successfully.",
