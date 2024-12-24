@@ -1,10 +1,9 @@
 export const generateSecurePassword = (): string => {
-  const length = 12;
+  const length = 16; // Fixed length for consistency
   const charset = {
     uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
     lowercase: 'abcdefghijklmnopqrstuvwxyz',
-    numbers: '0123456789',
-    symbols: '!@#$%^&*'
+    numbers: '0123456789'
   };
 
   let password = '';
@@ -13,7 +12,6 @@ export const generateSecurePassword = (): string => {
   password += charset.uppercase[Math.floor(Math.random() * charset.uppercase.length)];
   password += charset.lowercase[Math.floor(Math.random() * charset.lowercase.length)];
   password += charset.numbers[Math.floor(Math.random() * charset.numbers.length)];
-  password += charset.symbols[Math.floor(Math.random() * charset.symbols.length)];
 
   // Fill the rest with random characters from all sets
   const allChars = Object.values(charset).join('');
