@@ -17,33 +17,74 @@ Deno.serve(async (req) => {
     )
 
     const { userId } = await req.json()
+    console.log("[delete-user] Attempting to delete user:", userId);
 
     // First verify that the requesting user is an admin
     const {
-      data: { user },
+      data: { user: requestingUser },
       error: authError,
     } = await supabase.auth.getUser(req.headers.get('Authorization')?.split(' ')[1] ?? '')
     
-    if (authError) throw authError
+    if (authError) {
+      console.error("[delete-user] Auth error:", authError);
+      throw authError;
+    }
 
-    const { data: profile, error: profileError } = await supabase
+    // Get the requesting user's profile
+    const { data: requestingProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('is_admin')
-      .eq('id', user?.id)
+      .select('is_admin, is_owner')
+      .eq('id', requestingUser?.id)
       .single()
 
-    if (profileError) throw profileError
-    if (!profile?.is_admin) throw new Error('Unauthorized: Only admins can delete users')
+    if (profileError) {
+      console.error("[delete-user] Error fetching requesting user profile:", profileError);
+      throw profileError;
+    }
+
+    if (!requestingProfile?.is_admin && !requestingProfile?.is_owner) {
+      console.error("[delete-user] Unauthorized: User is not an admin or owner");
+      throw new Error('Unauthorized: Only admins can delete users')
+    }
+
+    // Get the profile of the user to be deleted
+    const { data: userToDelete, error: targetProfileError } = await supabase
+      .from('profiles')
+      .select('is_admin, is_owner, email')
+      .eq('id', userId)
+      .single()
+
+    if (targetProfileError) {
+      console.error("[delete-user] Error fetching target user profile:", targetProfileError);
+      throw targetProfileError;
+    }
+
+    // Check if trying to delete an owner
+    if (userToDelete.is_owner) {
+      console.error("[delete-user] Cannot delete owner account");
+      throw new Error('Cannot delete owner account')
+    }
+
+    // Check if non-owner admin trying to delete another admin
+    if (userToDelete.is_admin && !requestingProfile.is_owner) {
+      console.error("[delete-user] Non-owner admin attempting to delete admin account");
+      throw new Error('Only owners can delete admin accounts')
+    }
 
     // Delete the user
     const { error: deleteError } = await supabase.auth.admin.deleteUser(userId)
-    if (deleteError) throw deleteError
+    if (deleteError) {
+      console.error("[delete-user] Error deleting user:", deleteError);
+      throw deleteError;
+    }
 
+    console.log("[delete-user] User deleted successfully");
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (error) {
+    console.error("[delete-user] Error:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

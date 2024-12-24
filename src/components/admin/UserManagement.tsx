@@ -41,22 +41,39 @@ export const UserManagement = () => {
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
 
+    // Check if trying to delete owner or current admin
     if (userToDelete.email === "owner@dgxprt.ai") {
       toast({
         title: "Cannot delete owner account",
         description: "The main administrator account cannot be deleted.",
         variant: "destructive",
       });
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
       return;
     }
 
     setIsLoading(true);
     try {
+      console.log("[UserManagement] Attempting to delete user:", userToDelete.id);
       const { error } = await supabase.functions.invoke('delete-user', {
         body: { userId: userToDelete.id }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("[UserManagement] Error from delete-user function:", error);
+        // Parse the error message if it's in the response body
+        let errorMessage = error.message;
+        try {
+          if (error.message.includes('{')) {
+            const parsedError = JSON.parse(error.message);
+            errorMessage = parsedError.error || error.message;
+          }
+        } catch (e) {
+          console.error("[UserManagement] Error parsing error message:", e);
+        }
+        throw new Error(errorMessage);
+      }
 
       toast({
         title: "User deleted successfully",
@@ -64,10 +81,10 @@ export const UserManagement = () => {
       });
       refetch();
     } catch (error: any) {
-      console.error("Error deleting user:", error);
+      console.error("[UserManagement] Error deleting user:", error);
       toast({
         title: "Error deleting user",
-        description: error.message,
+        description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
