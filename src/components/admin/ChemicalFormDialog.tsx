@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { Database } from "@/integrations/supabase/types";
 import { useAuditLogger } from "@/hooks/useAuditLogger";
 import type { Chemical } from "@/types/chemical";
+import { useQuery } from "@tanstack/react-query";
 
 type ChemicalHazardClass = Database["public"]["Enums"]["chemical_hazard_class"];
 
@@ -35,6 +36,7 @@ interface ChemicalFormData {
   name: string;
   cas_number: string;
   hazard_class: ChemicalHazardClass;
+  category_id: string | null;
   description: string;
   storage_conditions: string;
   handling_precautions: string;
@@ -52,9 +54,27 @@ export const ChemicalFormDialog = ({
     name: "",
     cas_number: "",
     hazard_class: "non_hazardous",
+    category_id: null,
     description: "",
     storage_conditions: "",
     handling_precautions: "",
+  });
+
+  const { data: categories } = useQuery({
+    queryKey: ["chemical-categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("chemical_categories")
+        .select("*")
+        .order("name");
+
+      if (error) {
+        toast.error("Failed to fetch categories");
+        throw error;
+      }
+
+      return data || [];
+    },
   });
 
   useEffect(() => {
@@ -63,6 +83,7 @@ export const ChemicalFormDialog = ({
         name: chemical.name,
         cas_number: chemical.cas_number || "",
         hazard_class: chemical.hazard_class,
+        category_id: chemical.category_id,
         description: chemical.description || "",
         storage_conditions: chemical.storage_conditions || "",
         handling_precautions: chemical.handling_precautions || "",
@@ -72,6 +93,7 @@ export const ChemicalFormDialog = ({
         name: "",
         cas_number: "",
         hazard_class: "non_hazardous",
+        category_id: null,
         description: "",
         storage_conditions: "",
         handling_precautions: "",
@@ -85,7 +107,6 @@ export const ChemicalFormDialog = ({
 
     try {
       if (chemical) {
-        // Update existing chemical
         const { error } = await supabase
           .from("chemicals")
           .update(formData)
@@ -102,7 +123,6 @@ export const ChemicalFormDialog = ({
 
         toast.success("Chemical updated successfully");
       } else {
-        // Create new chemical
         const { error, data } = await supabase
           .from("chemicals")
           .insert(formData)
@@ -165,6 +185,28 @@ export const ChemicalFormDialog = ({
             </div>
 
             <div>
+              <Label htmlFor="category">Category</Label>
+              <Select
+                value={formData.category_id || ""}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, category_id: value || null })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No Category</SelectItem>
+                  {categories?.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
               <Label htmlFor="hazard_class">Hazard Class *</Label>
               <Select
                 value={formData.hazard_class}
@@ -199,13 +241,18 @@ export const ChemicalFormDialog = ({
                 id="storage_conditions"
                 value={formData.storage_conditions}
                 onChange={(e) =>
-                  setFormData({ ...formData, storage_conditions: e.target.value })
+                  setFormData({
+                    ...formData,
+                    storage_conditions: e.target.value,
+                  })
                 }
               />
             </div>
 
             <div>
-              <Label htmlFor="handling_precautions">Handling Precautions</Label>
+              <Label htmlFor="handling_precautions">
+                Handling Precautions
+              </Label>
               <Textarea
                 id="handling_precautions"
                 value={formData.handling_precautions}

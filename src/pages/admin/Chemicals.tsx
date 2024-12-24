@@ -17,7 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChemicalsTable } from "@/components/admin/chemicals/ChemicalsTable";
 import { ChemicalsPagination } from "@/components/admin/chemicals/ChemicalsPagination";
 import { ChemicalsFilters } from "@/components/admin/chemicals/ChemicalsFilters";
-import type { Chemical, ChemicalsResponse } from "@/types/chemical";
+import type { Chemical } from "@/types/chemical";
 import type { Database } from "@/integrations/supabase/types";
 
 const ITEMS_PER_PAGE = 10;
@@ -29,33 +29,62 @@ const Chemicals = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [hazardClass, setHazardClass] = useState<ChemicalHazardClass | "all">("all");
-  const [selectedChemical, setSelectedChemical] = useState<Chemical | null>(null);
+  const [hazardClass, setHazardClass] = useState<ChemicalHazardClass | "all">(
+    "all"
+  );
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedChemical, setSelectedChemical] = useState<Chemical | null>(
+    null
+  );
+
+  const { data: categories } = useQuery({
+    queryKey: ["chemical-categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("chemical_categories")
+        .select("*")
+        .order("name");
+
+      if (error) {
+        toast.error("Failed to fetch categories");
+        throw error;
+      }
+
+      return data || [];
+    },
+  });
 
   const { data: chemicalsData, refetch } = useQuery({
-    queryKey: ["chemicals", currentPage, searchQuery, hazardClass],
+    queryKey: [
+      "chemicals",
+      currentPage,
+      searchQuery,
+      hazardClass,
+      selectedCategory,
+    ],
     queryFn: async () => {
-      let query = supabase
-        .from("chemicals")
-        .select("*", { count: "exact" });
+      let query = supabase.from("chemicals").select("*", { count: "exact" });
 
-      // Apply search filter if search query exists
       if (searchQuery) {
         query = query.ilike("name", `%${searchQuery}%`);
       }
 
-      // Apply hazard class filter if selected
       if (hazardClass !== "all") {
         query = query.eq("hazard_class", hazardClass);
       }
 
-      // Get total count
+      if (selectedCategory !== "all") {
+        query = query.eq("category_id", selectedCategory);
+      }
+
       const countQuery = await query;
 
-      // Get paginated results
       const { data: chemicals, error } = await query
         .order("name")
-        .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
+        .range(
+          (currentPage - 1) * ITEMS_PER_PAGE,
+          currentPage * ITEMS_PER_PAGE - 1
+        );
 
       if (error) {
         toast.error("Failed to fetch chemicals");
@@ -77,16 +106,23 @@ const Chemicals = () => {
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    setCurrentPage(1); // Reset to first page when search changes
+    setCurrentPage(1);
   };
 
   const handleHazardClassChange = (value: ChemicalHazardClass | "all") => {
     setHazardClass(value);
-    setCurrentPage(1); // Reset to first page when filter changes
+    setCurrentPage(1);
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+    setCurrentPage(1);
   };
 
   const handleEditChemical = (chemical: Chemical) => {
-    setSelectedChemical(chemical);
+    set
+
+SelectedChemical(chemical);
     setDialogOpen(true);
   };
 
@@ -132,11 +168,7 @@ const Chemicals = () => {
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-background">
-        <Sidebar
-          className="bg-primary-blue transition-all duration-300 ease-in-out"
-          variant="sidebar"
-          collapsible="icon"
-        >
+        <Sidebar className="bg-primary-blue transition-all duration-300 ease-in-out">
           <SidebarHeader className="p-4 border-b border-border/10 bg-white flex justify-center">
             <img
               src="/dg-text-logo.png"
@@ -159,15 +191,24 @@ const Chemicals = () => {
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-2">
                 <Beaker className="h-6 w-6" />
-                <h2 className="text-2xl font-semibold">Chemical Management</h2>
+                <h2 className="text-2xl font-semibold">
+                  Chemical Management
+                </h2>
               </div>
-              <Button onClick={() => {
-                setSelectedChemical(null);
-                setDialogOpen(true);
-              }}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Chemical
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={() => navigate("/admin/chemical-categories")}>
+                  Manage Categories
+                </Button>
+                <Button
+                  onClick={() => {
+                    setSelectedChemical(null);
+                    setDialogOpen(true);
+                  }}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Chemical
+                </Button>
+              </div>
             </div>
 
             <ChemicalsFilters
@@ -175,6 +216,9 @@ const Chemicals = () => {
               onSearchChange={handleSearchChange}
               hazardClass={hazardClass}
               onHazardClassChange={handleHazardClassChange}
+              categories={categories || []}
+              selectedCategory={selectedCategory}
+              onCategoryChange={handleCategoryChange}
             />
 
             {chemicalsData?.chemicals?.length === 0 ? (

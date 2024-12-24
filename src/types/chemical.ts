@@ -6,6 +6,7 @@ export type Chemical = {
   id: string;
   name: string;
   cas_number: string | null;
+  category_id: string | null;
   hazard_class: ChemicalHazardClass;
   description: string | null;
   storage_conditions: string | null;
