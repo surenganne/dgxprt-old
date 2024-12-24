@@ -10,14 +10,15 @@ import {
 } from "@/components/ui/sidebar";
 import { AdminSidebarContent } from "@/components/admin/AdminSidebarContent";
 import { AdminSidebarFooter } from "@/components/admin/AdminSidebarFooter";
-import { Button } from "@/components/ui/button";
-import { Plus, Beaker } from "lucide-react";
 import { ChemicalFormDialog } from "@/components/admin/ChemicalFormDialog";
 import { useQuery } from "@tanstack/react-query";
 import { ChemicalsTable } from "@/components/admin/chemicals/ChemicalsTable";
 import { ChemicalsPagination } from "@/components/admin/chemicals/ChemicalsPagination";
 import { ChemicalsFilters } from "@/components/admin/chemicals/ChemicalsFilters";
+import { ChemicalsHeader } from "@/components/admin/chemicals/ChemicalsHeader";
+import { ChemicalsBatchActions } from "@/components/admin/chemicals/ChemicalsBatchActions";
 import { BulkCategoryUpdateDialog } from "@/components/admin/chemicals/BulkCategoryUpdateDialog";
+import { BackgroundEffects } from "@/components/shared/BackgroundEffects";
 import type { Chemical } from "@/types/chemical";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -192,69 +193,61 @@ const Chemicals = () => {
           <AdminSidebarFooter />
         </Sidebar>
 
-        <main className="flex-1 overflow-auto">
-          <div className="container mx-auto px-4 py-6">
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center gap-2">
-                <Beaker className="h-6 w-6" />
-                <h2 className="text-2xl font-semibold">
-                  Chemical Management
-                </h2>
-              </div>
-              <div className="flex gap-2">
-                {selectedChemicals.length > 0 && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setBulkUpdateDialogOpen(true)}
-                  >
-                    Update Category ({selectedChemicals.length})
-                  </Button>
-                )}
-                <Button onClick={() => navigate("/admin/chemical-categories")}>
-                  Manage Categories
-                </Button>
-                <Button
-                  onClick={() => {
+        <main className="flex-1 overflow-auto relative">
+          <BackgroundEffects />
+          
+          <div className="container mx-auto px-4 py-6 relative">
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-primary-purple/5 to-primary-blue/5 p-8 rounded-lg border border-gray-100 shadow-sm">
+                <ChemicalsHeader
+                  onAdd={() => {
                     setSelectedChemical(null);
                     setDialogOpen(true);
                   }}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Chemical
-                </Button>
+                  onManageCategories={() => navigate("/admin/chemical-categories")}
+                />
               </div>
+
+              <ChemicalsBatchActions
+                selectedChemicals={selectedChemicals}
+                onBulkUpdate={() => setBulkUpdateDialogOpen(true)}
+              />
+
+              <div className="bg-white/50 backdrop-blur-sm p-6 rounded-lg border border-gray-100 shadow-sm">
+                <ChemicalsFilters
+                  searchQuery={searchQuery}
+                  onSearchChange={handleSearchChange}
+                  hazardClass={hazardClass}
+                  onHazardClassChange={handleHazardClassChange}
+                  categories={categories || []}
+                  selectedCategory={selectedCategory}
+                  onCategoryChange={handleCategoryChange}
+                />
+              </div>
+
+              {chemicalsData?.chemicals?.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">
+                  No chemicals found. Click the button above to add one.
+                </p>
+              ) : (
+                <>
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+                    <ChemicalsTable
+                      chemicals={chemicalsData?.chemicals || []}
+                      onEdit={handleEditChemical}
+                      onDelete={refetch}
+                      selectedChemicals={selectedChemicals}
+                      onSelectionChange={setSelectedChemicals}
+                    />
+                  </div>
+                  <ChemicalsPagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                </>
+              )}
             </div>
-
-            <ChemicalsFilters
-              searchQuery={searchQuery}
-              onSearchChange={handleSearchChange}
-              hazardClass={hazardClass}
-              onHazardClassChange={handleHazardClassChange}
-              categories={categories || []}
-              selectedCategory={selectedCategory}
-              onCategoryChange={handleCategoryChange}
-            />
-
-            {chemicalsData?.chemicals?.length === 0 ? (
-              <p className="text-muted-foreground">
-                No chemicals found. Click the button above to add one.
-              </p>
-            ) : (
-              <>
-                <ChemicalsTable
-                  chemicals={chemicalsData?.chemicals || []}
-                  onEdit={handleEditChemical}
-                  onDelete={refetch}
-                  selectedChemicals={selectedChemicals}
-                  onSelectionChange={setSelectedChemicals}
-                />
-                <ChemicalsPagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
-              </>
-            )}
 
             <ChemicalFormDialog
               open={dialogOpen}

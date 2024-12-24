@@ -6,18 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { Edit, Trash } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -40,12 +31,12 @@ export const ChemicalsTable = ({
   selectedChemicals,
   onSelectionChange,
 }: ChemicalsTableProps) => {
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedChemical, setSelectedChemical] = useState<Chemical | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { logUserAction } = useAuditLogger();
 
   const handleDelete = async (chemical: Chemical) => {
     try {
+      setIsDeleting(true);
       const { error } = await supabase
         .from("chemicals")
         .delete()
@@ -65,9 +56,9 @@ export const ChemicalsTable = ({
     } catch (error) {
       console.error("Error deleting chemical:", error);
       toast.error("Failed to delete chemical");
+    } finally {
+      setIsDeleting(false);
     }
-    setDeleteDialogOpen(false);
-    setSelectedChemical(null);
   };
 
   const handleSelectAll = (checked: boolean) => {
@@ -85,95 +76,75 @@ export const ChemicalsTable = ({
     selectedChemicals.some((c) => c.id === chemical.id);
 
   return (
-    <>
-      <div className="border rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[50px]">
-                <Checkbox
-                  checked={
-                    chemicals.length > 0 &&
-                    selectedChemicals.length === chemicals.length
-                  }
-                  onCheckedChange={handleSelectAll}
-                  aria-label="Select all chemicals"
-                />
-              </TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>CAS Number</TableHead>
-              <TableHead>Hazard Class</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {chemicals.map((chemical) => (
-              <TableRow key={chemical.id}>
-                <TableCell>
-                  <Checkbox
-                    checked={isSelected(chemical)}
-                    onCheckedChange={(checked) =>
-                      handleSelectChemical(chemical, checked as boolean)
-                    }
-                    aria-label={`Select ${chemical.name}`}
-                  />
-                </TableCell>
-                <TableCell>{chemical.name}</TableCell>
-                <TableCell>{chemical.cas_number || "-"}</TableCell>
-                <TableCell className="capitalize">
-                  {chemical.hazard_class.replace("_", " ")}
-                </TableCell>
-                <TableCell>{chemical.description || "-"}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onEdit(chemical)}
-                    >
-                      <Edit className="h-4 w-4" />
-                      <span className="sr-only">Edit chemical</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        setSelectedChemical(chemical);
-                        setDeleteDialogOpen(true);
-                      }}
-                    >
-                      <Trash className="h-4 w-4" />
-                      <span className="sr-only">Delete chemical</span>
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              chemical
-              {selectedChemical && `: ${selectedChemical.name}`}.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => selectedChemical && handleDelete(selectedChemical)}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    <Table>
+      <TableHeader>
+        <TableRow className="bg-gray-50/50 hover:bg-gray-50/70 transition-colors">
+          <TableHead className="w-[50px]">
+            <Checkbox
+              checked={chemicals.length > 0 && selectedChemicals.length === chemicals.length}
+              onCheckedChange={handleSelectAll}
+              aria-label="Select all chemicals"
+            />
+          </TableHead>
+          <TableHead className="text-primary-purple font-medium">Name</TableHead>
+          <TableHead className="text-primary-purple font-medium">CAS Number</TableHead>
+          <TableHead className="text-primary-purple font-medium">Hazard Class</TableHead>
+          <TableHead className="text-primary-purple font-medium">Description</TableHead>
+          <TableHead className="text-right text-primary-purple font-medium">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {chemicals.map((chemical) => (
+          <TableRow key={chemical.id} className="hover:bg-gray-50/50 transition-colors">
+            <TableCell>
+              <Checkbox
+                checked={isSelected(chemical)}
+                onCheckedChange={(checked) =>
+                  handleSelectChemical(chemical, checked as boolean)
+                }
+                aria-label={`Select ${chemical.name}`}
+              />
+            </TableCell>
+            <TableCell className="font-medium text-primary-blue">{chemical.name}</TableCell>
+            <TableCell className="text-gray-600">{chemical.cas_number || "-"}</TableCell>
+            <TableCell>
+              <Badge
+                variant={chemical.hazard_class === "hazardous" ? "destructive" : "secondary"}
+                className={
+                  chemical.hazard_class === "hazardous"
+                    ? "bg-red-100 text-red-800 hover:bg-red-100"
+                    : "bg-gray-100 text-gray-800 hover:bg-gray-100"
+                }
+              >
+                {chemical.hazard_class.replace("_", " ")}
+              </Badge>
+            </TableCell>
+            <TableCell className="text-gray-600">
+              {chemical.description || "-"}
+            </TableCell>
+            <TableCell className="text-right space-x-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-gray-600 hover:text-primary-purple hover:bg-primary-purple/10"
+                disabled={isDeleting}
+                onClick={() => onEdit(chemical)}
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-gray-600 hover:text-primary-purple hover:bg-primary-purple/10"
+                disabled={isDeleting}
+                onClick={() => handleDelete(chemical)}
+              >
+                <Trash className="h-4 w-4" />
+              </Button>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 };
