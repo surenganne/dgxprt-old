@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { toast } from "sonner";
 
@@ -8,6 +8,7 @@ export const useMagicLink = (
   setInitialAuthCheckDone: (value: boolean) => void
 ) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const supabase = useSupabaseClient();
 
   useEffect(() => {
@@ -22,15 +23,24 @@ export const useMagicLink = (
         try {
           console.log("Magic link detected, handling auth flow");
           
-          // First, clear any existing session
+          // First, ensure we're on the auth page
+          if (location.pathname !== '/auth') {
+            console.log("Redirecting to auth page for magic link handling");
+            navigate(`/auth?token=${token}&type=${type}`);
+            return;
+          }
+          
+          // Clear any existing session
           await supabase.auth.signOut();
           
-          // Clear local storage
-          localStorage.removeItem("supabase.auth.token");
-          localStorage.removeItem("supabase.auth.expires_at");
-          localStorage.removeItem("supabase.auth.refresh_token");
+          // Clear all auth-related local storage
+          for (const key of Object.keys(localStorage)) {
+            if (key.startsWith('supabase.auth.')) {
+              localStorage.removeItem(key);
+            }
+          }
           
-          // Wait a bit to ensure cleanup is complete
+          // Wait to ensure cleanup is complete
           await new Promise((resolve) => setTimeout(resolve, 500));
           
           // Now verify the magic link token
@@ -46,10 +56,10 @@ export const useMagicLink = (
             console.log("Magic link verified successfully");
           }
           
-          setInitialAuthCheckDone(true);
         } catch (error) {
           console.error("Error handling magic link:", error);
           toast.error("Error processing magic link");
+        } finally {
           setInitialAuthCheckDone(true);
         }
       } else {
@@ -65,5 +75,5 @@ export const useMagicLink = (
         toast.info("Please use the temporary password sent to your email to log in.");
       }
     }
-  }, [location, supabase.auth, setEmail, setInitialAuthCheckDone]);
+  }, [location, supabase.auth, setEmail, setInitialAuthCheckDone, navigate]);
 };

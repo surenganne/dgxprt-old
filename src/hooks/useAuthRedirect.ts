@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { toast } from "sonner";
 
@@ -8,10 +8,18 @@ export const useAuthRedirect = (
 ) => {
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const handleSuccessfulLogin = async (userId: string) => {
       try {
+        // Don't redirect if we're handling a magic link
+        const params = new URLSearchParams(location.search);
+        if (params.get("token") && params.get("type") === "magiclink") {
+          console.log("Magic link detected, skipping redirect");
+          return;
+        }
+
         const { data: profile, error } = await supabase
           .from("profiles")
           .select("is_admin, has_reset_password, status")
@@ -89,5 +97,5 @@ export const useAuthRedirect = (
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, [navigate, supabase, setInitialAuthCheckDone]);
+  }, [navigate, supabase, setInitialAuthCheckDone, location.search]);
 };
