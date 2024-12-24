@@ -10,6 +10,7 @@ serve(async (req) => {
 
   try {
     const { to, password, loginLink } = await req.json();
+    console.log('Received request with:', { to, passwordReceived: !!password, loginLink });
 
     if (!to || !password || !loginLink) {
       return new Response(
@@ -45,8 +46,8 @@ serve(async (req) => {
           <p>Please follow these steps to access your account:</p>
           <ol>
             <li>Click on this link to go to the login page: <a href="${loginLink}">Login to DGXPRT</a></li>
-            <li>Your email will be pre-filled</li>
-            <li>Enter the temporary password provided above</li>
+            <li>Enter your email: ${to}</li>
+            <li>Enter the temporary password shown above</li>
             <li>After logging in, you'll be prompted to set a new password</li>
           </ol>
           <p>For security reasons, please change your password upon first login.</p>
