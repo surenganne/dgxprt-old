@@ -21,29 +21,54 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { useQuery } from "@tanstack/react-query";
+
+const ITEMS_PER_PAGE = 10;
 
 const Chemicals = () => {
   const session = useSession();
   const navigate = useNavigate();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: chemicals, refetch } = useQuery({
+  const { data: chemicalsData, refetch } = useQuery({
     queryKey: ["chemicals"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: totalCount } = await supabase
+        .from("chemicals")
+        .select("id", { count: "exact", head: true });
+
+      const { data: chemicals, error } = await supabase
         .from("chemicals")
         .select("*")
-        .order("name");
+        .order("name")
+        .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
       
       if (error) {
         toast.error("Failed to fetch chemicals");
         throw error;
       }
       
-      return data;
+      return {
+        chemicals,
+        totalCount: totalCount?.count || 0
+      };
     },
   });
+
+  const totalPages = Math.ceil((chemicalsData?.totalCount || 0) / ITEMS_PER_PAGE);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -122,35 +147,71 @@ const Chemicals = () => {
               </Button>
             </div>
 
-            {chemicals?.length === 0 ? (
+            {chemicalsData?.chemicals?.length === 0 ? (
               <p className="text-muted-foreground">
                 No chemicals found. Click the button above to add one.
               </p>
             ) : (
-              <div className="border rounded-lg">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>CAS Number</TableHead>
-                      <TableHead>Hazard Class</TableHead>
-                      <TableHead>Description</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {chemicals?.map((chemical) => (
-                      <TableRow key={chemical.id}>
-                        <TableCell>{chemical.name}</TableCell>
-                        <TableCell>{chemical.cas_number || "-"}</TableCell>
-                        <TableCell className="capitalize">
-                          {chemical.hazard_class.replace("_", " ")}
-                        </TableCell>
-                        <TableCell>{chemical.description || "-"}</TableCell>
+              <>
+                <div className="border rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>CAS Number</TableHead>
+                        <TableHead>Hazard Class</TableHead>
+                        <TableHead>Description</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                    </TableHeader>
+                    <TableBody>
+                      {chemicalsData?.chemicals?.map((chemical) => (
+                        <TableRow key={chemical.id}>
+                          <TableCell>{chemical.name}</TableCell>
+                          <TableCell>{chemical.cas_number || "-"}</TableCell>
+                          <TableCell className="capitalize">
+                            {chemical.hazard_class.replace("_", " ")}
+                          </TableCell>
+                          <TableCell>{chemical.description || "-"}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="mt-4">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious 
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                          />
+                        </PaginationItem>
+                        
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <PaginationItem key={page}>
+                            <PaginationLink
+                              onClick={() => handlePageChange(page)}
+                              isActive={currentPage === page}
+                              className="cursor-pointer"
+                            >
+                              {page}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ))}
+                        
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
+              </>
             )}
 
             <ChemicalFormDialog
