@@ -47,8 +47,16 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized: Only admins can delete users')
     }
 
+    // First check if the user exists in auth.users
+    const { data: userToDelete, error: userError } = await supabase.auth.admin.getUserById(userId)
+    
+    if (userError || !userToDelete?.user) {
+      console.error("[delete-user] User not found in auth.users:", userError);
+      throw new Error('User not found in authentication system')
+    }
+
     // Get the profile of the user to be deleted
-    const { data: userToDelete, error: targetProfileError } = await supabase
+    const { data: targetProfile, error: targetProfileError } = await supabase
       .from('profiles')
       .select('is_admin, is_owner, email')
       .eq('id', userId)
@@ -60,18 +68,26 @@ Deno.serve(async (req) => {
     }
 
     // Check if trying to delete an owner
-    if (userToDelete.is_owner) {
+    if (targetProfile.is_owner) {
       console.error("[delete-user] Cannot delete owner account");
       throw new Error('Cannot delete owner account')
     }
 
     // Check if non-owner admin trying to delete another admin
-    if (userToDelete.is_admin && !requestingProfile.is_owner) {
+    if (targetProfile.is_admin && !requestingProfile.is_owner) {
       console.error("[delete-user] Non-owner admin attempting to delete admin account");
       throw new Error('Only owners can delete admin accounts')
     }
 
-    // Delete the profile first (this will cascade to user_locations due to FK)
+    // Delete the user from auth.users first
+    console.log("[delete-user] Deleting auth user:", userId);
+    const { error: deleteError } = await supabase.auth.admin.deleteUser(userId)
+    if (deleteError) {
+      console.error("[delete-user] Error deleting user:", deleteError);
+      throw deleteError;
+    }
+
+    // Delete the profile (this will cascade to user_locations due to FK)
     console.log("[delete-user] Deleting profile for user:", userId);
     const { error: deleteProfileError } = await supabase
       .from('profiles')
@@ -80,15 +96,8 @@ Deno.serve(async (req) => {
 
     if (deleteProfileError) {
       console.error("[delete-user] Error deleting profile:", deleteProfileError);
-      throw deleteProfileError;
-    }
-
-    // Delete the user from auth.users
-    console.log("[delete-user] Deleting auth user:", userId);
-    const { error: deleteError } = await supabase.auth.admin.deleteUser(userId)
-    if (deleteError) {
-      console.error("[delete-user] Error deleting user:", deleteError);
-      throw deleteError;
+      // Note: We don't throw here since the auth user is already deleted
+      console.warn("[delete-user] Profile deletion failed but auth user was deleted:", deleteProfileError);
     }
 
     console.log("[delete-user] User deleted successfully");
