@@ -35,7 +35,7 @@ interface LocationFormData {
   address?: string;
   contact_email?: string;
   contact_phone?: string;
-  parent_id?: string;
+  parent_id?: string | null;
 }
 
 interface LocationData extends LocationFormData {
@@ -87,17 +87,23 @@ export function LocationFormDialog({
       address: "",
       contact_email: "",
       contact_phone: "",
-      parent_id: "",
+      parent_id: null,
     },
   });
 
   const onSubmit = async (data: LocationFormData) => {
     setIsLoading(true);
     try {
+      // Convert empty parent_id to null
+      const formData = {
+        ...data,
+        parent_id: data.parent_id === "none" ? null : data.parent_id,
+      };
+
       if (initialData) {
         const { error } = await supabase
           .from("locations")
-          .update(data)
+          .update(formData)
           .eq("id", initialData.id);
 
         if (error) throw error;
@@ -106,7 +112,7 @@ export function LocationFormDialog({
           description: "The location has been updated successfully.",
         });
       } else {
-        const { error } = await supabase.from("locations").insert(data);
+        const { error } = await supabase.from("locations").insert(formData);
         if (error) throw error;
         toast({
           title: "Location created",
@@ -184,7 +190,7 @@ export function LocationFormDialog({
                   <FormLabel>Parent Location</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    defaultValue={field.value || "none"}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -192,7 +198,7 @@ export function LocationFormDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {locations?.map((location) => (
                         <SelectItem key={location.id} value={location.id}>
                           {location.name} ({location.type})
