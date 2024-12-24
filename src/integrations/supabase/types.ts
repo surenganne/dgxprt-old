@@ -294,6 +294,60 @@ export type Database = {
         }
         Relationships: []
       }
+      sds_documents: {
+        Row: {
+          chemical_id: string | null
+          created_at: string
+          expiry_date: string | null
+          file_path: string
+          id: string
+          review_date: string | null
+          status: Database["public"]["Enums"]["sds_status"] | null
+          updated_at: string
+          uploaded_by: string | null
+          version: string
+        }
+        Insert: {
+          chemical_id?: string | null
+          created_at?: string
+          expiry_date?: string | null
+          file_path: string
+          id?: string
+          review_date?: string | null
+          status?: Database["public"]["Enums"]["sds_status"] | null
+          updated_at?: string
+          uploaded_by?: string | null
+          version: string
+        }
+        Update: {
+          chemical_id?: string | null
+          created_at?: string
+          expiry_date?: string | null
+          file_path?: string
+          id?: string
+          review_date?: string | null
+          status?: Database["public"]["Enums"]["sds_status"] | null
+          updated_at?: string
+          uploaded_by?: string | null
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sds_documents_chemical_id_fkey"
+            columns: ["chemical_id"]
+            isOneToOne: false
+            referencedRelation: "chemicals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sds_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -327,6 +381,7 @@ export type Database = {
       audit_log_type: "user_action" | "system_event"
       chemical_hazard_class: "hazardous" | "non_hazardous"
       location_type: "country" | "state" | "district" | "school" | "site"
+      sds_status: "active" | "archived" | "pending_review"
     }
     CompositeTypes: {
       [_ in never]: never

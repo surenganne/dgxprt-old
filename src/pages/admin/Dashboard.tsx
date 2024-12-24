@@ -121,7 +121,7 @@ const AdminDashboard = () => {
             <h2 className="text-2xl font-semibold mb-6">Admin Dashboard</h2>
             
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -161,6 +161,8 @@ const AdminDashboard = () => {
                   <div className="text-2xl font-bold">{dashboardData?.hazardousCount || 0}</div>
                 </CardContent>
               </Card>
+
+              <SDSWidget />
             </div>
 
             {/* Chemical Distribution Chart */}
