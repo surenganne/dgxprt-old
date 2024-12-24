@@ -96,6 +96,7 @@ const Auth = () => {
           onEmailChange={setEmail}
           onPasswordChange={setPassword}
           onSubmit={handleLogin}
+          isEmailReadOnly={!!email} // Make email readonly if it's pre-populated
         />
       </div>
     </div>

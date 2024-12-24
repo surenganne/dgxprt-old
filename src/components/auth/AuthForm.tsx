@@ -9,6 +9,7 @@ interface AuthFormProps {
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
+  isEmailReadOnly?: boolean;
 }
 
 export const AuthForm = ({
@@ -18,6 +19,7 @@ export const AuthForm = ({
   onEmailChange,
   onPasswordChange,
   onSubmit,
+  isEmailReadOnly = false,
 }: AuthFormProps) => {
   return (
     <form onSubmit={onSubmit} className="mt-8 space-y-6">
@@ -32,7 +34,7 @@ export const AuthForm = ({
             value={email}
             onChange={(e) => onEmailChange(e.target.value)}
             required
-            disabled={loading}
+            disabled={loading || isEmailReadOnly}
             className="mt-1"
             placeholder="Enter your email"
           />
