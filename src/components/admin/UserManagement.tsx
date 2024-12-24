@@ -41,9 +41,9 @@ export const UserManagement = () => {
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
 
-    if (userToDelete.email === "admin@dgxprt.ai") {
+    if (userToDelete.email === "owner@dgxprt.ai") {
       toast({
-        title: "Cannot delete admin account",
+        title: "Cannot delete owner account",
         description: "The main administrator account cannot be deleted.",
         variant: "destructive",
       });
@@ -78,9 +78,9 @@ export const UserManagement = () => {
   };
 
   const handleEditUser = (user: any) => {
-    if (user.email === "admin@dgxprt.ai") {
+    if (user.email === "owner@dgxprt.ai") {
       toast({
-        title: "Cannot edit admin account",
+        title: "Cannot edit owner account",
         description: "The main administrator account cannot be modified.",
         variant: "destructive",
       });
@@ -98,10 +98,10 @@ export const UserManagement = () => {
   const handleSendPassword = async (email: string) => {
     console.log("[UserManagement] Starting password reset for email:", email);
     
-    if (email === "admin@dgxprt.ai") {
-      console.log("[UserManagement] Attempted to reset admin password - blocked");
+    if (email === "owner@dgxprt.ai") {
+      console.log("[UserManagement] Attempted to reset owner password - blocked");
       toast({
-        title: "Cannot reset admin password",
+        title: "Cannot reset owner password",
         description: "The main administrator password cannot be reset.",
         variant: "destructive",
       });
