@@ -51,17 +51,26 @@ export function LocationFormDialog({
     },
   });
 
+  const defaultValues: LocationFormData = {
+    name: "",
+    type: "site",
+    description: "",
+    address: "",
+    contact_email: "",
+    contact_phone: "",
+    parent_id: null,
+  };
+
   const form = useForm<LocationFormData>({
-    defaultValues: initialData || {
-      name: "",
-      type: "site",
-      description: "",
-      address: "",
-      contact_email: "",
-      contact_phone: "",
-      parent_id: null,
-    },
+    defaultValues: initialData || defaultValues,
   });
+
+  // Reset form when dialog opens/closes or when initialData changes
+  useState(() => {
+    if (open) {
+      form.reset(initialData || defaultValues);
+    }
+  }, [open, initialData, form]);
 
   const onSubmit = async (data: LocationFormData) => {
     setIsLoading(true);
