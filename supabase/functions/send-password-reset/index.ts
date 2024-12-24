@@ -25,6 +25,10 @@ serve(async (req) => {
       throw new Error("Email is required");
     }
 
+    if (!RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY is not configured");
+    }
+
     // Create a Supabase client with the service role key
     const supabase = createClient(
       SUPABASE_URL!,
@@ -37,16 +41,26 @@ serve(async (req) => {
       }
     );
 
-    // Generate a sign-in link
-    const { data: { user }, error: signInError } = await supabase.auth.admin.generateLink({
+    // Generate a magic link
+    const { data, error: signInError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email: email,
+      options: {
+        redirectTo: `${req.headers.get('origin')}/auth`
+      }
     });
 
-    if (signInError) {
+    if (signInError || !data) {
       console.error("[send-password-reset] Error generating link:", signInError);
-      throw signInError;
+      throw signInError || new Error("Failed to generate magic link");
     }
+
+    const { properties } = data;
+    if (!properties?.action_link) {
+      throw new Error("No action link generated");
+    }
+
+    console.log("[send-password-reset] Generated magic link successfully");
 
     // Send email using Resend
     const res = await fetch("https://api.resend.com/emails", {
@@ -62,7 +76,7 @@ serve(async (req) => {
         html: `
           <h2>Password Reset Request</h2>
           <p>Click the link below to reset your password:</p>
-          <p><a href="${user?.confirmation_sent_at}">Reset Password</a></p>
+          <p><a href="${properties.action_link}">Reset Password</a></p>
           <p>If you didn't request this, you can safely ignore this email.</p>
           <p>Best regards,<br>DGXPRT Team</p>
         `,
@@ -74,6 +88,8 @@ serve(async (req) => {
       console.error("[send-password-reset] Error sending email:", error);
       throw new Error("Failed to send password reset email");
     }
+
+    console.log("[send-password-reset] Email sent successfully");
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
