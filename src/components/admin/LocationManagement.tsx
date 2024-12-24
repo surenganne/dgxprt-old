@@ -23,6 +23,7 @@ export const LocationManagement = () => {
   const [selectedLocation, setSelectedLocation] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -69,6 +70,31 @@ export const LocationManagement = () => {
     setIsLoading(false);
   };
 
+  const handleToggleStatus = async (location: any) => {
+    setIsLoading(true);
+    const newStatus = location.status === "active" ? "inactive" : "active";
+    
+    const { error } = await supabase
+      .from("locations")
+      .update({ status: newStatus })
+      .eq("id", location.id);
+
+    if (error) {
+      toast({
+        title: "Error updating location status",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Location status updated",
+        description: `Location is now ${newStatus}.`,
+      });
+      refetch();
+    }
+    setIsLoading(false);
+  };
+
   const handleEdit = (location: any) => {
     setSelectedLocation(location);
     setDialogOpen(true);
@@ -79,7 +105,7 @@ export const LocationManagement = () => {
     setDialogOpen(true);
   };
 
-  // Filter locations based on search term and type filter
+  // Filter locations based on search term, type filter, and status filter
   const filteredLocations = locations?.filter((location) => {
     const matchesSearch =
       !searchTerm ||
@@ -88,7 +114,10 @@ export const LocationManagement = () => {
     const matchesType =
       typeFilter === "all" || location.type === typeFilter;
 
-    return matchesSearch && matchesType;
+    const matchesStatus =
+      statusFilter === "all" || location.status === statusFilter;
+
+    return matchesSearch && matchesType && matchesStatus;
   });
 
   // Calculate pagination
@@ -110,12 +139,15 @@ export const LocationManagement = () => {
         onSearchChange={setSearchTerm}
         typeFilter={typeFilter}
         onTypeFilterChange={setTypeFilter}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
       />
 
       <LocationTable
         locations={paginatedLocations}
         onEdit={handleEdit}
         onDelete={handleDeleteLocation}
+        onToggleStatus={handleToggleStatus}
         isLoading={isLoading}
       />
 

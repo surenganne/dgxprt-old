@@ -6,6 +6,8 @@ interface LocationFiltersProps {
   onSearchChange: (value: string) => void;
   typeFilter: string;
   onTypeFilterChange: (value: string) => void;
+  statusFilter: string;
+  onStatusFilterChange: (value: string) => void;
 }
 
 export const LocationFilters = ({
@@ -13,9 +15,11 @@ export const LocationFilters = ({
   onSearchChange,
   typeFilter,
   onTypeFilterChange,
+  statusFilter,
+  onStatusFilterChange,
 }: LocationFiltersProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <Input
         placeholder="Search locations..."
         value={searchTerm}
@@ -33,6 +37,16 @@ export const LocationFilters = ({
           <SelectItem value="district">District</SelectItem>
           <SelectItem value="school">School</SelectItem>
           <SelectItem value="site">Site</SelectItem>
+        </SelectContent>
+      </Select>
+      <Select value={statusFilter} onValueChange={onStatusFilterChange}>
+        <SelectTrigger>
+          <SelectValue placeholder="Filter by status" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Statuses</SelectItem>
+          <SelectItem value="active">Active</SelectItem>
+          <SelectItem value="inactive">Inactive</SelectItem>
         </SelectContent>
       </Select>
     </div>
