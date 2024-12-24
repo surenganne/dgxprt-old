@@ -73,17 +73,23 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
       const trustedOrigins = [
         window.location.origin,
         'https://preview--dgxprt.lovable.app',
-        'https://dgxprt.lovable.app'
+        'https://dgxprt.lovable.app',
+        'https://zrmjzuebsupnwuekzfio.supabase.co'
       ];
       
-      if (!trustedOrigins.includes(event.origin)) {
+      // Check if origin is in our trusted list
+      const isTrustedOrigin = trustedOrigins.some(origin => 
+        event.origin === origin || event.origin.endsWith(origin.replace('https://', ''))
+      );
+      
+      if (!isTrustedOrigin) {
         console.warn('[MagicLinkHandler] Ignored postMessage from untrusted origin:', event.origin);
         return;
       }
 
       // Handle the message
-      if (event.data && event.data.type === 'SUPABASE_AUTH') {
-        console.log('[MagicLinkHandler] Received auth message');
+      if (event.data?.type === 'SUPABASE_AUTH') {
+        console.log('[MagicLinkHandler] Received auth message from:', event.origin);
         handleMagicLink();
       }
     };
