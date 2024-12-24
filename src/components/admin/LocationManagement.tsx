@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 import { LocationFormDialog } from "./LocationFormDialog";
 import { LocationHeader } from "./location/LocationHeader";
 import { LocationFilters } from "./location/LocationFilters";
 import { LocationTable } from "./location/LocationTable";
 import { LocationBatchActions } from "./location/LocationBatchActions";
+import { useLocations } from "@/hooks/useLocations";
+import { useLocationActions } from "@/hooks/useLocationActions";
 import { 
   Pagination, 
   PaginationContent, 
@@ -17,8 +16,6 @@ import {
 } from "@/components/ui/pagination";
 
 export const LocationManagement = () => {
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -27,73 +24,8 @@ export const LocationManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const { data: locations, refetch } = useQuery({
-    queryKey: ["locations"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("locations")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        toast({
-          title: "Error fetching locations",
-          description: error.message,
-          variant: "destructive",
-        });
-        return [];
-      }
-      return data;
-    },
-  });
-
-  const handleDeleteLocation = async (locationId: string) => {
-    setIsLoading(true);
-    const { error } = await supabase
-      .from("locations")
-      .delete()
-      .eq("id", locationId);
-
-    if (error) {
-      toast({
-        title: "Error deleting location",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Location deleted successfully",
-        description: "The location has been removed from the system.",
-      });
-      refetch();
-    }
-    setIsLoading(false);
-  };
-
-  const handleToggleStatus = async (location: any) => {
-    setIsLoading(true);
-    const newStatus = location.status === "active" ? "inactive" : "active";
-    
-    const { error } = await supabase
-      .from("locations")
-      .update({ status: newStatus })
-      .eq("id", location.id);
-
-    if (error) {
-      toast({
-        title: "Error updating location status",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Location status updated",
-        description: `Location is now ${newStatus}.`,
-      });
-      refetch();
-    }
-    setIsLoading(false);
-  };
+  const { data: locations, refetch } = useLocations();
+  const { isLoading, handleDeleteLocation, handleToggleStatus } = useLocationActions(refetch);
 
   const handleEdit = (location: any) => {
     setSelectedLocation(location);
