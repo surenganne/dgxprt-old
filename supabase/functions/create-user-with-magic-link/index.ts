@@ -32,45 +32,79 @@ serve(async (req) => {
       },
     });
 
-    // Generate magic link
-    console.log("[create-user] Generating magic link...");
-    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email: email,
-      options: {
-        redirectTo: `${req.headers.get('origin')}/auth`,
-      }
-    });
-
-    if (linkError || !linkData) {
-      console.error("[create-user] Error generating link:", linkError);
-      throw linkError || new Error("Failed to generate magic link");
-    }
-
-    // Get user data from the response
-    const userId = linkData.user.id;
-    if (!userId) {
-      throw new Error("No user ID returned from auth");
-    }
-
-    // Create profile with the user ID
-    console.log("[create-user] Creating profile for user:", userId);
-    const { error: profileError } = await supabase
+    // Check if user already exists
+    console.log("[create-user] Checking if user exists...");
+    const { data: existingUser, error: userError } = await supabase
       .from('profiles')
-      .insert({
-        id: userId,
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (userError && userError.code !== 'PGRST116') { // PGRST116 means no rows returned
+      console.error("[create-user] Error checking existing user:", userError);
+      throw userError;
+    }
+
+    let userId;
+
+    if (existingUser) {
+      console.log("[create-user] User exists, updating profile...");
+      userId = existingUser.id;
+      
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          full_name: fullName,
+          is_admin: isAdmin,
+          status: status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+
+      if (updateError) {
+        console.error("[create-user] Error updating profile:", updateError);
+        throw updateError;
+      }
+    } else {
+      // Generate magic link for new user
+      console.log("[create-user] Generating magic link...");
+      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+        type: 'magiclink',
         email: email,
-        full_name: fullName,
-        is_admin: isAdmin,
-        status: status,
+        options: {
+          redirectTo: `${req.headers.get('origin')}/auth`,
+        }
       });
 
-    if (profileError) {
-      console.error("[create-user] Error creating profile:", profileError);
-      throw profileError;
+      if (linkError || !linkData) {
+        console.error("[create-user] Error generating link:", linkError);
+        throw linkError || new Error("Failed to generate magic link");
+      }
+
+      userId = linkData.user.id;
+      if (!userId) {
+        throw new Error("No user ID returned from auth");
+      }
+
+      // Create profile for new user
+      console.log("[create-user] Creating profile for user:", userId);
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          email: email,
+          full_name: fullName,
+          is_admin: isAdmin,
+          status: status,
+        });
+
+      if (profileError) {
+        console.error("[create-user] Error creating profile:", profileError);
+        throw profileError;
+      }
     }
 
-    // Send welcome email with magic link
+    // Send welcome email
     console.log("[create-user] Sending welcome email...");
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -91,7 +125,7 @@ serve(async (req) => {
             <p>Your DGXPRT account has been created. To get started, please click the button below to set up your password and access your account:</p>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${linkData.properties.action_link}" 
+              <a href="${req.headers.get('origin')}/auth?email=${encodeURIComponent(email)}&temp=true" 
                  style="background-color: #895AB7; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px;">
                 Set Up Your Account
               </a>
