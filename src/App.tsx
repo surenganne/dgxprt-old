@@ -16,6 +16,7 @@ import Users from "@/pages/admin/Users";
 import Locations from "@/pages/admin/Locations";
 import Chemicals from "@/pages/admin/Chemicals";
 import ChemicalCategories from "@/pages/admin/ChemicalCategories";
+import SDS from "@/pages/admin/SDS";
 import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient({
@@ -100,6 +101,15 @@ function App() {
                 element={
                   <ProtectedRoute adminOnly>
                     <ChemicalCategories />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/admin/sds"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <SDS />
                   </ProtectedRoute>
                 }
               />
