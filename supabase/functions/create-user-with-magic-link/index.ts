@@ -47,7 +47,13 @@ serve(async (req) => {
 
     if (existingAuthUsers?.users && existingAuthUsers.users.length > 0) {
       console.error("[create-user] User already exists in auth.users");
-      throw new Error("A user with this email already exists");
+      return new Response(
+        JSON.stringify({ error: "A user with this email already exists" }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400
+        }
+      );
     }
 
     // Create new user
