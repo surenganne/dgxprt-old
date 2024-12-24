@@ -1,6 +1,6 @@
 import { useSession } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -11,11 +11,39 @@ import {
 import { AdminSidebarContent } from "@/components/admin/AdminSidebarContent";
 import { AdminSidebarFooter } from "@/components/admin/AdminSidebarFooter";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Beaker } from "lucide-react";
+import { ChemicalFormDialog } from "@/components/admin/ChemicalFormDialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useQuery } from "@tanstack/react-query";
 
 const Chemicals = () => {
   const session = useSession();
   const navigate = useNavigate();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  const { data: chemicals, refetch } = useQuery({
+    queryKey: ["chemicals"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("chemicals")
+        .select("*")
+        .order("name");
+      
+      if (error) {
+        toast.error("Failed to fetch chemicals");
+        throw error;
+      }
+      
+      return data;
+    },
+  });
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -84,14 +112,52 @@ const Chemicals = () => {
         <main className="flex-1 overflow-auto">
           <div className="container mx-auto px-4 py-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold">Chemical Management</h2>
-              <Button>
+              <div className="flex items-center gap-2">
+                <Beaker className="h-6 w-6" />
+                <h2 className="text-2xl font-semibold">Chemical Management</h2>
+              </div>
+              <Button onClick={() => setIsAddDialogOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
                 Add Chemical
               </Button>
             </div>
-            {/* Chemical list will be implemented here */}
-            <p className="text-muted-foreground">No chemicals found. Click the button above to add one.</p>
+
+            {chemicals?.length === 0 ? (
+              <p className="text-muted-foreground">
+                No chemicals found. Click the button above to add one.
+              </p>
+            ) : (
+              <div className="border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>CAS Number</TableHead>
+                      <TableHead>Hazard Class</TableHead>
+                      <TableHead>Description</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {chemicals?.map((chemical) => (
+                      <TableRow key={chemical.id}>
+                        <TableCell>{chemical.name}</TableCell>
+                        <TableCell>{chemical.cas_number || "-"}</TableCell>
+                        <TableCell className="capitalize">
+                          {chemical.hazard_class.replace("_", " ")}
+                        </TableCell>
+                        <TableCell>{chemical.description || "-"}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+
+            <ChemicalFormDialog
+              open={isAddDialogOpen}
+              onOpenChange={setIsAddDialogOpen}
+              onSuccess={refetch}
+            />
           </div>
         </main>
       </div>
