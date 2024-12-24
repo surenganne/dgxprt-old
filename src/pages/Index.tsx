@@ -13,7 +13,7 @@ const Index = () => {
   const session = useSession();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const handleAuthChange = async () => {
@@ -38,23 +38,22 @@ const Index = () => {
 
           console.log("[Index] Profile fetched:", profile);
           if (profile?.is_admin) {
-            navigate('/admin/dashboard');
+            navigate('/admin');
           } else {
             navigate('/dashboard');
           }
+        } else {
+          setIsLoading(false);
         }
       } catch (error) {
         console.error("[Index] Error in auth change handler:", error);
         toast.error("Error checking authentication status");
-      } finally {
         setIsLoading(false);
       }
     };
 
-    // Check auth state on mount
     handleAuthChange();
 
-    // Listen for auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
         handleAuthChange();
@@ -72,8 +71,8 @@ const Index = () => {
         <Header />
         <main className="flex-grow flex items-center justify-center">
           <div className="text-center">
-            <h2 className="text-lg font-semibold mb-2">Checking authentication...</h2>
-            <p className="text-muted-foreground">Please wait while we verify your access.</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-purple mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading...</p>
           </div>
         </main>
         <Footer />
@@ -81,6 +80,7 @@ const Index = () => {
     );
   }
 
+  // If not authenticated, show landing page
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
