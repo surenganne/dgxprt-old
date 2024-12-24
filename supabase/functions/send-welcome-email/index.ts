@@ -1,7 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from "../_shared/cors.ts";
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -36,7 +40,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: fromEmail,
         to: [to],
-        subject: "DGXPRT - User Authentication",
+        subject: "Welcome to DGXPRT - Your Account Details",
         html: `
           <!DOCTYPE html>
           <html>
@@ -109,7 +113,7 @@ serve(async (req) => {
                   <li>You will be prompted to change your password upon first login</li>
                 </ol>
 
-                <a href="${loginLink}" class="button">Login to DGXPRT</a>
+                <a href="${loginLink}" class="button" style="color: white;">Login to DGXPRT</a>
 
                 <p><strong>Important:</strong> For security reasons, please change your password immediately after your first login.</p>
                 
@@ -127,6 +131,7 @@ serve(async (req) => {
     });
 
     const data = await res.json();
+    console.log('Email sent response:', data);
 
     return new Response(
       JSON.stringify(data),

@@ -1,7 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { UserFormData } from "@/types/user";
 import { generateSecurePassword } from "@/utils/passwordUtils";
-import { sendWelcomeEmail } from "./emailService";
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = "https://zrmjzuebsupnwuekzfio.supabase.co";
@@ -57,7 +56,8 @@ export const createNewUser = async (formData: UserFormData) => {
     options: {
       data: {
         full_name: formData.full_name,
-      }
+      },
+      emailRedirectTo: `${window.location.origin}/auth`
     }
   });
 
@@ -77,8 +77,16 @@ export const createNewUser = async (formData: UserFormData) => {
 
     if (profileUpdateError) throw profileUpdateError;
 
-    // Send welcome email with the temporary password
-    await sendWelcomeEmail(formData.email, tempPassword);
+    // Send welcome email using our custom email service
+    const { error: emailError } = await supabase.functions.invoke('send-welcome-email', {
+      body: {
+        to: formData.email,
+        password: tempPassword,
+        loginLink: `${window.location.origin}/auth`
+      }
+    });
+
+    if (emailError) throw emailError;
   }
 
   return authData;
