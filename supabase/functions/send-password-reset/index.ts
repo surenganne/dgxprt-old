@@ -18,13 +18,6 @@ serve(async (req) => {
   }
 
   try {
-    const { email } = await req.json();
-    console.log("[send-password-reset] Received request for email:", email);
-
-    if (!email) {
-      throw new Error("Email is required");
-    }
-
     if (!RESEND_API_KEY) {
       console.error("[send-password-reset] RESEND_API_KEY is not configured");
       throw new Error("RESEND_API_KEY is not configured");
@@ -33,6 +26,13 @@ serve(async (req) => {
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       console.error("[send-password-reset] Supabase configuration missing");
       throw new Error("Supabase configuration is incomplete");
+    }
+
+    const { email } = await req.json();
+    console.log("[send-password-reset] Received request for email:", email);
+
+    if (!email) {
+      throw new Error("Email is required");
     }
 
     // Create a Supabase client with the service role key
@@ -80,7 +80,7 @@ serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "DGXPRT <no-reply@dgxprt.incepta.ai>",
+        from: "DGXPRT <no-reply@incepta.ai>",
         to: [email],
         subject: "Reset Your Password - DGXPRT",
         html: `
