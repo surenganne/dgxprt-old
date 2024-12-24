@@ -32,35 +32,51 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
       const token = searchParams.get("token") || hashParams.get("access_token");
       const type = searchParams.get("type") || hashParams.get("type");
 
-      if (token && (type === "magiclink" || type === "recovery")) {
-        setIsHandlingMagicLink(true);
-        
-        try {
-          const { data: { user }, error } = await supabaseClient.auth.getUser();
-          
-          if (error) throw error;
-          
-          if (user) {
-            const { data: profile } = await supabaseClient
-              .from('profiles')
-              .select('has_reset_password, is_admin')
-              .eq('id', user.id)
-              .single();
+      // Only proceed if this is a magic link or recovery
+      if (!token || (type !== "magiclink" && type !== "recovery")) {
+        return;
+      }
 
-            // If user hasn't reset password and came through magic link, send to reset password
-            if (!profile?.has_reset_password) {
-              navigate('/reset-password');
-            } else {
-              navigate(profile?.is_admin ? '/admin/dashboard' : '/dashboard');
-            }
-          }
-        } catch (error: any) {
-          console.error('Magic link error:', error);
-          toast.error("Error processing magic link");
-          navigate('/auth');
-        } finally {
-          setIsHandlingMagicLink(false);
+      setIsHandlingMagicLink(true);
+      
+      try {
+        // If we have a hash-based token, set the session
+        if (hashParams.get("access_token")) {
+          const { error: setSessionError } = await supabaseClient.auth.setSession({
+            access_token: hashParams.get("access_token")!,
+            refresh_token: hashParams.get("refresh_token") || "",
+          });
+          
+          if (setSessionError) throw setSessionError;
+        } else {
+          // Otherwise exchange the code for a session
+          const { error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(token);
+          if (exchangeError) throw exchangeError;
         }
+
+        // Get user after setting/exchanging session
+        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+        if (userError) throw userError;
+
+        if (user) {
+          const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('has_reset_password, is_admin')
+            .eq('id', user.id)
+            .single();
+
+          if (!profile?.has_reset_password) {
+            navigate('/reset-password');
+          } else {
+            navigate(profile?.is_admin ? '/admin/dashboard' : '/dashboard');
+          }
+        }
+      } catch (error: any) {
+        console.error('Magic link error:', error);
+        toast.error("Error processing magic link");
+        navigate('/auth');
+      } finally {
+        setIsHandlingMagicLink(false);
       }
     };
 
@@ -100,8 +116,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           .eq("id", session.user.id)
           .single();
 
-        // If user has already reset password or didn't come through magic link,
-        // redirect them to their appropriate dashboard
+        // If user has already reset password, redirect them to their appropriate dashboard
         if (profile?.has_reset_password) {
           const { data: userProfile } = await supabaseClient
             .from("profiles")
