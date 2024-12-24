@@ -26,12 +26,12 @@ type ChemicalHazardClass = Database["public"]["Enums"]["chemical_hazard_class"];
 const Chemicals = () => {
   const session = useSession();
   const navigate = useNavigate();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [hazardClass, setHazardClass] = useState<ChemicalHazardClass | "all">("all");
 
-  const { data: chemicalsData, refetch } = useQuery<ChemicalsResponse>({
+  const { data: chemicalsData, refetch } = useQuery({
     queryKey: ["chemicals", currentPage, searchQuery, hazardClass],
     queryFn: async () => {
       let query = supabase
@@ -155,7 +155,7 @@ const Chemicals = () => {
                 <Beaker className="h-6 w-6" />
                 <h2 className="text-2xl font-semibold">Chemical Management</h2>
               </div>
-              <Button onClick={() => setIsAddDialogOpen(true)}>
+              <Button onClick={() => setDialogOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
                 Add Chemical
               </Button>
@@ -184,8 +184,8 @@ const Chemicals = () => {
             )}
 
             <ChemicalFormDialog
-              open={isAddDialogOpen}
-              onOpenChange={setIsAddDialogOpen}
+              open={dialogOpen}
+              onOpenChange={setDialogOpen}
               onSuccess={refetch}
             />
           </div>
