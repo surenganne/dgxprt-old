@@ -1,20 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { MapPin, Plus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { LocationFormDialog } from "./LocationFormDialog";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LocationHeader } from "./location/LocationHeader";
+import { LocationFilters } from "./location/LocationFilters";
+import { LocationTable } from "./location/LocationTable";
+import { LocationBatchActions } from "./location/LocationBatchActions";
 import { 
   Pagination, 
   PaginationContent, 
@@ -109,78 +101,23 @@ export const LocationManagement = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Location Management</h2>
-        <Button onClick={handleAdd}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Location
-        </Button>
-      </div>
+      <LocationHeader onAdd={handleAdd} />
+      
+      <LocationBatchActions />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input
-          placeholder="Search locations..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full"
-        />
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger>
-            <SelectValue placeholder="Filter by type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="country">Country</SelectItem>
-            <SelectItem value="state">State</SelectItem>
-            <SelectItem value="district">District</SelectItem>
-            <SelectItem value="school">School</SelectItem>
-            <SelectItem value="site">Site</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <LocationFilters
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        typeFilter={typeFilter}
+        onTypeFilterChange={setTypeFilter}
+      />
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Parent Location</TableHead>
-            <TableHead>Created At</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginatedLocations?.map((location) => (
-            <TableRow key={location.id}>
-              <TableCell className="font-medium">{location.name}</TableCell>
-              <TableCell>{location.type}</TableCell>
-              <TableCell>{location.parent_id || "None"}</TableCell>
-              <TableCell>
-                {new Date(location.created_at).toLocaleDateString()}
-              </TableCell>
-              <TableCell className="text-right">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="mr-2"
-                  disabled={isLoading}
-                  onClick={() => handleEdit(location)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  disabled={isLoading}
-                  onClick={() => handleDeleteLocation(location.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <LocationTable
+        locations={paginatedLocations}
+        onEdit={handleEdit}
+        onDelete={handleDeleteLocation}
+        isLoading={isLoading}
+      />
 
       {totalPages > 1 && (
         <Pagination className="mt-4">
