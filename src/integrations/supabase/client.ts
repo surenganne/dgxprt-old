@@ -12,9 +12,8 @@ export const createClient = (options?: any) => {
       persistSession: true,
       detectSessionInUrl: false,
       flowType: 'pkce',
-      emailAuth: {
-        enabled: false
-      }
+      emailRedirectTo: `${window.location.origin}/auth`,
+      debug: true
     }
   });
 };

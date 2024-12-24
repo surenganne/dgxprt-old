@@ -34,7 +34,7 @@ export const createNewUser = async (formData: UserFormData) => {
     const { data: authData, error: createUserError } = await anonClient.auth.admin.createUser({
       email: formData.email,
       password: tempPassword,
-      email_confirm: true, // Skip email confirmation
+      email_confirm: true,
       user_metadata: {
         full_name: formData.full_name
       }
