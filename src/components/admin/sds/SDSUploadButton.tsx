@@ -19,12 +19,14 @@ interface SDSUploadButtonProps {
   chemicalId: string;
   onSuccess: () => void;
   currentVersion?: string;
+  className?: string; // Added className prop
 }
 
 export const SDSUploadButton = ({ 
   chemicalId, 
   onSuccess,
-  currentVersion 
+  currentVersion,
+  className 
 }: SDSUploadButtonProps) => {
   const [uploading, setUploading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -99,7 +101,7 @@ export const SDSUploadButton = ({
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          className="border-primary-purple/20 hover:bg-primary-purple/10 text-primary-purple"
+          className={`border-primary-purple/20 hover:bg-primary-purple/10 text-primary-purple ${className}`}
           disabled={uploading}
         >
           <Upload className="mr-2 h-4 w-4" />
