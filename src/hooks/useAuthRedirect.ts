@@ -44,11 +44,9 @@ export const useAuthRedirect = (
           return;
         }
 
-        console.log("[useAuthRedirect] Session found for user:", session.user.id);
-
         // Skip profile check if on auth page with magic link
         if (location.pathname === '/auth' && isMagicLink) {
-          console.log("[useAuthRedirect] On auth page with magic link, skipping profile check");
+          console.log("[useAuthRedirect] Skipping profile check for magic link auth");
           setInitialAuthCheckDone(true);
           return;
         }
@@ -74,10 +72,6 @@ export const useAuthRedirect = (
           return;
         }
 
-        console.log("[useAuthRedirect] Profile status:", profile.status);
-        console.log("[useAuthRedirect] Is admin:", profile.is_admin);
-        console.log("[useAuthRedirect] Has reset password:", profile.has_reset_password);
-
         if (profile.status !== "active") {
           console.log("[useAuthRedirect] Account not active");
           toast.error("Your account is not active");
@@ -87,8 +81,8 @@ export const useAuthRedirect = (
           return;
         }
 
-        // Only redirect if we're not on the auth page and not handling a magic link
-        if (location.pathname === '/auth' && !isMagicLink) {
+        // Only redirect if not handling magic link authentication
+        if (!isMagicLink && location.pathname === '/auth') {
           console.log("[useAuthRedirect] Redirecting to appropriate dashboard");
           if (profile.is_admin) {
             navigate('/admin/dashboard', { replace: true });
