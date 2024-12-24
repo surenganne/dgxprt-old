@@ -14,8 +14,10 @@ serve(async (req) => {
 
   try {
     const { to, password, loginLink } = await req.json();
+    console.log("[send-welcome-email] Processing request for:", to);
 
     if (!to || !password || !loginLink) {
+      console.error("[send-welcome-email] Missing required parameters");
       return new Response(
         JSON.stringify({ error: 'Required parameters missing' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -23,13 +25,14 @@ serve(async (req) => {
     }
 
     if (!RESEND_API_KEY) {
+      console.error("[send-welcome-email] RESEND_API_KEY is not configured");
       return new Response(
         JSON.stringify({ error: 'RESEND_API_KEY is not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const fromEmail = "no-reply@dgxprt.incepta.ai";
+    console.log("[send-welcome-email] Sending email via Resend...");
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -38,7 +41,7 @@ serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: fromEmail,
+        from: "no-reply@incepta.ai",
         to: [to],
         subject: "Welcome to DGXPRT - Your Account Details",
         html: `
@@ -75,6 +78,7 @@ serve(async (req) => {
                   padding: 15px;
                   margin: 15px 0;
                   border-radius: 5px;
+                  border: 1px solid #e0e0e0;
                 }
                 .button {
                   display: inline-block;
@@ -91,6 +95,11 @@ serve(async (req) => {
                   font-size: 12px;
                   color: #666666;
                 }
+                .important-note {
+                  color: #d32f2f;
+                  font-weight: bold;
+                  margin: 15px 0;
+                }
               </style>
             </head>
             <body>
@@ -105,6 +114,8 @@ serve(async (req) => {
                   <p><strong>Temporary Password:</strong> ${password}</p>
                 </div>
 
+                <p class="important-note">Please note: This is a temporary password. You will be required to change it upon your first login.</p>
+
                 <p>To access your account, please follow these steps:</p>
                 <ol>
                   <li>Click the button below to go to the login page</li>
@@ -115,7 +126,12 @@ serve(async (req) => {
 
                 <a href="${loginLink}" class="button" style="color: white;">Login to DGXPRT</a>
 
-                <p><strong>Important:</strong> For security reasons, please change your password immediately after your first login.</p>
+                <p><strong>Important Security Notice:</strong></p>
+                <ul>
+                  <li>For security reasons, please change your password immediately after your first login.</li>
+                  <li>Keep your credentials confidential and do not share them with anyone.</li>
+                  <li>If you did not request this account, please contact your system administrator immediately.</li>
+                </ul>
                 
                 <p>If you have any questions or need assistance, please contact your system administrator.</p>
               </div>
@@ -130,8 +146,14 @@ serve(async (req) => {
       }),
     });
 
+    if (!res.ok) {
+      const error = await res.text();
+      console.error("[send-welcome-email] Error sending email:", error);
+      throw new Error(`Failed to send email: ${error}`);
+    }
+
     const data = await res.json();
-    console.log('Email sent response:', data);
+    console.log("[send-welcome-email] Email sent successfully:", data);
 
     return new Response(
       JSON.stringify(data),
@@ -142,7 +164,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error("[send-welcome-email] Error:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
