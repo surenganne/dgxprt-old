@@ -109,27 +109,33 @@ export const UserManagement = () => {
     }
 
     setIsLoading(true);
-    console.log("[UserManagement] Calling Supabase auth.signInWithOtp for email:", email);
+    console.log("[UserManagement] Calling custom password reset function for email:", email);
     
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email,
-    });
-
-    if (error) {
-      console.error("[UserManagement] Error sending password reset:", error);
-      toast({
-        title: "Error sending password reset",
-        description: error.message,
-        variant: "destructive",
+    try {
+      const { error } = await supabase.functions.invoke('send-password-reset', {
+        body: { email }
       });
-    } else {
+
+      if (error) {
+        console.error("[UserManagement] Error sending password reset:", error);
+        throw error;
+      }
+
       console.log("[UserManagement] Password reset email sent successfully to:", email);
       toast({
         title: "Password reset email sent",
         description: "A login link has been sent to the user's email.",
       });
+    } catch (error: any) {
+      console.error("[UserManagement] Error:", error);
+      toast({
+        title: "Error sending password reset",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (
