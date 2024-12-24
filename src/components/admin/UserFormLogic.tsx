@@ -34,7 +34,6 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
         const { error: updateError } = await supabase
           .from("profiles")
           .update({
-            email: formData.email,
             full_name: formData.full_name,
             is_admin: formData.is_admin,
             status: formData.status,
@@ -49,6 +48,17 @@ export const useUserForm = ({ user, onSuccess, onOpenChange }: UseUserFormProps)
           description: "The user's information has been updated.",
         });
       } else {
+        // Check if user already exists
+        const { data: existingUser } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("email", formData.email)
+          .single();
+
+        if (existingUser) {
+          throw new Error("A user with this email already exists");
+        }
+
         // Create new user and send magic link
         const { error: createError } = await supabase.functions.invoke('create-user-with-magic-link', {
           body: { 
