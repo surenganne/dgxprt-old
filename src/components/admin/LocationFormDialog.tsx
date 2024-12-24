@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -66,7 +66,7 @@ export function LocationFormDialog({
   });
 
   // Reset form when dialog opens/closes or when initialData changes
-  useState(() => {
+  useEffect(() => {
     if (open) {
       form.reset(initialData || defaultValues);
     }
