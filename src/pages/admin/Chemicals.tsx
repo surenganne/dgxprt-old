@@ -17,7 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChemicalsTable } from "@/components/admin/chemicals/ChemicalsTable";
 import { ChemicalsPagination } from "@/components/admin/chemicals/ChemicalsPagination";
 import { ChemicalsFilters } from "@/components/admin/chemicals/ChemicalsFilters";
-import type { ChemicalsResponse } from "@/types/chemical";
+import type { Chemical, ChemicalsResponse } from "@/types/chemical";
 import type { Database } from "@/integrations/supabase/types";
 
 const ITEMS_PER_PAGE = 10;
