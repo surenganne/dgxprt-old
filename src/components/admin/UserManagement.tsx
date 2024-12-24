@@ -96,7 +96,10 @@ export const UserManagement = () => {
   };
 
   const handleSendPassword = async (email: string) => {
+    console.log("[UserManagement] Starting password reset for email:", email);
+    
     if (email === "admin@dgxprt.ai") {
+      console.log("[UserManagement] Attempted to reset admin password - blocked");
       toast({
         title: "Cannot reset admin password",
         description: "The main administrator password cannot be reset.",
@@ -106,17 +109,21 @@ export const UserManagement = () => {
     }
 
     setIsLoading(true);
+    console.log("[UserManagement] Calling Supabase auth.signInWithOtp for email:", email);
+    
     const { error } = await supabase.auth.signInWithOtp({
       email: email,
     });
 
     if (error) {
+      console.error("[UserManagement] Error sending password reset:", error);
       toast({
         title: "Error sending password reset",
         description: error.message,
         variant: "destructive",
       });
     } else {
+      console.log("[UserManagement] Password reset email sent successfully to:", email);
       toast({
         title: "Password reset email sent",
         description: "A login link has been sent to the user's email.",
