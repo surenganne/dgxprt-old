@@ -26,19 +26,24 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const handleMagicLink = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get("token");
-      const type = params.get("type");
-      const email = params.get("email");
+      // Parse both search params and hash params
+      const searchParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+      
+      // Check both locations for magic link parameters
+      const token = searchParams.get("token") || hashParams.get("access_token");
+      const type = searchParams.get("type") || hashParams.get("type");
+      const email = searchParams.get("email");
 
       console.log("[MagicLinkHandler] URL Parameters:", {
         token: token ? "present" : "absent",
         type,
         email,
-        fullUrl: window.location.href
+        fullUrl: window.location.href,
+        hasHash: window.location.hash ? "yes" : "no"
       });
 
-      if (token && type === "magiclink") {
+      if (token && (type === "magiclink" || type === "recovery")) {
         setIsHandlingMagicLink(true);
         console.log("[MagicLinkHandler] Magic link detected, starting verification process");
         

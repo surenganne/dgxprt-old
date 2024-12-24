@@ -11,22 +11,25 @@ export const useMagicLink = (
   const supabase = useSupabaseClient();
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const emailFromUrl = params.get("email");
-    const isTemp = params.get("temp") === "true";
-    const token = params.get("token");
-    const type = params.get("type");
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+    
+    const emailFromUrl = searchParams.get("email");
+    const isTemp = searchParams.get("temp") === "true";
+    const token = searchParams.get("token") || hashParams.get("access_token");
+    const type = searchParams.get("type") || hashParams.get("type");
 
     console.log("[useMagicLink] Parameters:", {
       emailFromUrl,
       isTemp,
       hasToken: token ? "yes" : "no",
       type,
-      fullUrl: window.location.href // Fixed: Using window.location.href instead of location.href
+      fullUrl: window.location.href,
+      hasHash: window.location.hash ? "yes" : "no"
     });
 
     const handleMagicLink = async () => {
-      if (!token || type !== "magiclink") {
+      if (!token || (type !== "magiclink" && type !== "recovery")) {
         console.log("[useMagicLink] No magic link parameters found");
         setInitialAuthCheckDone(true);
         return;
