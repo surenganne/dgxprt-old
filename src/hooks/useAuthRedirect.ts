@@ -17,9 +17,9 @@ export const useAuthRedirect = (
     console.log("[useAuthRedirect] Current path:", location.pathname);
     console.log("[useAuthRedirect] Magic link detected:", isMagicLink);
     
-    // Skip auth check if handling magic link
-    if (isMagicLink) {
-      console.log("[useAuthRedirect] Magic link detected, skipping auth redirect");
+    // If handling magic link and on auth page, don't redirect
+    if (isMagicLink && location.pathname === '/auth') {
+      console.log("[useAuthRedirect] On auth page with magic link, completing authentication");
       setInitialAuthCheckDone(true);
       return;
     }
@@ -37,6 +37,9 @@ export const useAuthRedirect = (
         
         if (!session) {
           console.log("[useAuthRedirect] No session found");
+          if (location.pathname !== '/auth') {
+            navigate('/auth', { replace: true });
+          }
           setInitialAuthCheckDone(true);
           return;
         }
@@ -79,20 +82,12 @@ export const useAuthRedirect = (
           console.log("[useAuthRedirect] Account not active");
           toast.error("Your account is not active");
           await supabase.auth.signOut();
+          navigate('/auth', { replace: true });
           setInitialAuthCheckDone(true);
           return;
         }
 
-        if (!profile.has_reset_password) {
-          console.log("[useAuthRedirect] Password reset required");
-          if (location.pathname !== '/auth/reset-password') {
-            navigate('/auth/reset-password', { replace: true });
-          }
-          setInitialAuthCheckDone(true);
-          return;
-        }
-
-        // Only redirect if we're on the auth page and not handling a magic link
+        // Only redirect if we're not on the auth page and not handling a magic link
         if (location.pathname === '/auth' && !isMagicLink) {
           console.log("[useAuthRedirect] Redirecting to appropriate dashboard");
           if (profile.is_admin) {
