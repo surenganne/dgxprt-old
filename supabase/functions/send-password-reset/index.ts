@@ -80,7 +80,7 @@ serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "DGXPRT <no-reply@dgxprt.ai>",
+        from: "onboarding@resend.dev",  // Using Resend's default domain
         to: [email],
         subject: "Reset Your Password - DGXPRT",
         html: `
