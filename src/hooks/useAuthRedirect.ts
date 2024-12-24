@@ -31,6 +31,12 @@ export const useAuthRedirect = (
           return;
         }
 
+        // Skip profile check if on auth page with magic link
+        if (location.pathname === '/auth' && isMagicLink) {
+          setInitialAuthCheckDone(true);
+          return;
+        }
+
         const { data: profile, error } = await supabase
           .from("profiles")
           .select("is_admin, has_reset_password, status")

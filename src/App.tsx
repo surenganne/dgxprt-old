@@ -44,10 +44,11 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
             }
           }
 
-          // Only redirect if not already on auth page
-          if (location.pathname !== '/auth') {
-            const redirectUrl = `/auth?token=${token}&type=${type}`;
-            navigate(redirectUrl, { replace: true });
+          // Force navigation to auth page with token
+          const currentPath = location.pathname;
+          if (currentPath !== '/auth') {
+            console.log("Redirecting to auth page with token");
+            navigate(`/auth?token=${token}&type=${type}`, { replace: true });
           }
         } catch (error) {
           console.error("Error handling magic link:", error);
@@ -61,9 +62,8 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
     handleMagicLink();
   }, [location, navigate, supabaseClient]);
 
-  // Don't render children while handling magic link
   if (isHandlingMagicLink) {
-    return null;
+    return <div>Processing magic link...</div>;
   }
 
   return <>{children}</>;

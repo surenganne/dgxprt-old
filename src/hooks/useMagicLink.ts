@@ -41,6 +41,7 @@ export const useMagicLink = (
         console.log("Magic link verified successfully");
 
         if (emailFromUrl) {
+          console.log("Setting email from URL:", emailFromUrl);
           setEmail(emailFromUrl);
           
           if (isTemp) {
