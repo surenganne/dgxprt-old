@@ -61,7 +61,6 @@ export const UserFormFields = ({
           onChange={(e) =>
             setFormData({ ...formData, full_name: e.target.value })
           }
-          required
           disabled={loading}
         />
       </div>
