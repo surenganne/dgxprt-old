@@ -10,10 +10,45 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!session) {
-      navigate('/auth');
-    }
-  }, [session, navigate]);
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.log("No session found, redirecting to auth");
+        navigate('/auth');
+        return;
+      }
+
+      // Check if user exists in profiles and their status
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('is_admin, status')
+        .eq('id', session.user.id)
+        .single();
+
+      if (error || !profile) {
+        console.error("Error fetching profile:", error);
+        toast.error("Error verifying user access");
+        navigate('/auth');
+        return;
+      }
+
+      // Redirect admin users to admin dashboard
+      if (profile.is_admin) {
+        navigate('/admin/dashboard');
+        return;
+      }
+
+      // Check if user is active
+      if (profile.status !== 'active') {
+        toast.error("Your account is not active");
+        navigate('/auth');
+        return;
+      }
+    };
+
+    checkAuth();
+  }, [session, navigate, supabase]);
 
   const handleSignOut = async () => {
     try {
@@ -24,6 +59,11 @@ const Dashboard = () => {
       toast.error("Error signing out");
     }
   };
+
+  // Show loading state while checking auth
+  if (!session) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">

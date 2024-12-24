@@ -30,15 +30,20 @@ const Auth = () => {
 
   // Check if user is already authenticated
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
         handleSuccessfulLogin(session.user.id);
       }
-    });
+    };
 
     // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+    checkSession();
+
+    // Listen for auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session);
+      if (event === 'SIGNED_IN' && session) {
         handleSuccessfulLogin(session.user.id);
       }
     });
@@ -51,13 +56,24 @@ const Auth = () => {
   const handleSuccessfulLogin = async (userId: string) => {
     try {
       // Check if the user is an admin and their password reset status
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
-        .select('is_admin, has_reset_password')
+        .select('is_admin, has_reset_password, status')
         .eq('id', userId)
         .single();
 
-      if (profile && !profile.has_reset_password) {
+      if (error) {
+        console.error('Error checking user profile:', error);
+        toast.error("Error checking user profile");
+        return;
+      }
+
+      if (profile.status !== 'active') {
+        toast.error("Your account is not active");
+        return;
+      }
+
+      if (!profile.has_reset_password) {
         toast.info("Please reset your password for security reasons.");
         // Here you would typically redirect to a password reset page
       }
