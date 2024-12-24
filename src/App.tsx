@@ -12,7 +12,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
 import AdminLocations from "./pages/admin/Locations";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const queryClient = new QueryClient();
 
@@ -21,18 +21,20 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const supabaseClient = useSupabaseClient();
+  const [isHandlingMagicLink, setIsHandlingMagicLink] = useState(false);
 
   useEffect(() => {
     const handleMagicLink = async () => {
-      const params = new URLSearchParams(location.search);
+      const params = new URLSearchParams(window.location.search);
       const token = params.get("token");
       const type = params.get("type");
 
       if (token && type === "magiclink") {
-        console.log("Magic link detected, clearing session and redirecting to auth");
+        setIsHandlingMagicLink(true);
+        console.log("Magic link detected, handling verification");
         
         try {
-          // Clear any existing session
+          // Clear any existing session first
           await supabaseClient.auth.signOut();
           
           // Clear all auth-related local storage
@@ -42,17 +44,27 @@ const MagicLinkHandler = ({ children }: { children: React.ReactNode }) => {
             }
           }
 
-          // Force redirect to auth page with parameters
-          const redirectUrl = `/auth?token=${token}&type=${type}`;
-          navigate(redirectUrl, { replace: true });
+          // Only redirect if not already on auth page
+          if (location.pathname !== '/auth') {
+            const redirectUrl = `/auth?token=${token}&type=${type}`;
+            navigate(redirectUrl, { replace: true });
+          }
         } catch (error) {
           console.error("Error handling magic link:", error);
+          navigate('/auth');
+        } finally {
+          setIsHandlingMagicLink(false);
         }
       }
     };
 
     handleMagicLink();
   }, [location, navigate, supabaseClient]);
+
+  // Don't render children while handling magic link
+  if (isHandlingMagicLink) {
+    return null;
+  }
 
   return <>{children}</>;
 };

@@ -22,14 +22,15 @@ export const useAuthRedirect = (
     }
 
     const checkAuthAndRedirect = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session) {
-        setInitialAuthCheckDone(true);
-        return;
-      }
-
       try {
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!session) {
+          console.log("No session found");
+          setInitialAuthCheckDone(true);
+          return;
+        }
+
         const { data: profile, error } = await supabase
           .from("profiles")
           .select("is_admin, has_reset_password, status")
@@ -81,5 +82,5 @@ export const useAuthRedirect = (
     };
 
     checkAuthAndRedirect();
-  }, [location, navigate, supabase]);
+  }, [location, navigate, supabase, setInitialAuthCheckDone]);
 };
