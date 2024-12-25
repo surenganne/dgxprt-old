@@ -4,6 +4,7 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
 
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
@@ -48,7 +49,7 @@ const ResetPassword = () => {
 
       if (profileError) throw profileError;
 
-      toast.success("Password updated successfully");
+      toast.success("Password updated successfully! Redirecting to dashboard...");
       
       // Check if user is admin
       const { data: profile } = await supabase
@@ -57,7 +58,11 @@ const ResetPassword = () => {
         .eq('id', user.id)
         .single();
 
-      navigate(profile?.is_admin ? '/admin/dashboard' : '/dashboard');
+      // Short delay to show the success message before redirecting
+      setTimeout(() => {
+        navigate(profile?.is_admin ? '/admin/dashboard' : '/dashboard', { replace: true });
+      }, 2000);
+
     } catch (error: any) {
       console.error('Reset password error:', error);
       toast.error("Error updating password: " + error.message);
@@ -67,7 +72,19 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
+      <div className="absolute top-4 left-4 z-20">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex items-center gap-2 hover:bg-background/50"
+          onClick={() => navigate('/')}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </Button>
+      </div>
+
       <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-lg shadow-lg">
         <div className="text-center">
           <img
