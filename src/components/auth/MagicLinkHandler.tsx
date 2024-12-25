@@ -11,68 +11,67 @@ export const MagicLinkHandler = () => {
 
   useEffect(() => {
     const handleMagicLink = async () => {
-      const searchParams = new URLSearchParams(window.location.search);
-      const token = searchParams.get("token");
-      const type = searchParams.get("type");
-
-      console.log("[MagicLinkHandler] Token:", token);
-      console.log("[MagicLinkHandler] Type:", type);
-
-      if (!token || type !== "magiclink") {
-        console.log("[MagicLinkHandler] Invalid magic link parameters");
-        navigate('/auth');
-        return;
-      }
-
-      setIsHandlingMagicLink(true);
-      
       try {
+        setIsHandlingMagicLink(true);
+        console.log("[MagicLinkHandler] Starting magic link handling");
+
+        // Get the code from the URL
+        const searchParams = new URLSearchParams(window.location.search);
+        const code = searchParams.get("code");
+        const type = searchParams.get("type");
+
+        console.log("[MagicLinkHandler] Code:", code);
+        console.log("[MagicLinkHandler] Type:", type);
+
+        if (!code) {
+          console.log("[MagicLinkHandler] No code found in URL");
+          navigate('/auth');
+          return;
+        }
+
         // Clear any existing session first
         await supabaseClient.auth.signOut();
         
-        console.log("[MagicLinkHandler] Exchanging token for session");
-        const { error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(token);
+        console.log("[MagicLinkHandler] Exchanging code for session");
+        const { data: { session }, error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(code);
         
         if (exchangeError) {
           console.error("[MagicLinkHandler] Token exchange error:", exchangeError);
           throw exchangeError;
         }
 
-        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-        if (userError) {
-          console.error("[MagicLinkHandler] Get user error:", userError);
-          throw userError;
+        if (!session?.user) {
+          console.error("[MagicLinkHandler] No user in session");
+          throw new Error("No user found in session");
         }
 
-        if (user) {
-          console.log("[MagicLinkHandler] User authenticated:", user.email);
-          const { data: profile, error: profileError } = await supabaseClient
-            .from('profiles')
-            .select('has_reset_password, is_admin')
-            .eq('id', user.id)
-            .maybeSingle();
+        console.log("[MagicLinkHandler] User authenticated:", session.user.email);
+        const { data: profile, error: profileError } = await supabaseClient
+          .from('profiles')
+          .select('has_reset_password, is_admin')
+          .eq('id', session.user.id)
+          .maybeSingle();
 
-          if (profileError) {
-            console.error("[MagicLinkHandler] Error fetching profile:", profileError);
-            throw profileError;
-          }
+        if (profileError) {
+          console.error("[MagicLinkHandler] Error fetching profile:", profileError);
+          throw profileError;
+        }
 
-          if (!profile) {
-            console.error("[MagicLinkHandler] No profile found for user:", user.email);
-            toast.error("User profile not found. Please contact support.");
-            navigate('/auth');
-            return;
-          }
+        if (!profile) {
+          console.error("[MagicLinkHandler] No profile found for user:", session.user.email);
+          toast.error("User profile not found. Please contact support.");
+          navigate('/auth');
+          return;
+        }
 
-          console.log("[MagicLinkHandler] Profile found:", profile);
-          // Treat null has_reset_password as false
-          if (!profile.has_reset_password) {
-            console.log("[MagicLinkHandler] User needs to reset password");
-            navigate('/reset-password', { replace: true });
-          } else {
-            console.log("[MagicLinkHandler] User has reset password, redirecting to dashboard");
-            navigate(profile.is_admin ? '/admin' : '/dashboard', { replace: true });
-          }
+        console.log("[MagicLinkHandler] Profile found:", profile);
+        // Treat null has_reset_password as false
+        if (!profile.has_reset_password) {
+          console.log("[MagicLinkHandler] User needs to reset password");
+          navigate('/reset-password', { replace: true });
+        } else {
+          console.log("[MagicLinkHandler] User has reset password, redirecting to dashboard");
+          navigate(profile.is_admin ? '/admin' : '/dashboard', { replace: true });
         }
       } catch (error: any) {
         console.error('[MagicLinkHandler] Magic link error:', error);
