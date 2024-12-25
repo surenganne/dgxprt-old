@@ -6,22 +6,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Edit2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { SDSList } from "@/components/admin/sds/SDSList";
 import type { Chemical } from "@/types/chemical";
-import { useAuditLogger } from "@/hooks/useAuditLogger";
 
 interface ChemicalsTableProps {
   chemicals: Chemical[];
   onEdit: (chemical: Chemical) => void;
-  onDelete: () => void;
+  onDelete: (chemical: Chemical) => void;
   selectedChemicals: Chemical[];
   onSelectionChange: (chemicals: Chemical[]) => void;
+  readOnly?: boolean;
 }
 
 export const ChemicalsTable = ({
@@ -30,118 +28,98 @@ export const ChemicalsTable = ({
   onDelete,
   selectedChemicals,
   onSelectionChange,
+  readOnly = false,
 }: ChemicalsTableProps) => {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const { logUserAction } = useAuditLogger();
-
-  const handleDelete = async (chemical: Chemical) => {
-    try {
-      setIsDeleting(true);
-      const { error } = await supabase
-        .from("chemicals")
-        .delete()
-        .eq("id", chemical.id);
-
-      if (error) throw error;
-
-      await logUserAction(
-        "chemicals",
-        chemical.id,
-        `Deleted chemical: ${chemical.name}`,
-        { chemical_name: chemical.name }
-      );
-
-      toast.success("Chemical deleted successfully");
-      onDelete();
-    } catch (error) {
-      console.error("Error deleting chemical:", error);
-      toast.error("Failed to delete chemical");
-    } finally {
-      setIsDeleting(false);
+  const handleToggleAll = () => {
+    if (selectedChemicals.length === chemicals.length) {
+      onSelectionChange([]);
+    } else {
+      onSelectionChange([...chemicals]);
     }
   };
 
-  const handleSelectAll = (checked: boolean) => {
-    onSelectionChange(checked ? chemicals : []);
+  const handleToggleOne = (chemical: Chemical) => {
+    if (selectedChemicals.find((c) => c.id === chemical.id)) {
+      onSelectionChange(selectedChemicals.filter((c) => c.id !== chemical.id));
+    } else {
+      onSelectionChange([...selectedChemicals, chemical]);
+    }
   };
-
-  const handleSelectChemical = (chemical: Chemical, checked: boolean) => {
-    const newSelection = checked
-      ? [...selectedChemicals, chemical]
-      : selectedChemicals.filter((c) => c.id !== chemical.id);
-    onSelectionChange(newSelection);
-  };
-
-  const isSelected = (chemical: Chemical) =>
-    selectedChemicals.some((c) => c.id === chemical.id);
 
   return (
     <Table>
       <TableHeader>
-        <TableRow className="bg-gray-50/50 hover:bg-gray-50/70 transition-colors">
-          <TableHead className="w-[50px]">
-            <Checkbox
-              checked={chemicals.length > 0 && selectedChemicals.length === chemicals.length}
-              onCheckedChange={handleSelectAll}
-              aria-label="Select all chemicals"
-            />
-          </TableHead>
-          <TableHead className="text-primary-purple font-medium">Name</TableHead>
-          <TableHead className="text-primary-purple font-medium">CAS Number</TableHead>
-          <TableHead className="text-primary-purple font-medium">Hazard Class</TableHead>
-          <TableHead className="text-primary-purple font-medium">Description</TableHead>
-          <TableHead className="text-right text-primary-purple font-medium">Actions</TableHead>
+        <TableRow>
+          {!readOnly && (
+            <TableHead className="w-[50px]">
+              <Checkbox
+                checked={
+                  chemicals.length > 0 &&
+                  selectedChemicals.length === chemicals.length
+                }
+                onCheckedChange={handleToggleAll}
+              />
+            </TableHead>
+          )}
+          <TableHead>Name</TableHead>
+          <TableHead>CAS Number</TableHead>
+          <TableHead>Hazard Class</TableHead>
+          <TableHead>SDS Documents</TableHead>
+          {!readOnly && <TableHead className="w-[100px]">Actions</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
         {chemicals.map((chemical) => (
-          <TableRow key={chemical.id} className="hover:bg-gray-50/50 transition-colors">
-            <TableCell>
-              <Checkbox
-                checked={isSelected(chemical)}
-                onCheckedChange={(checked) =>
-                  handleSelectChemical(chemical, checked as boolean)
-                }
-                aria-label={`Select ${chemical.name}`}
-              />
-            </TableCell>
-            <TableCell className="font-medium text-primary-blue">{chemical.name}</TableCell>
-            <TableCell className="text-gray-600">{chemical.cas_number || "-"}</TableCell>
+          <TableRow key={chemical.id}>
+            {!readOnly && (
+              <TableCell>
+                <Checkbox
+                  checked={
+                    selectedChemicals.find((c) => c.id === chemical.id) !==
+                    undefined
+                  }
+                  onCheckedChange={() => handleToggleOne(chemical)}
+                />
+              </TableCell>
+            )}
+            <TableCell>{chemical.name}</TableCell>
+            <TableCell>{chemical.cas_number || "-"}</TableCell>
             <TableCell>
               <Badge
-                variant={chemical.hazard_class === "hazardous" ? "destructive" : "secondary"}
-                className={
+                variant={
                   chemical.hazard_class === "hazardous"
-                    ? "bg-red-100 text-red-800 hover:bg-red-100"
-                    : "bg-gray-100 text-gray-800 hover:bg-gray-100"
+                    ? "destructive"
+                    : "secondary"
                 }
               >
-                {chemical.hazard_class.replace("_", " ")}
+                {chemical.hazard_class === "hazardous"
+                  ? "Hazardous"
+                  : "Non-Hazardous"}
               </Badge>
             </TableCell>
-            <TableCell className="text-gray-600">
-              {chemical.description || "-"}
+            <TableCell>
+              <SDSList chemicalId={chemical.id} />
             </TableCell>
-            <TableCell className="text-right space-x-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-gray-600 hover:text-primary-purple hover:bg-primary-purple/10"
-                disabled={isDeleting}
-                onClick={() => onEdit(chemical)}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-gray-600 hover:text-primary-purple hover:bg-primary-purple/10"
-                disabled={isDeleting}
-                onClick={() => handleDelete(chemical)}
-              >
-                <Trash className="h-4 w-4" />
-              </Button>
-            </TableCell>
+            {!readOnly && (
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onEdit(chemical)}
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onDelete(chemical)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            )}
           </TableRow>
         ))}
       </TableBody>
