@@ -19,6 +19,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      console.log("[Auth] Attempting login for:", email);
       const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -27,6 +28,7 @@ const Auth = () => {
       if (signInError) throw signInError;
 
       if (user) {
+        console.log("[Auth] User signed in successfully:", user.email);
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('is_admin, has_reset_password')
@@ -34,23 +36,28 @@ const Auth = () => {
           .single();
 
         if (profileError) {
+          console.error("[Auth] Error fetching profile:", profileError);
           throw profileError;
         }
+
+        console.log("[Auth] User profile:", profile);
 
         if (!profile) {
           throw new Error('Profile not found');
         }
 
         if (!profile.has_reset_password) {
+          console.log("[Auth] User needs to reset password");
           navigate('/reset-password', { replace: true });
         } else {
+          console.log("[Auth] User has reset password, redirecting to dashboard");
           navigate(profile.is_admin ? '/admin/dashboard' : '/dashboard', { replace: true });
         }
 
         toast.success('Logged in successfully');
       }
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error('[Auth] Login error:', error);
       toast.error(error.message || 'Error logging in');
     } finally {
       setLoading(false);
@@ -62,6 +69,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      console.log("[Auth] Sending magic link to:", email);
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
@@ -73,7 +81,7 @@ const Auth = () => {
 
       toast.success('Magic link sent to your email');
     } catch (error: any) {
-      console.error('Magic link error:', error);
+      console.error('[Auth] Magic link error:', error);
       toast.error(error.message || 'Error sending magic link');
     } finally {
       setLoading(false);
