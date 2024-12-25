@@ -28,13 +28,13 @@ export const ChemicalDetails = ({
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col overflow-hidden">
-          <DialogHeader>
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-2xl font-semibold">
               {chemical.name}
             </DialogTitle>
           </DialogHeader>
-          <ScrollArea className="flex-1 px-2">
-            <div className="space-y-6 py-4">
+          <ScrollArea className="flex-1 h-full min-h-0">
+            <div className="space-y-6 py-4 px-2">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">CAS Number</h3>
