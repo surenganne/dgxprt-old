@@ -30,22 +30,52 @@ export const UserActions = ({
   const session = useSession();
   const { toast } = useToast();
 
+  console.log("[UserActions] Component rendered for user:", {
+    userId: user.id,
+    userEmail: user.email,
+    isOwner: user.is_owner,
+    isAdmin: user.is_admin
+  });
+  console.log("[UserActions] Current session:", session);
+
   const { data: currentUserProfile } = useQuery({
     queryKey: ["currentUserProfile"],
     queryFn: async () => {
-      if (!session?.user?.id) return null;
+      console.log("[UserActions] Fetching current user profile for:", session?.user?.id);
+      if (!session?.user?.id) {
+        console.log("[UserActions] No session user ID found");
+        return null;
+      }
+      
       const { data, error } = await supabase
         .from("profiles")
         .select("is_owner, is_admin")
         .eq("id", session.user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("[UserActions] Error fetching profile:", error);
+        throw error;
+      }
+      
+      console.log("[UserActions] Current user profile data:", data);
       return data;
     },
+    onError: (error) => {
+      console.error("[UserActions] Query error:", error);
+    }
   });
 
   const canModifyUser = () => {
+    console.log("[UserActions] Checking permissions:", {
+      currentProfile: currentUserProfile,
+      targetUser: user,
+      canModify: Boolean(currentUserProfile && 
+        (!user.is_owner && 
+        (currentUserProfile.is_owner || 
+        (currentUserProfile.is_admin && !user.is_admin))))
+    });
+
     if (!currentUserProfile) return false;
     if (user.is_owner) return false;
     if (currentUserProfile.is_owner) return !user.is_owner;
@@ -54,9 +84,20 @@ export const UserActions = ({
   };
 
   const getTooltipMessage = () => {
-    if (user.is_owner) return "Owner accounts cannot be modified";
-    if (user.is_admin && !currentUserProfile?.is_owner) return "Only owners can modify admin accounts";
-    return "This action is not allowed";
+    const message = user.is_owner 
+      ? "Owner accounts cannot be modified"
+      : user.is_admin && !currentUserProfile?.is_owner 
+        ? "Only owners can modify admin accounts"
+        : "This action is not allowed";
+    
+    console.log("[UserActions] Tooltip message:", {
+      message,
+      userIsOwner: user.is_owner,
+      userIsAdmin: user.is_admin,
+      currentUserIsOwner: currentUserProfile?.is_owner
+    });
+    
+    return message;
   };
 
   const handleCopyMagicLink = async () => {
@@ -64,16 +105,23 @@ export const UserActions = ({
       console.log("[UserActions] Generating magic link for:", user.email);
       const magicLink = await generateMagicLink(user.email);
       
-      // Check if the user has reset their password
-      const { data: profile } = await supabase
+      console.log("[UserActions] Checking user profile for reset status");
+      const { data: profile, error } = await supabase
         .from("profiles")
         .select("has_reset_password")
         .eq("email", user.email)
         .single();
       
-      console.log("[UserActions] User profile:", profile);
+      if (error) {
+        console.error("[UserActions] Error checking profile:", error);
+        throw error;
+      }
+      
+      console.log("[UserActions] User profile data:", profile);
       
       await navigator.clipboard.writeText(magicLink);
+      
+      console.log("[UserActions] Magic link copied to clipboard");
       
       toast({
         title: "Magic link copied!",
