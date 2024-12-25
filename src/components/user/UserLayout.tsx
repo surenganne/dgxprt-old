@@ -8,9 +8,11 @@ import {
   Sidebar,
   SidebarHeader,
   SidebarProvider,
+  SidebarContent,
 } from "@/components/ui/sidebar";
-import { UserSidebarContent } from "./UserSidebarContent";
 import { BackgroundEffects } from "@/components/shared/BackgroundEffects";
+import { UserSidebarContent } from "./UserSidebarContent";
+import { UserSidebarFooter } from "./UserSidebarFooter";
 
 interface UserLayoutProps {
   children: React.ReactNode;
@@ -31,15 +33,11 @@ export function UserLayout({ children }: UserLayoutProps) {
   };
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultCollapsed={false}>
       <div className="min-h-screen flex w-full bg-background">
         <BackgroundEffects />
-        <Sidebar 
-          className="bg-primary-blue transition-all duration-300 ease-in-out"
-          variant="sidebar"
-          collapsible="icon"
-        >
-          <SidebarHeader className="p-4 border-b border-border/10 bg-white/5 flex justify-center">
+        <Sidebar className="bg-primary-blue transition-all duration-300 ease-in-out">
+          <SidebarHeader className="p-4 border-b border-border/10 bg-background flex justify-center">
             <img
               src="/dg-text-logo.png"
               alt="DGXPRT Logo"
@@ -53,34 +51,7 @@ export function UserLayout({ children }: UserLayoutProps) {
           </SidebarHeader>
 
           <UserSidebarContent />
-
-          <div className="mt-auto p-4 border-t border-white/10">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white">
-                {session?.user?.email?.[0].toUpperCase()}
-              </div>
-              <span className="text-sm text-white/90 truncate group-data-[state=collapsed]:hidden">
-                {session?.user?.email}
-              </span>
-            </div>
-            <div className="flex flex-col space-y-2">
-              <Button
-                variant="ghost"
-                className="text-white hover:bg-white/50 hover:text-black transition-colors duration-200 ease-in-out w-full justify-start"
-                onClick={() => {}}
-              >
-                <ThemeToggle />
-                <span className="ml-2 group-data-[state=collapsed]:hidden">Theme</span>
-              </Button>
-              <Button 
-                variant="ghost"
-                onClick={handleSignOut}
-                className="text-white hover:bg-white/50 hover:text-black transition-colors duration-200 ease-in-out w-full justify-start"
-              >
-                Sign Out
-              </Button>
-            </div>
-          </div>
+          <UserSidebarFooter />
         </Sidebar>
 
         <main className="flex-1 overflow-auto">
