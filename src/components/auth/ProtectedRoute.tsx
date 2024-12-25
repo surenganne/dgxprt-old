@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, Navigate, useNavigate } from "react-router-dom";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 
@@ -12,6 +12,8 @@ export const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRoutePr
   const location = useLocation();
   const navigate = useNavigate();
   const supabaseClient = useSupabaseClient();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   
   useEffect(() => {
     const checkAuth = async () => {
@@ -21,8 +23,9 @@ export const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRoutePr
         console.log("[ProtectedRoute] Admin only:", adminOnly);
 
         if (!session?.user) {
-          console.log("[ProtectedRoute] No session, redirecting to auth");
-          navigate("/auth");
+          console.log("[ProtectedRoute] No session, will redirect to auth");
+          setIsAuthorized(false);
+          setIsLoading(false);
           return;
         }
 
@@ -35,6 +38,8 @@ export const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRoutePr
         
         if (profileError) {
           console.error("[ProtectedRoute] Error fetching profile:", profileError);
+          setIsAuthorized(false);
+          setIsLoading(false);
           return;
         }
 
@@ -44,6 +49,7 @@ export const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRoutePr
         if (!profile?.has_reset_password && location.pathname !== '/reset-password') {
           console.log("[ProtectedRoute] User needs to reset password, redirecting to /reset-password");
           navigate("/reset-password", { replace: true });
+          setIsLoading(false);
           return;
         }
 
@@ -51,17 +57,35 @@ export const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRoutePr
         if (adminOnly && !profile?.is_admin) {
           console.log("[ProtectedRoute] User is not admin, redirecting to dashboard");
           navigate("/dashboard");
+          setIsLoading(false);
+          return;
         }
+
+        setIsAuthorized(true);
+        setIsLoading(false);
       } catch (error) {
         console.error("[ProtectedRoute] Error in auth check:", error);
+        setIsAuthorized(false);
+        setIsLoading(false);
       }
     };
 
     checkAuth();
   }, [session, navigate, supabaseClient, adminOnly, location.pathname]);
   
-  if (!session) {
-    console.log("[ProtectedRoute] No session, rendering Navigate component");
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-purple mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!isAuthorized) {
+    console.log("[ProtectedRoute] Not authorized, rendering Navigate component");
     return <Navigate to="/auth" replace />;
   }
   
