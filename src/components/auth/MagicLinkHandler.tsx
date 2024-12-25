@@ -15,16 +15,21 @@ export const MagicLinkHandler = () => {
         setIsHandlingMagicLink(true);
         console.log("[MagicLinkHandler] Starting magic link handling");
 
-        // Get the code from the URL
+        // Get parameters from URL
         const searchParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+        
+        // Check for both PKCE flow (code) and legacy flow (token)
         const code = searchParams.get("code");
-        const type = searchParams.get("type");
+        const token = searchParams.get("token") || hashParams.get("access_token");
+        const type = searchParams.get("type") || hashParams.get("type");
 
         console.log("[MagicLinkHandler] Code:", code);
+        console.log("[MagicLinkHandler] Token:", token);
         console.log("[MagicLinkHandler] Type:", type);
 
-        if (!code) {
-          console.log("[MagicLinkHandler] No code found in URL");
+        if (!code && !token) {
+          console.log("[MagicLinkHandler] No authentication parameters found");
           navigate('/auth');
           return;
         }
@@ -32,12 +37,27 @@ export const MagicLinkHandler = () => {
         // Clear any existing session first
         await supabaseClient.auth.signOut();
         
-        console.log("[MagicLinkHandler] Exchanging code for session");
-        const { data: { session }, error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(code);
-        
-        if (exchangeError) {
-          console.error("[MagicLinkHandler] Token exchange error:", exchangeError);
-          throw exchangeError;
+        let session;
+
+        if (code) {
+          console.log("[MagicLinkHandler] Using PKCE flow with code");
+          const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+          session = data.session;
+        } else if (token) {
+          console.log("[MagicLinkHandler] Using legacy flow with token");
+          if (hashParams.get("access_token")) {
+            const { data, error } = await supabaseClient.auth.setSession({
+              access_token: token,
+              refresh_token: hashParams.get("refresh_token") || ""
+            });
+            if (error) throw error;
+            session = data.session;
+          } else {
+            const { data, error } = await supabaseClient.auth.getSession();
+            if (error) throw error;
+            session = data.session;
+          }
         }
 
         if (!session?.user) {
