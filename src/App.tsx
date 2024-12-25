@@ -19,6 +19,13 @@ import ChemicalCategories from "@/pages/admin/ChemicalCategories";
 import SDS from "@/pages/admin/SDS";
 import { Navigate } from "react-router-dom";
 
+// User routes
+import UserDashboard from "@/pages/user/Dashboard";
+import UserChemicals from "@/pages/user/Chemicals";
+import UserSDS from "@/pages/user/SDS";
+import UserRiskAssessments from "@/pages/user/RiskAssessments";
+import UserReports from "@/pages/user/Reports";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -41,6 +48,7 @@ function App() {
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/verify" element={<MagicLinkHandler />} />
               
+              {/* Legacy dashboard route - will redirect to appropriate dashboard */}
               <Route
                 path="/dashboard"
                 element={
@@ -110,6 +118,61 @@ function App() {
                 element={
                   <ProtectedRoute adminOnly>
                     <SDS />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* User Routes */}
+              <Route
+                path="/user"
+                element={
+                  <ProtectedRoute>
+                    <Navigate to="/user/dashboard" replace />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/user/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <UserDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/user/chemicals"
+                element={
+                  <ProtectedRoute>
+                    <UserChemicals />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/user/sds"
+                element={
+                  <ProtectedRoute>
+                    <UserSDS />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/user/risk-assessments"
+                element={
+                  <ProtectedRoute>
+                    <UserRiskAssessments />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/user/reports"
+                element={
+                  <ProtectedRoute>
+                    <UserReports />
                   </ProtectedRoute>
                 }
               />
