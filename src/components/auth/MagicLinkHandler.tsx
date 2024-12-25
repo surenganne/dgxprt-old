@@ -15,12 +15,13 @@ export const MagicLinkHandler = () => {
         setIsHandlingMagicLink(true);
         console.log("[MagicLinkHandler] Starting magic link handling");
         console.log("[MagicLinkHandler] Current URL:", window.location.href);
-        console.log("[MagicLinkHandler] Search params:", window.location.search);
-        console.log("[MagicLinkHandler] Hash params:", window.location.hash);
-
+        
         // Get parameters from URL
         const searchParams = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+        
+        console.log("[MagicLinkHandler] Search params:", Object.fromEntries(searchParams));
+        console.log("[MagicLinkHandler] Hash params:", Object.fromEntries(hashParams));
         
         // Check for both PKCE flow (code) and legacy flow (token)
         const code = searchParams.get("code");
@@ -34,9 +35,7 @@ export const MagicLinkHandler = () => {
           token,
           type,
           error,
-          errorDescription,
-          searchParams: Object.fromEntries(searchParams),
-          hashParams: Object.fromEntries(hashParams)
+          errorDescription
         });
 
         if (error || errorDescription) {
