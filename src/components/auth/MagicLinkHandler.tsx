@@ -113,14 +113,18 @@ export const MagicLinkHandler = () => {
         }
 
         console.log("[MagicLinkHandler] Profile found:", profile);
-        // Treat null has_reset_password as false
+        
+        // Always redirect to reset-password if has_reset_password is false
         if (!profile.has_reset_password) {
-          console.log("[MagicLinkHandler] User needs to reset password");
+          console.log("[MagicLinkHandler] User needs to reset password, redirecting to /reset-password");
           navigate('/reset-password', { replace: true });
-        } else {
-          console.log("[MagicLinkHandler] User has reset password, redirecting to dashboard");
-          navigate(profile.is_admin ? '/admin' : '/dashboard', { replace: true });
+          return;
         }
+
+        // Only redirect to appropriate dashboard if password has been reset
+        console.log("[MagicLinkHandler] User has reset password, redirecting to dashboard");
+        navigate(profile.is_admin ? '/admin' : '/dashboard', { replace: true });
+        
       } catch (error: any) {
         console.error('[MagicLinkHandler] Magic link error:', error);
         console.error('[MagicLinkHandler] Error stack:', error.stack);
