@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,52 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const supabase = useSupabaseClient();
+
+  // Check auth state on mount and when it changes
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // If user is authenticated, redirect to appropriate dashboard
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profile?.is_admin) {
+          navigate('/admin/dashboard', { replace: true });
+        } else {
+          navigate('/user/dashboard', { replace: true });
+        }
+      }
+    };
+
+    checkAuth();
+
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profile?.is_admin) {
+          navigate('/admin/dashboard', { replace: true });
+        } else {
+          navigate('/user/dashboard', { replace: true });
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, supabase]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,6 +133,20 @@ const Auth = () => {
     }
   };
 
+  const handleBackToHome = () => {
+    // Check if we came from a protected route
+    const isFromProtectedRoute = location.pathname.startsWith('/user/') || 
+                                location.pathname.startsWith('/admin/');
+    
+    // If from protected route, go to root
+    if (isFromProtectedRoute) {
+      navigate('/', { replace: true });
+    } else {
+      // Otherwise, go back
+      navigate(-1);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
       <div className="absolute top-4 left-4 z-20">
@@ -95,7 +154,7 @@ const Auth = () => {
           variant="ghost"
           size="sm"
           className="flex items-center gap-2 hover:bg-background/50"
-          onClick={() => navigate('/')}
+          onClick={handleBackToHome}
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Home
