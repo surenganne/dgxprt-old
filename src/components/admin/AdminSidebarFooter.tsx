@@ -67,7 +67,10 @@ export const AdminSidebarFooter = () => {
             size="sm"
             onClick={() => setTheme(theme === "light" ? "dark" : "light")}
           >
-            <ThemeToggle />
+            <div className="flex items-center w-full">
+              <ThemeToggle />
+              <span className="ml-2 group-data-[state=collapsed]:hidden">Theme</span>
+            </div>
           </Button>
           <Button
             variant="ghost"
