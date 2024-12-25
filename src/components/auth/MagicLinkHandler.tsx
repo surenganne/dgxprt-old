@@ -14,7 +14,9 @@ export const MagicLinkHandler = () => {
       try {
         setIsHandlingMagicLink(true);
         console.log("[MagicLinkHandler] Starting magic link handling");
-        console.log("[MagicLinkHandler] Current location:", location);
+        console.log("[MagicLinkHandler] Current URL:", window.location.href);
+        console.log("[MagicLinkHandler] Search params:", window.location.search);
+        console.log("[MagicLinkHandler] Hash params:", window.location.hash);
 
         // Get parameters from URL
         const searchParams = new URLSearchParams(window.location.search);
@@ -27,15 +29,14 @@ export const MagicLinkHandler = () => {
         const error = searchParams.get("error");
         const errorDescription = searchParams.get("error_description");
 
-        console.log("[MagicLinkHandler] URL Parameters:", {
+        console.log("[MagicLinkHandler] Parsed parameters:", {
           code,
           token,
           type,
           error,
           errorDescription,
-          fullUrl: window.location.href,
-          search: window.location.search,
-          hash: window.location.hash
+          searchParams: Object.fromEntries(searchParams),
+          hashParams: Object.fromEntries(hashParams)
         });
 
         if (error || errorDescription) {
