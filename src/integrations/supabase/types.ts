@@ -297,6 +297,88 @@ export type Database = {
         }
         Relationships: []
       }
+      risk_assessments: {
+        Row: {
+          additional_controls: string | null
+          assessed_by: string
+          assessment_date: string
+          chemical_id: string
+          created_at: string
+          existing_controls: string | null
+          expiry_date: string | null
+          hazard_description: string
+          id: string
+          likelihood: number
+          review_comments: string | null
+          review_date: string | null
+          reviewed_by: string | null
+          risk_level: Database["public"]["Enums"]["risk_level"]
+          severity: number
+          status: Database["public"]["Enums"]["risk_assessment_status"]
+          updated_at: string
+        }
+        Insert: {
+          additional_controls?: string | null
+          assessed_by: string
+          assessment_date?: string
+          chemical_id: string
+          created_at?: string
+          existing_controls?: string | null
+          expiry_date?: string | null
+          hazard_description: string
+          id?: string
+          likelihood: number
+          review_comments?: string | null
+          review_date?: string | null
+          reviewed_by?: string | null
+          risk_level: Database["public"]["Enums"]["risk_level"]
+          severity: number
+          status?: Database["public"]["Enums"]["risk_assessment_status"]
+          updated_at?: string
+        }
+        Update: {
+          additional_controls?: string | null
+          assessed_by?: string
+          assessment_date?: string
+          chemical_id?: string
+          created_at?: string
+          existing_controls?: string | null
+          expiry_date?: string | null
+          hazard_description?: string
+          id?: string
+          likelihood?: number
+          review_comments?: string | null
+          review_date?: string | null
+          reviewed_by?: string | null
+          risk_level?: Database["public"]["Enums"]["risk_level"]
+          severity?: number
+          status?: Database["public"]["Enums"]["risk_assessment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_assessments_assessed_by_fkey"
+            columns: ["assessed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_assessments_chemical_id_fkey"
+            columns: ["chemical_id"]
+            isOneToOne: false
+            referencedRelation: "chemicals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_assessments_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sds_documents: {
         Row: {
           chemical_id: string | null
@@ -480,6 +562,12 @@ export type Database = {
       audit_log_type: "user_action" | "system_event"
       chemical_hazard_class: "hazardous" | "non_hazardous"
       location_type: "country" | "state" | "district" | "school" | "site"
+      risk_assessment_status:
+        | "draft"
+        | "pending_review"
+        | "approved"
+        | "rejected"
+      risk_level: "low" | "medium" | "high" | "critical"
       sds_status: "active" | "archived" | "pending_review"
     }
     CompositeTypes: {
