@@ -1,142 +1,175 @@
 # DGXPRT Project Status
 
-## Completed Features ✅
+## Completed Features by Role ✅
 
-### Authentication & User Management
-- Basic authentication with email/password
-- User role management (Admin, Compliance Officer, Standard User)
-- User profile management
-- Location-based access control
-- User status management (active/inactive)
+### Admin Features
+- User and location management
+  - Create, edit, and delete users
+  - Assign user roles (Admin, Compliance Officer, Standard User)
+  - Manage user status (active/inactive)
+  - Create and manage location hierarchy
+  - Assign users to locations
+  - Set custom location labels
+  - Manage location contact information
 
-### Location Management
-- Hierarchical location structure
-- Location CRUD operations
-- Location assignment to users
-- Location status tracking
-- Custom location labels
-- Location contact information
+- Chemical Management
+  - Maintain chemical master list
+  - Create and manage chemical categories
+  - Set hazard classifications
+  - Track chemical status
+  - Manage chemical details (CAS number, storage conditions)
+  - Configure search and filtering options
 
-### Chemical Management
-- Chemical master list
-- Chemical categories
-- Hazard classification
-- Chemical status tracking
-- Chemical details (CAS number, storage conditions, etc.)
-- Basic search and filtering
+- SDS Management
+  - Upload and manage SDS documents
+  - Control version system
+  - Review and approve SDS documents
+  - Configure review workflows
+  - Manage document storage in Supabase
 
-### SDS Management
-- SDS document upload
-- Version control system
-- SDS review workflow
-- SDS status tracking
-- Review notifications
-- Document storage in Supabase
+### Compliance Officer Features
+- Risk Assessment Review
+  - Review and approve risk assessments
+  - Monitor assessment status
+  - Provide review comments
+  - Track assessment history
+  - Calculate risk levels
 
-### Risk Assessment
-- Basic risk assessment creation
-- Risk level calculation
-- Assessment review workflow
-- Status tracking
-- Reviewer comments
+- SDS Review
+  - Review uploaded SDS documents
+  - Add review comments
+  - Update SDS status
+  - Receive review notifications
+  - Track document versions
 
-## In Progress 🚧
+### Standard User Features
+- Chemical Access
+  - View approved chemical list
+  - Search and filter chemicals
+  - Access chemical details
+  - View hazard information
+  - Download SDS documents
 
-### Chemical Management
-- Chemical compatibility matrix
-- Advanced search capabilities
-- Bulk import/export functionality
-- Chemical inventory tracking
-- Storage location mapping
+- Risk Assessments
+  - Create draft assessments
+  - Submit for review
+  - View assessment status
+  - Receive status notifications
+  - Access approved assessments
 
-### Risk Assessment
-- Custom assessment templates
-- Risk calculation algorithms
-- Automated controls suggestions
-- Historical assessment tracking
-- Batch assessment capabilities
+- Location-Based Access
+  - View assigned locations
+  - Access location-specific data
+  - View location contact info
+  - Receive location-based alerts
 
-### Reporting & Analytics
-- Basic reporting functionality
-- Custom report builder
-- Data visualization
-- Export capabilities
-- Cross-location analytics
+## In Progress Features 🚧
+
+### Admin Enhancements
+- Advanced Chemical Management
+  - Chemical compatibility matrix
+  - Bulk import/export tools
+  - Advanced search capabilities
+  - Storage location mapping
+  - Inventory tracking system
+
+- Enhanced User Management
+  - Advanced access controls
+  - Bulk user operations
+  - User activity monitoring
+  - Custom role definitions
+
+### Compliance Officer Tools
+- Risk Assessment Tools
+  - Custom assessment templates
+  - Automated controls suggestions
+  - Batch assessment capabilities
+  - Risk calculation algorithms
+  - Historical tracking dashboard
+
+- Compliance Monitoring
+  - Real-time compliance dashboard
+  - Automated compliance checks
+  - Regulatory requirement tracking
+  - Violation alert system
+  - Compliance reporting tools
+
+### Standard User Features
+- Enhanced Chemical Access
+  - Advanced filtering options
+  - Custom chemical lists
+  - Favorite chemicals
+  - Usage history tracking
+  - Personal notifications
 
 ## Pending Features 📋
 
-### Inventory Management
-- Real-time inventory tracking
-- Stock level management
-- Inventory adjustments
-- Location-based inventory
-- Automated alerts for low stock
-- Transfer operations
+### Admin Features
+- Inventory Management System
+  - Real-time tracking
+  - Stock level management
+  - Transfer operations
+  - Low stock alerts
+  - Location-based inventory
 
-### Compliance Monitoring
-- Compliance dashboard
-- Automated compliance checks
-- Regulatory requirement tracking
-- Compliance reporting
-- Alert system for violations
+- System Integration
+  - External system connections
+  - API documentation
+  - Webhook support
+  - Data import/export tools
+  - Third-party integrations
 
-### Enhanced Security
-- Two-factor authentication
-- Advanced password policies
-- Session management
-- Login attempt tracking
-- Security audit logging
+### Compliance Features
+- Advanced Compliance Tools
+  - Automated assessments
+  - Regulatory updates
+  - Compliance forecasting
+  - Risk trend analysis
+  - Automated reporting
 
-### User Experience
-- Mobile responsiveness optimization
-- Offline capabilities
-- Bulk operations for all features
-- Advanced filtering and sorting
-- Custom dashboards
-
-### Integration & APIs
-- External system integration
-- API documentation
-- Webhook support
-- Data import/export tools
-- Third-party integration support
+### Standard User Features
+- Mobile Access
+  - Responsive interface
+  - Offline capabilities
+  - Mobile notifications
+  - Barcode scanning
+  - Quick actions
 
 ## Next Steps 🎯
 
-1. Complete the chemical management module
-   - Implement chemical compatibility matrix
-   - Add bulk import/export functionality
-   - Enhance search capabilities
+1. Complete Role-Specific Dashboards
+   - Admin control center
+   - Compliance monitoring hub
+   - User activity dashboard
 
-2. Enhance risk assessment functionality
-   - Add custom templates
-   - Implement automated controls suggestions
-   - Enable batch assessments
+2. Enhance Security Features
+   - Two-factor authentication
+   - Advanced password policies
+   - Session management
+   - Login attempt tracking
+   - Audit logging
 
-3. Develop reporting system
-   - Create basic reports
-   - Implement custom report builder
-   - Add data visualization
-
-4. Build inventory management
-   - Implement real-time tracking
-   - Add stock level management
-   - Create transfer operations
+3. Implement Advanced Analytics
+   - Role-based reporting
+   - Custom dashboards
+   - Data visualization
+   - Export capabilities
+   - Cross-location analytics
 
 ## Known Issues 🐛
 
-- Page refresh handling in user authentication
-- Navigation state persistence
-- Form validation improvements needed
-- Performance optimization for large data sets
-- Mobile responsive design needs enhancement
+- Authentication state management on refresh
+- Role-based navigation improvements
+- Form validation enhancements
+- Performance optimization needed
+- Mobile responsiveness updates
 
 ## Future Enhancements 🚀
 
-- AI-powered risk assessment suggestions
-- Predictive inventory management
-- Advanced analytics dashboard
-- Mobile application development
-- Integration with laboratory equipment
-- Automated compliance reporting
-- Real-time collaboration features
+- AI-powered risk suggestions
+- Predictive inventory system
+- Role-specific mobile apps
+- Equipment integration
+- Real-time collaboration
+- Automated compliance tools
+- Advanced analytics platform
