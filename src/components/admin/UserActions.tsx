@@ -61,8 +61,10 @@ export const UserActions = ({
       console.log("[UserActions] Current user profile data:", data);
       return data;
     },
-    onError: (error) => {
-      console.error("[UserActions] Query error:", error);
+    meta: {
+      errorHandler: (error: Error) => {
+        console.error("[UserActions] Query error:", error);
+      }
     }
   });
 
