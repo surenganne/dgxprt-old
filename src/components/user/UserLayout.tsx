@@ -33,10 +33,14 @@ export function UserLayout({ children }: UserLayoutProps) {
   };
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-background">
         <BackgroundEffects />
-        <Sidebar className="bg-primary-blue transition-all duration-300 ease-in-out">
+        <Sidebar 
+          className="bg-primary-blue transition-all duration-300 ease-in-out"
+          variant="sidebar"
+          collapsible="icon"
+        >
           <SidebarHeader className="p-4 border-b border-border/10 bg-background flex justify-center">
             <img
               src="/dg-text-logo.png"
