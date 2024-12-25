@@ -20,14 +20,27 @@ export const ChemicalsPagination = ({
 }: ChemicalsPaginationProps) => {
   if (totalPages <= 1) return null;
 
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      onPageChange(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      onPageChange(currentPage + 1);
+    }
+  };
+
   return (
     <div className="mt-4">
       <Pagination>
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious
-              onClick={() => onPageChange(currentPage - 1)}
-              className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+              onClick={handlePreviousPage}
+              className={currentPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+              aria-disabled={currentPage <= 1}
             />
           </PaginationItem>
 
@@ -45,8 +58,9 @@ export const ChemicalsPagination = ({
 
           <PaginationItem>
             <PaginationNext
-              onClick={() => onPageChange(currentPage + 1)}
-              className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+              onClick={handleNextPage}
+              className={currentPage >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+              aria-disabled={currentPage >= totalPages}
             />
           </PaginationItem>
         </PaginationContent>
