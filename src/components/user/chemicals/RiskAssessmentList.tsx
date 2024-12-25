@@ -1,14 +1,39 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { useState } from "react";
+import { RiskAssessmentReviewDialog } from "./RiskAssessmentReviewDialog";
+import { useSession } from "@supabase/auth-helpers-react";
 import type { Chemical } from "@/types/chemical";
 
 interface RiskAssessmentListProps {
   chemicalId: string;
+  chemical: Chemical;
 }
 
-export const RiskAssessmentList = ({ chemicalId }: RiskAssessmentListProps) => {
+export const RiskAssessmentList = ({ chemicalId, chemical }: RiskAssessmentListProps) => {
+  const session = useSession();
+  const [selectedAssessment, setSelectedAssessment] = useState<any>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile", session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!session?.user?.id,
+  });
+
   const { data: assessments, isLoading } = useQuery({
     queryKey: ["risk-assessments", chemicalId],
     queryFn: async () => {
@@ -29,6 +54,11 @@ export const RiskAssessmentList = ({ chemicalId }: RiskAssessmentListProps) => {
     },
   });
 
+  const handleReview = (assessment: any) => {
+    setSelectedAssessment(assessment);
+    setReviewOpen(true);
+  };
+
   if (isLoading) {
     return <div className="text-sm text-gray-500">Loading assessments...</div>;
   }
@@ -38,6 +68,8 @@ export const RiskAssessmentList = ({ chemicalId }: RiskAssessmentListProps) => {
       <div className="text-sm text-gray-500">No risk assessments available.</div>
     );
   }
+
+  const canReview = profile?.is_admin || profile?.is_compliance_officer;
 
   const getRiskLevelColor = (level: string) => {
     switch (level) {
@@ -49,6 +81,21 @@ export const RiskAssessmentList = ({ chemicalId }: RiskAssessmentListProps) => {
         return "bg-orange-100 text-orange-800";
       case "critical":
         return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "approved":
+        return "bg-green-100 text-green-800";
+      case "rejected":
+        return "bg-red-100 text-red-800";
+      case "pending_review":
+        return "bg-yellow-100 text-yellow-800";
+      case "requires_revision":
+        return "bg-orange-100 text-orange-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -75,16 +122,52 @@ export const RiskAssessmentList = ({ chemicalId }: RiskAssessmentListProps) => {
             <p className="text-gray-600">{assessment.hazard_description}</p>
           </div>
 
+          {assessment.review_comments && (
+            <div className="text-sm">
+              <p className="font-medium">Review Comments:</p>
+              <p className="text-gray-600">{assessment.review_comments}</p>
+            </div>
+          )}
+
           <div className="flex items-center justify-between text-sm text-gray-500">
             <span>
               By: {assessment.assessed_by.full_name}
+              {assessment.reviewed_by && (
+                <span className="ml-2">
+                  | Reviewed by: {assessment.reviewed_by.full_name}
+                </span>
+              )}
             </span>
-            <Badge variant="outline">
-              {assessment.status.toUpperCase()}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className={getStatusColor(assessment.status)}>
+                {assessment.status.toUpperCase().replace("_", " ")}
+              </Badge>
+              {canReview && assessment.status !== "draft" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleReview(assessment)}
+                  className="ml-2"
+                >
+                  Review
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       ))}
+
+      {selectedAssessment && (
+        <RiskAssessmentReviewDialog
+          assessment={selectedAssessment}
+          chemical={chemical}
+          open={reviewOpen}
+          onOpenChange={setReviewOpen}
+          onSuccess={() => {
+            setSelectedAssessment(null);
+          }}
+        />
+      )}
     </div>
   );
 };

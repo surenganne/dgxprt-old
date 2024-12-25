@@ -105,7 +105,7 @@ export const ChemicalDetails = ({
                     New Assessment
                   </Button>
                 </div>
-                <RiskAssessmentList chemicalId={chemical.id} />
+                <RiskAssessmentList chemicalId={chemical.id} chemical={chemical} />
               </div>
             </div>
           </ScrollArea>
