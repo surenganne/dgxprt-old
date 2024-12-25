@@ -9,6 +9,7 @@ import { Beaker } from "lucide-react";
 import { ChemicalsFilters } from "@/components/admin/chemicals/ChemicalsFilters";
 import { ChemicalsTable } from "@/components/admin/chemicals/ChemicalsTable";
 import { ChemicalsPagination } from "@/components/admin/chemicals/ChemicalsPagination";
+import { ChemicalDetails } from "@/components/user/chemicals/ChemicalDetails";
 import type { Chemical } from "@/types/chemical";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -23,6 +24,8 @@ const UserChemicals = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [hazardClass, setHazardClass] = useState<ChemicalHazardClass | "all">("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedChemical, setSelectedChemical] = useState<Chemical | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const { data: categories } = useQuery({
     queryKey: ["chemical-categories"],
@@ -97,6 +100,11 @@ const UserChemicals = () => {
     setCurrentPage(1);
   };
 
+  const handleChemicalClick = (chemical: Chemical) => {
+    setSelectedChemical(chemical);
+    setDetailsOpen(true);
+  };
+
   useEffect(() => {
     if (!session?.user) {
       navigate("/auth");
@@ -141,7 +149,7 @@ const UserChemicals = () => {
             <div className="bg-white/50 backdrop-blur-sm rounded-lg border border-gray-100 shadow-sm overflow-hidden">
               <ChemicalsTable
                 chemicals={chemicalsData?.chemicals || []}
-                onEdit={() => {}}
+                onEdit={handleChemicalClick}
                 onDelete={() => {}}
                 selectedChemicals={[]}
                 onSelectionChange={() => {}}
@@ -155,6 +163,12 @@ const UserChemicals = () => {
             />
           </>
         )}
+
+        <ChemicalDetails
+          chemical={selectedChemical}
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+        />
       </div>
     </UserLayout>
   );
