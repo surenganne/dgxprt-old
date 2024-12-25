@@ -26,56 +26,31 @@ export const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRoutePr
           return;
         }
 
-        // Check admin status if adminOnly is true
-        if (adminOnly) {
-          console.log("[ProtectedRoute] Checking admin status");
-          const { data: profile, error: profileError } = await supabaseClient
-            .from("profiles")
-            .select("is_admin")
-            .eq("id", session.user.id)
-            .single();
-          
-          if (profileError) {
-            console.error("[ProtectedRoute] Error fetching profile:", profileError);
-            return;
-          }
-
-          console.log("[ProtectedRoute] User profile:", profile);
-          
-          if (!profile?.is_admin) {
-            console.log("[ProtectedRoute] User is not admin, redirecting to dashboard");
-            navigate("/dashboard");
-            return;
-          }
+        // Check user profile including password reset status
+        const { data: profile, error: profileError } = await supabaseClient
+          .from("profiles")
+          .select("is_admin, has_reset_password")
+          .eq("id", session.user.id)
+          .single();
+        
+        if (profileError) {
+          console.error("[ProtectedRoute] Error fetching profile:", profileError);
+          return;
         }
 
-        // Only check reset password status if user is on the reset password page
-        if (location.pathname === '/reset-password') {
-          console.log("[ProtectedRoute] Checking password reset status");
-          const { data: profile, error: profileError } = await supabaseClient
-            .from("profiles")
-            .select("has_reset_password")
-            .eq("id", session.user.id)
-            .single();
+        console.log("[ProtectedRoute] User profile:", profile);
 
-          if (profileError) {
-            console.error("[ProtectedRoute] Error checking reset password status:", profileError);
-            return;
-          }
+        // If password hasn't been reset and user is not already on reset-password page
+        if (!profile?.has_reset_password && location.pathname !== '/reset-password') {
+          console.log("[ProtectedRoute] User needs to reset password, redirecting to /reset-password");
+          navigate("/reset-password", { replace: true });
+          return;
+        }
 
-          console.log("[ProtectedRoute] Password reset status:", profile?.has_reset_password);
-
-          // If user has already reset password, redirect them to their appropriate dashboard
-          if (profile?.has_reset_password) {
-            const { data: userProfile } = await supabaseClient
-              .from("profiles")
-              .select("is_admin")
-              .eq("id", session.user.id)
-              .single();
-            
-            console.log("[ProtectedRoute] Redirecting user who already reset password");
-            navigate(userProfile?.is_admin ? '/admin' : '/dashboard');
-          }
+        // Only check admin status if adminOnly is true and user has reset password
+        if (adminOnly && !profile?.is_admin) {
+          console.log("[ProtectedRoute] User is not admin, redirecting to dashboard");
+          navigate("/dashboard");
         }
       } catch (error) {
         console.error("[ProtectedRoute] Error in auth check:", error);
@@ -83,7 +58,7 @@ export const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRoutePr
     };
 
     checkAuth();
-  }, [session, location, navigate, supabaseClient, adminOnly]);
+  }, [session, navigate, supabaseClient, adminOnly, location.pathname]);
   
   if (!session) {
     console.log("[ProtectedRoute] No session, rendering Navigate component");
