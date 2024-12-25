@@ -12,7 +12,21 @@ export const createClient = (options?: any) => {
       persistSession: true,
       detectSessionInUrl: true,
       flowType: 'pkce',
-      debug: true
+      debug: true,
+      storage: {
+        getItem: (key: string) => {
+          console.log('[Supabase Storage] Getting item:', key);
+          return localStorage.getItem(key);
+        },
+        setItem: (key: string, value: string) => {
+          console.log('[Supabase Storage] Setting item:', key, value);
+          localStorage.setItem(key, value);
+        },
+        removeItem: (key: string) => {
+          console.log('[Supabase Storage] Removing item:', key);
+          localStorage.removeItem(key);
+        },
+      }
     },
     global: {
       headers: {
