@@ -11,13 +11,15 @@ import CreateOwner from "@/pages/CreateOwner";
 import ResetPassword from "@/pages/ResetPassword";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { MagicLinkHandler } from "@/components/auth/MagicLinkHandler";
+import { Navigate } from "react-router-dom";
+
+// Admin routes
 import AdminDashboard from "@/pages/admin/Dashboard";
 import Users from "@/pages/admin/Users";
 import Locations from "@/pages/admin/Locations";
 import Chemicals from "@/pages/admin/Chemicals";
 import ChemicalCategories from "@/pages/admin/ChemicalCategories";
 import SDS from "@/pages/admin/SDS";
-import { Navigate } from "react-router-dom";
 
 // User routes
 import UserDashboard from "@/pages/user/Dashboard";
