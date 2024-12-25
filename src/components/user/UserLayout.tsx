@@ -33,7 +33,7 @@ export function UserLayout({ children }: UserLayoutProps) {
   };
 
   return (
-    <SidebarProvider defaultCollapsed={false}>
+    <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <BackgroundEffects />
         <Sidebar className="bg-primary-blue transition-all duration-300 ease-in-out">
