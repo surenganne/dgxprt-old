@@ -47,9 +47,9 @@ const Auth = () => {
 
           if (profile) {
             if (!profile.has_reset_password) {
-              navigate('/reset-password');
+              navigate('/reset-password', { replace: true });
             } else {
-              navigate(profile.is_admin ? '/admin' : '/dashboard');
+              navigate(profile.is_admin ? '/admin' : '/dashboard', { replace: true });
             }
           }
         }
@@ -77,10 +77,10 @@ const Auth = () => {
         throw error;
       }
 
-      // Check if user needs to reset password
+      // Immediately check profile and redirect after successful login
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('has_reset_password')
+        .select('is_admin, has_reset_password')
         .eq('email', email)
         .single();
 
@@ -89,8 +89,13 @@ const Auth = () => {
         throw profileError;
       }
 
-      if (profile && !profile.has_reset_password) {
-        navigate('/reset-password');
+      // Immediate redirect based on profile
+      if (profile) {
+        if (!profile.has_reset_password) {
+          navigate('/reset-password', { replace: true });
+        } else {
+          navigate(profile.is_admin ? '/admin' : '/dashboard', { replace: true });
+        }
       }
     } catch (error: any) {
       console.error("Login process error:", error);
