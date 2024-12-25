@@ -128,6 +128,23 @@ const Chemicals = () => {
     setDialogOpen(true);
   };
 
+  const handleDeleteChemical = async (chemical: Chemical) => {
+    try {
+      const { error } = await supabase
+        .from("chemicals")
+        .delete()
+        .eq("id", chemical.id);
+
+      if (error) throw error;
+
+      toast.success("Chemical deleted successfully");
+      refetch();
+    } catch (error) {
+      console.error("Error deleting chemical:", error);
+      toast.error("Failed to delete chemical");
+    }
+  };
+
   const handleBulkUpdateSuccess = () => {
     refetch();
     setSelectedChemicals([]);
@@ -235,7 +252,7 @@ const Chemicals = () => {
                     <ChemicalsTable
                       chemicals={chemicalsData?.chemicals || []}
                       onEdit={handleEditChemical}
-                      onDelete={refetch}
+                      onDelete={handleDeleteChemical}
                       selectedChemicals={selectedChemicals}
                       onSelectionChange={setSelectedChemicals}
                     />
