@@ -91,7 +91,7 @@ export const useAuthRedirect = (
         // Immediate redirect if on auth page and user is authenticated
         if (location.pathname === '/auth') {
           console.log("[useAuthRedirect] Redirecting to appropriate dashboard");
-          const redirectPath = profile.is_admin ? '/admin/dashboard' : '/dashboard';
+          const redirectPath = profile.is_admin ? '/admin' : '/dashboard';
           navigate(redirectPath, { replace: true });
         }
 

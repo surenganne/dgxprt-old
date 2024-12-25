@@ -21,6 +21,46 @@ const Auth = () => {
   // Handle authentication redirects
   useAuthRedirect(setInitialAuthCheckDone);
 
+  // Check for existing session on mount
+  useEffect(() => {
+    const checkExistingSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Session check error:", error);
+          return;
+        }
+
+        if (session?.user) {
+          console.log("Existing session found, checking profile");
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('is_admin, has_reset_password')
+            .eq('id', session.user.id)
+            .single();
+
+          if (profileError) {
+            console.error("Profile fetch error:", profileError);
+            return;
+          }
+
+          if (profile) {
+            if (!profile.has_reset_password) {
+              navigate('/reset-password');
+            } else {
+              navigate(profile.is_admin ? '/admin' : '/dashboard');
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+      }
+    };
+
+    checkExistingSession();
+  }, [navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -52,7 +92,6 @@ const Auth = () => {
       if (profile && !profile.has_reset_password) {
         navigate('/reset-password');
       }
-      // Success handling is managed by the auth state change listener
     } catch (error: any) {
       console.error("Login process error:", error);
       toast.error("Error logging in: " + error.message);
