@@ -64,11 +64,22 @@ export const UserActions = ({
       console.log("[UserActions] Generating magic link for:", user.email);
       const magicLink = await generateMagicLink(user.email);
       
+      // Check if the user has reset their password
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("has_reset_password")
+        .eq("email", user.email)
+        .single();
+      
+      console.log("[UserActions] User profile:", profile);
+      
       await navigator.clipboard.writeText(magicLink);
       
       toast({
         title: "Magic link copied!",
-        description: "The login link has been copied to your clipboard.",
+        description: profile?.has_reset_password 
+          ? "The login link has been copied to your clipboard."
+          : "The password reset link has been copied to your clipboard.",
       });
     } catch (error: any) {
       console.error("[UserActions] Error generating magic link:", error);
