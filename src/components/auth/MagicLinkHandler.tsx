@@ -14,6 +14,7 @@ export const MagicLinkHandler = () => {
       try {
         setIsHandlingMagicLink(true);
         console.log("[MagicLinkHandler] Starting magic link handling");
+        console.log("[MagicLinkHandler] Current location:", location);
 
         // Get parameters from URL
         const searchParams = new URLSearchParams(window.location.search);
@@ -23,10 +24,24 @@ export const MagicLinkHandler = () => {
         const code = searchParams.get("code");
         const token = searchParams.get("token") || hashParams.get("access_token");
         const type = searchParams.get("type") || hashParams.get("type");
+        const error = searchParams.get("error");
+        const errorDescription = searchParams.get("error_description");
 
-        console.log("[MagicLinkHandler] Code:", code);
-        console.log("[MagicLinkHandler] Token:", token);
-        console.log("[MagicLinkHandler] Type:", type);
+        console.log("[MagicLinkHandler] URL Parameters:", {
+          code,
+          token,
+          type,
+          error,
+          errorDescription,
+          fullUrl: window.location.href,
+          search: window.location.search,
+          hash: window.location.hash
+        });
+
+        if (error || errorDescription) {
+          console.error("[MagicLinkHandler] Auth error:", { error, errorDescription });
+          throw new Error(errorDescription || error || "Authentication error");
+        }
 
         if (!code && !token) {
           console.log("[MagicLinkHandler] No authentication parameters found");
@@ -35,6 +50,7 @@ export const MagicLinkHandler = () => {
         }
 
         // Clear any existing session first
+        console.log("[MagicLinkHandler] Clearing existing session");
         await supabaseClient.auth.signOut();
         
         let session;
@@ -42,7 +58,11 @@ export const MagicLinkHandler = () => {
         if (code) {
           console.log("[MagicLinkHandler] Using PKCE flow with code");
           const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
-          if (error) throw error;
+          if (error) {
+            console.error("[MagicLinkHandler] Code exchange error:", error);
+            throw error;
+          }
+          console.log("[MagicLinkHandler] Code exchange successful:", data);
           session = data.session;
         } else if (token) {
           console.log("[MagicLinkHandler] Using legacy flow with token");
@@ -51,11 +71,19 @@ export const MagicLinkHandler = () => {
               access_token: token,
               refresh_token: hashParams.get("refresh_token") || ""
             });
-            if (error) throw error;
+            if (error) {
+              console.error("[MagicLinkHandler] Token session error:", error);
+              throw error;
+            }
+            console.log("[MagicLinkHandler] Token session set successfully:", data);
             session = data.session;
           } else {
             const { data, error } = await supabaseClient.auth.getSession();
-            if (error) throw error;
+            if (error) {
+              console.error("[MagicLinkHandler] Get session error:", error);
+              throw error;
+            }
+            console.log("[MagicLinkHandler] Got existing session:", data);
             session = data.session;
           }
         }
@@ -95,13 +123,14 @@ export const MagicLinkHandler = () => {
         }
       } catch (error: any) {
         console.error('[MagicLinkHandler] Magic link error:', error);
+        console.error('[MagicLinkHandler] Error stack:', error.stack);
         
         // Check if it's a refresh token error
         if (error.message?.includes('refresh_token_not_found')) {
           await supabaseClient.auth.signOut();
           toast.error("Your session has expired. Please sign in again.");
         } else {
-          toast.error("Error processing magic link");
+          toast.error(`Error processing magic link: ${error.message}`);
         }
         
         navigate('/auth');
