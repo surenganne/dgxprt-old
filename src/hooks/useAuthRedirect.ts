@@ -17,9 +17,9 @@ export const useAuthRedirect = (
     console.log("[useAuthRedirect] Current path:", location.pathname);
     console.log("[useAuthRedirect] Magic link detected:", isMagicLink);
     
-    // If handling magic link and on auth page, don't redirect
-    if (isMagicLink && location.pathname === '/auth') {
-      console.log("[useAuthRedirect] On auth page with magic link, completing authentication");
+    // If handling magic link, don't redirect yet
+    if (isMagicLink) {
+      console.log("[useAuthRedirect] Magic link detected, skipping redirect");
       setInitialAuthCheckDone(true);
       return;
     }
@@ -47,13 +47,6 @@ export const useAuthRedirect = (
           if (location.pathname !== '/auth') {
             navigate('/auth', { replace: true });
           }
-          setInitialAuthCheckDone(true);
-          return;
-        }
-
-        // Skip profile check if on auth page with magic link
-        if (location.pathname === '/auth' && isMagicLink) {
-          console.log("[useAuthRedirect] Skipping profile check for magic link auth");
           setInitialAuthCheckDone(true);
           return;
         }
@@ -88,8 +81,16 @@ export const useAuthRedirect = (
           return;
         }
 
-        // Immediate redirect if on auth page and user is authenticated
-        if (location.pathname === '/auth') {
+        // Check if user needs to reset password
+        if (!profile.has_reset_password && location.pathname !== '/reset-password') {
+          console.log("[useAuthRedirect] User needs to reset password");
+          navigate('/reset-password', { replace: true });
+          setInitialAuthCheckDone(true);
+          return;
+        }
+
+        // Only redirect to dashboard if not on reset-password page
+        if (location.pathname === '/auth' && profile.has_reset_password) {
           console.log("[useAuthRedirect] Redirecting to appropriate dashboard");
           const redirectPath = profile.is_admin ? '/admin' : '/dashboard';
           navigate(redirectPath, { replace: true });
