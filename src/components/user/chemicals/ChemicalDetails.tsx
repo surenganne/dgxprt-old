@@ -27,14 +27,14 @@ export const ChemicalDetails = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
+        <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-2xl font-semibold">
               {chemical.name}
             </DialogTitle>
           </DialogHeader>
-          <ScrollArea className="flex-1">
-            <div className="space-y-6 p-2">
+          <ScrollArea className="flex-1 px-2">
+            <div className="space-y-6 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">CAS Number</h3>
@@ -117,7 +117,6 @@ export const ChemicalDetails = ({
         open={riskAssessmentOpen}
         onOpenChange={setRiskAssessmentOpen}
         onSuccess={() => {
-          // This will trigger a refetch of the risk assessments list
           setRiskAssessmentOpen(false);
         }}
       />
