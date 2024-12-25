@@ -1,9 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
-import { UserDashboardLayout } from "@/components/user/UserDashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 const Dashboard = () => {
@@ -30,13 +27,17 @@ const Dashboard = () => {
           return;
         }
 
+        // If password hasn't been reset, redirect to reset page
         if (!profile?.has_reset_password) {
           navigate("/reset-password", { replace: true });
           return;
         }
 
+        // Redirect based on user role
         if (profile?.is_admin) {
-          navigate("/admin/dashboard");
+          navigate("/admin/dashboard", { replace: true });
+        } else {
+          navigate("/user/dashboard", { replace: true });
         }
       } catch (error) {
         console.error("Error in auth check:", error);
@@ -47,69 +48,8 @@ const Dashboard = () => {
     checkAuth();
   }, [session, navigate, supabase]);
 
-  return (
-    <UserDashboardLayout>
-      <div className="space-y-8">
-        <h1 className="text-3xl font-bold tracking-tight">Welcome to DGXPRT</h1>
-        
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Chemical Register Card */}
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle>Chemical Register</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                View and manage your chemical inventory
-              </p>
-              <Button 
-                className="w-full bg-gradient-to-r from-primary-purple to-primary-blue text-white"
-                onClick={() => navigate("/chemicals")}
-              >
-                View Register
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* SDS Documents Card */}
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle>SDS Documents</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                Access safety data sheets for your chemicals
-              </p>
-              <Button 
-                className="w-full bg-gradient-to-r from-primary-purple to-primary-blue text-white"
-                onClick={() => navigate("/sds")}
-              >
-                View Documents
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Risk Assessments Card */}
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle>Risk Assessments</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                Manage and review chemical risk assessments
-              </p>
-              <Button 
-                className="w-full bg-gradient-to-r from-primary-purple to-primary-blue text-white"
-                onClick={() => navigate("/risk-assessments")}
-              >
-                View Assessments
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </UserDashboardLayout>
-  );
+  // Show nothing while checking auth
+  return null;
 };
 
 export default Dashboard;
