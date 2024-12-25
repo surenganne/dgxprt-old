@@ -30,7 +30,14 @@ export const useAuthRedirect = (
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
-          console.error("[useAuthRedirect] Session error:", sessionError);
+          if (sessionError.message?.includes('refresh_token_not_found')) {
+            console.log("[useAuthRedirect] Refresh token not found, signing out");
+            await supabase.auth.signOut();
+            toast.error("Your session has expired. Please sign in again.");
+            navigate('/auth', { replace: true });
+          } else {
+            console.error("[useAuthRedirect] Session error:", sessionError);
+          }
           setInitialAuthCheckDone(true);
           return;
         }
@@ -91,7 +98,7 @@ export const useAuthRedirect = (
         setInitialAuthCheckDone(true);
       } catch (error) {
         console.error("[useAuthRedirect] Error in auth redirect:", error);
-      } finally {
+        toast.error("Error checking authentication status");
         setInitialAuthCheckDone(true);
       }
     };

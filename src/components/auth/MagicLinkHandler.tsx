@@ -24,6 +24,9 @@ export const MagicLinkHandler = () => {
       setIsHandlingMagicLink(true);
       
       try {
+        // Clear any existing session first
+        await supabaseClient.auth.signOut();
+        
         if (hashParams.get("access_token")) {
           const { error: setSessionError } = await supabaseClient.auth.setSession({
             access_token: hashParams.get("access_token")!,
@@ -68,7 +71,15 @@ export const MagicLinkHandler = () => {
         }
       } catch (error: any) {
         console.error('[MagicLinkHandler] Magic link error:', error);
-        toast.error("Error processing magic link");
+        
+        // Check if it's a refresh token error
+        if (error.message?.includes('refresh_token_not_found')) {
+          await supabaseClient.auth.signOut();
+          toast.error("Your session has expired. Please sign in again.");
+        } else {
+          toast.error("Error processing magic link");
+        }
+        
         navigate('/auth');
       } finally {
         setIsHandlingMagicLink(false);
