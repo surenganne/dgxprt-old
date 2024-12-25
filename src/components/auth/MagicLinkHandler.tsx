@@ -12,12 +12,15 @@ export const MagicLinkHandler = () => {
   useEffect(() => {
     const handleMagicLink = async () => {
       const searchParams = new URLSearchParams(window.location.search);
-      const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
-      
-      const token = searchParams.get("token") || hashParams.get("access_token");
-      const type = searchParams.get("type") || hashParams.get("type");
+      const token = searchParams.get("token");
+      const type = searchParams.get("type");
 
-      if (!token || (type !== "magiclink" && type !== "recovery")) {
+      console.log("[MagicLinkHandler] Token:", token);
+      console.log("[MagicLinkHandler] Type:", type);
+
+      if (!token || type !== "magiclink") {
+        console.log("[MagicLinkHandler] Invalid magic link parameters");
+        navigate('/auth');
         return;
       }
 
@@ -27,20 +30,19 @@ export const MagicLinkHandler = () => {
         // Clear any existing session first
         await supabaseClient.auth.signOut();
         
-        if (hashParams.get("access_token")) {
-          const { error: setSessionError } = await supabaseClient.auth.setSession({
-            access_token: hashParams.get("access_token")!,
-            refresh_token: hashParams.get("refresh_token") || "",
-          });
-          
-          if (setSessionError) throw setSessionError;
-        } else {
-          const { error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(token);
-          if (exchangeError) throw exchangeError;
+        console.log("[MagicLinkHandler] Exchanging token for session");
+        const { error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(token);
+        
+        if (exchangeError) {
+          console.error("[MagicLinkHandler] Token exchange error:", exchangeError);
+          throw exchangeError;
         }
 
         const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-        if (userError) throw userError;
+        if (userError) {
+          console.error("[MagicLinkHandler] Get user error:", userError);
+          throw userError;
+        }
 
         if (user) {
           console.log("[MagicLinkHandler] User authenticated:", user.email);
@@ -63,7 +65,7 @@ export const MagicLinkHandler = () => {
           }
 
           console.log("[MagicLinkHandler] Profile found:", profile);
-          // Consider null has_reset_password the same as false
+          // Treat null has_reset_password as false
           if (!profile.has_reset_password) {
             console.log("[MagicLinkHandler] User needs to reset password");
             navigate('/reset-password', { replace: true });
