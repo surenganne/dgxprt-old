@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Edit2, Trash2 } from "lucide-react";
+import { Edit2, Eye, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SDSList } from "@/components/admin/sds/SDSList";
 import type { Chemical } from "@/types/chemical";
@@ -65,7 +65,7 @@ export const ChemicalsTable = ({
           <TableHead>CAS Number</TableHead>
           <TableHead>Hazard Class</TableHead>
           <TableHead>SDS Documents</TableHead>
-          {!readOnly && <TableHead className="w-[100px]">Actions</TableHead>}
+          <TableHead className="w-[100px]">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -100,16 +100,20 @@ export const ChemicalsTable = ({
             <TableCell>
               <SDSList chemicalId={chemical.id} />
             </TableCell>
-            {!readOnly && (
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEdit(chemical)}
-                  >
+            <TableCell>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onEdit(chemical)}
+                >
+                  {readOnly ? (
+                    <Eye className="h-4 w-4" />
+                  ) : (
                     <Edit2 className="h-4 w-4" />
-                  </Button>
+                  )}
+                </Button>
+                {!readOnly && (
                   <Button
                     variant="ghost"
                     size="icon"
@@ -117,9 +121,9 @@ export const ChemicalsTable = ({
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
-                </div>
-              </TableCell>
-            )}
+                )}
+              </div>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
