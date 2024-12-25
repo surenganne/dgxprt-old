@@ -11,7 +11,7 @@ export const createClient = (options?: any) => {
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
-      flowType: 'pkce',
+      flowType: 'implicit',
       debug: true,
       storage: {
         getItem: (key: string) => {
