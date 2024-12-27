@@ -124,6 +124,16 @@ function App() {
                 }
               />
 
+              {/* Catch-all route for admin paths - redirects to dashboard */}
+              <Route
+                path="/admin/*"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Navigate to="/admin/dashboard" replace />
+                  </ProtectedRoute>
+                }
+              />
+
               {/* User Routes */}
               <Route
                 path="/user"
@@ -175,6 +185,16 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <UserReports />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Catch-all route for user paths - redirects to dashboard */}
+              <Route
+                path="/user/*"
+                element={
+                  <ProtectedRoute>
+                    <Navigate to="/user/dashboard" replace />
                   </ProtectedRoute>
                 }
               />
