@@ -20,6 +20,59 @@ project:
       - "React Query"
       - "Context API"
 
+# Regional Code Standards
+regional_code_standards:
+  formatting:
+    - "Use provided regional formatters from utils/formatters directory"
+    - "Always pass locale to formatting functions"
+    - "Handle timezone conversions explicitly"
+  
+  implementation:
+    number_formatting:
+      - "Use Intl.NumberFormat with proper locale"
+      - "Respect regional decimal/thousand separators"
+      - "Format currencies with correct symbols"
+    
+    date_formatting:
+      - "Use date-fns with explicit locale imports"
+      - "Store all dates in UTC/ISO format"
+      - "Display in user's local timezone"
+      - "Use timezone-aware date comparisons"
+    
+    text_formatting:
+      - "Support RTL/LTR text direction"
+      - "Use locale-specific collation for sorting"
+      - "Handle special characters and diacritics"
+    
+    measurement_units:
+      - "Store measurements in standard units (metric)"
+      - "Convert to local units for display"
+      - "Include unit conversions in calculations"
+    
+    currency_handling:
+      - "Store amounts in smallest currency unit (cents/pence)"
+      - "Use BigDecimal for currency calculations"
+      - "Apply locale-specific currency formatting"
+    
+    forms:
+      - "Validate inputs according to regional formats"
+      - "Show locale-specific error messages"
+      - "Use regional-specific input masks"
+    
+    accessibility:
+      - "Provide locale-specific screen reader text"
+      - "Support regional keyboard shortcuts"
+      - "Follow regional accessibility guidelines"
+
+  utilities:
+    required_functions:
+      - "formatDate(date: Date, locale: string): string"
+      - "formatCurrency(amount: number, locale: string): string"
+      - "formatNumber(number: number, locale: string): string"
+      - "formatMeasurement(value: number, unit: string, locale: string): string"
+      - "parseLocalDate(dateString: string, locale: string): Date"
+      - "parseLocalNumber(numberString: string, locale: string): number"
+
 # Code Organization
 directory_structure:
   root:
@@ -42,9 +95,76 @@ directory_structure:
 
 # Data Format Standards
 data_formats:
+  regional_standards:
+    australia:
+      date_format: "DD/MM/YYYY"
+      time_format: "HH:mm:ss"
+      datetime_format: "DD/MM/YYYY HH:mm:ss"
+      currency: "AUD"
+      currency_symbol: "$"
+      decimal_separator: "."
+      thousand_separator: ","
+      locale: "en-AU"
+      timezone: "Australia/Sydney"
+    
+    new_zealand:
+      date_format: "DD/MM/YYYY"
+      time_format: "HH:mm:ss"
+      datetime_format: "DD/MM/YYYY HH:mm:ss"
+      currency: "NZD"
+      currency_symbol: "$"
+      decimal_separator: "."
+      thousand_separator: ","
+      locale: "en-NZ"
+      timezone: "Pacific/Auckland"
+    
+    united_kingdom:
+      date_format: "DD/MM/YYYY"
+      time_format: "HH:mm:ss"
+      datetime_format: "DD/MM/YYYY HH:mm:ss"
+      currency: "GBP"
+      currency_symbol: "£"
+      decimal_separator: "."
+      thousand_separator: ","
+      locale: "en-GB"
+      timezone: "Europe/London"
+    
+    united_states:
+      date_format: "MM/DD/YYYY"
+      time_format: "hh:mm:ss A"
+      datetime_format: "MM/DD/YYYY hh:mm:ss A"
+      currency: "USD"
+      currency_symbol: "$"
+      decimal_separator: "."
+      thousand_separator: ","
+      locale: "en-US"
+      timezone: "America/New_York"
+    
+    european_union:
+      date_format: "DD/MM/YYYY"
+      time_format: "HH:mm:ss"
+      datetime_format: "DD/MM/YYYY HH:mm:ss"
+      currency: "EUR"
+      currency_symbol: "€"
+      decimal_separator: ","
+      thousand_separator: "."
+      locale: "en-EU"
+      timezone: "Europe/Brussels"
+    
+    canada:
+      date_format: "YYYY-MM-DD"
+      time_format: "HH:mm:ss"
+      datetime_format: "YYYY-MM-DD HH:mm:ss"
+      currency: "CAD"
+      currency_symbol: "$"
+      decimal_separator: "."
+      thousand_separator: ","
+      locale: "en-CA"
+      timezone: "America/Toronto"
+
   date:
-    display: "DD/MM/YYYY"
-    iso: "YYYY-MM-DD"
+    display: "DD/MM/YYYY"  # Default format
+    iso: "YYYY-MM-DD"      # Storage format
     database: "TIMESTAMP WITH TIME ZONE"
     parsing: "YYYY-MM-DDTHH:mm:ss.sssZ"
   
@@ -81,6 +201,42 @@ naming_conventions:
     columns: "^[a-z_]+$"
     foreign_keys: "^fk_[a-z_]+$"
     indexes: "^idx_[a-z_]+$"
+
+# Localization Standards
+localization_standards:
+  structure:
+    directory: "src/locales/"
+    format: "json"
+    naming: "{locale}.json"
+  
+  implementation:
+    - "Use React-Intl for message formatting"
+    - "Support dynamic message parameters"
+    - "Maintain separate translation files per locale"
+    - "Include fallback translations"
+  
+  required_features:
+    - "Locale detection"
+    - "Locale switching"
+    - "Locale persistence"
+    - "RTL/LTR support"
+    - "Number formatting"
+    - "Date formatting"
+    - "Currency formatting"
+  
+  message_format:
+    pattern: "{namespace}.{component}.{messageId}"
+    example: "chemical.form.nameLabel"
+  
+  translation_keys:
+    naming: "camelCase"
+    namespace_required: true
+    description_required: true
+  
+  date_time:
+    storage: "UTC"
+    display: "User timezone"
+    format: "Regional preference"
 
 # Component Standards
 components:
