@@ -1,0 +1,241 @@
+# Project .windsurfrules
+version: 1.0
+strict_mode: true
+
+# Project Configuration
+project:
+  name: "DGXPRT"
+  description: "Chemical management system for educational institutions"
+  tech_stack:
+    primary:
+      - "React 18"
+      - "TypeScript"
+      - "Supabase"
+      - "Vite"
+    ui:
+      - "Shadcn UI"
+      - "Radix UI"
+      - "Tailwind CSS"
+    state:
+      - "React Query"
+      - "Context API"
+
+# Code Organization
+directory_structure:
+  root:
+    src/
+    ├── components/        # React components
+    │   ├── ui/           # Shadcn/Radix components
+    │   ├── shared/       # Shared components
+    │   ├── admin/        # Admin interface components
+    │   ├── user/         # User interface components
+    │   ├── auth/         # Authentication components
+    │   └── landing/      # Landing page components
+    ├── pages/            # Route pages
+    │   ├── admin/        # Admin routes
+    │   └── user/         # User routes
+    ├── hooks/            # Custom React hooks
+    ├── services/         # API services
+    ├── integrations/     # Third-party integrations
+    ├── types/            # TypeScript types
+    └── utils/            # Utility functions
+
+# Data Format Standards
+data_formats:
+  date:
+    display: "DD/MM/YYYY"
+    iso: "YYYY-MM-DD"
+    database: "TIMESTAMP WITH TIME ZONE"
+    parsing: "YYYY-MM-DDTHH:mm:ss.sssZ"
+  
+  numbers:
+    decimal_separator: "."
+    thousand_separator: ","
+    decimal_places: 2
+    percentage: "0.00%"
+  
+  chemical_identifiers:
+    cas_number: "^\\d{2,7}-\\d{2}-\\d$"  # Format: XXXXXXX-XX-X
+    un_number: "^UN\\d{4}$"              # Format: UNXXXX
+  
+  measurements:
+    weight:
+      si: "kg"
+      display: "kg"
+    volume:
+      si: "L"
+      display: "L"
+    concentration:
+      si: "mg/L"
+      display: "mg/L"
+
+# Naming Conventions
+naming_conventions:
+  files:
+    components: "^[A-Z][a-zA-Z0-9]+\\.(tsx|ts)$"
+    hooks: "^use[A-Z][a-zA-Z0-9]+\\.(ts|tsx)$"
+    utils: "^[a-z][a-zA-Z0-9]+\\.(ts|tsx)$"
+  
+  database:
+    tables: "^[a-z_]+$"
+    columns: "^[a-z_]+$"
+    foreign_keys: "^fk_[a-z_]+$"
+    indexes: "^idx_[a-z_]+$"
+
+# Component Standards
+components:
+  structure:
+    order:
+      - "Imports"
+      - "Types"
+      - "Constants"
+      - "Component"
+      - "Exports"
+  
+  rules:
+    - "Use functional components exclusively"
+    - "Implement proper loading states"
+    - "Handle error states gracefully"
+    - "Use proper TypeScript types"
+    - "Implement proper prop validation"
+
+# Database Standards
+database:
+  platform: "Supabase"
+  schema:
+    tables:
+      - "profiles"
+      - "chemicals"
+      - "locations"
+      - "user_locations"
+      - "chemical_categories"
+  
+  security:
+    - "Implement RLS policies"
+    - "Use service roles for admin functions"
+    - "Validate data on server side"
+
+# Authentication Standards
+authentication:
+  provider: "Supabase Auth"
+  features:
+    - "Magic link authentication"
+    - "Email/password authentication"
+    - "Password reset functionality"
+    - "Session management"
+  
+  roles:
+    - "owner"
+    - "admin"
+    - "user"
+
+# State Management
+state_management:
+  server_state: "React Query"
+  client_state: "Context API"
+  preferences:
+    - "Prefer server state over client state"
+    - "Use optimistic updates where appropriate"
+    - "Implement proper error boundaries"
+
+# Error Handling
+error_handling:
+  client:
+    - "Use error boundaries for component errors"
+    - "Implement user-friendly error messages"
+    - "Log errors to console in development"
+  
+  server:
+    - "Use structured error responses"
+    - "Implement proper error status codes"
+    - "Log errors with context information"
+
+# UI Standards
+ui:
+  theme:
+    colors:
+      primary: 
+        purple: "#895AB7"
+        blue: "#00005B"
+      background: "#FFFFFF"
+      foreground: "#000000"
+  
+  accessibility:
+    - "Implement ARIA labels"
+    - "Ensure keyboard navigation"
+    - "Maintain color contrast ratios"
+    - "Support screen readers"
+
+# Testing Standards
+testing:
+  unit_tests:
+    - "Test hooks independently"
+    - "Test utility functions"
+    - "Test component logic"
+  
+  integration_tests:
+    - "Test form submissions"
+    - "Test authentication flows"
+    - "Test data fetching"
+
+# Performance Standards
+performance:
+  optimization:
+    - "Implement proper code splitting"
+    - "Use React.memo for expensive renders"
+    - "Optimize images and assets"
+    - "Implement proper caching strategies"
+  
+  metrics:
+    - "First Contentful Paint < 2s"
+    - "Time to Interactive < 3.5s"
+    - "Cumulative Layout Shift < 0.1"
+
+# Documentation Standards
+documentation:
+  code:
+    - "Document complex functions"
+    - "Document component props"
+    - "Document type definitions"
+  
+  api:
+    - "Document API endpoints"
+    - "Document request/response formats"
+    - "Document error responses"
+
+# Security Standards
+security:
+  data:
+    - "Sanitize user inputs"
+    - "Validate data on server"
+    - "Implement proper CORS policies"
+  
+  authentication:
+    - "Implement proper session management"
+    - "Use secure password reset flows"
+    - "Implement proper role-based access"
+
+# Git Standards
+git:
+  branches:
+    main: "production ready code"
+    develop: "development branch"
+    feature: "feature/*"
+    hotfix: "hotfix/*"
+  
+  commits:
+    format: "<type>(<scope>): <description>"
+    types:
+      - "feat"
+      - "fix"
+      - "docs"
+      - "style"
+      - "refactor"
+      - "test"
+      - "chore"
+
+# Output Configuration
+output:
+  format: "json"
+  fail_on_error: true
+  log_level: "INFO"
