@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { BackgroundEffects } from "@/components/shared/BackgroundEffects";
 
 interface UserDashboardLayoutProps {
   children: React.ReactNode;
@@ -25,34 +24,25 @@ export function UserDashboardLayout({ children }: UserDashboardLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <BackgroundEffects />
-      
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-4">
-              <img src="/dg-text-logo.png" alt="DGXPRT Logo" className="h-8 w-auto" />
-            </div>
-            
-            <div className="flex items-center gap-4">
+      <header className="border-b">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold">Dashboard</h1>
               <span className="text-sm text-muted-foreground">
                 {session?.user?.email}
               </span>
               <Button 
                 variant="outline" 
                 onClick={handleSignOut}
-                className="bg-gradient-to-r from-primary-purple to-primary-blue text-white hover:opacity-90"
               >
-                Sign Out
+                Sign out
               </Button>
             </div>
           </div>
         </div>
       </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-6">
         {children}
       </main>
     </div>

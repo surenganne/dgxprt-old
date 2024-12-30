@@ -7,7 +7,6 @@ import {
   Sidebar,
   SidebarHeader,
   SidebarProvider,
-  SidebarContent,
 } from "@/components/ui/sidebar";
 import { BackgroundEffects } from "@/components/shared/BackgroundEffects";
 import { UserSidebarContent } from "./UserSidebarContent";
