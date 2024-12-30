@@ -51,7 +51,7 @@ export function Header() {
           <div className="flex items-center gap-4">
             <Button 
               variant="outline" 
-              className="hidden md:inline-flex bg-gradient-to-r from-primary-purple to-primary-blue text-white hover:opacity-90 transition-all duration-300 transform hover:scale-105 group border-0"
+              className="hidden md:inline-flex bg-gradient-to-r from-primary-purple to-primary-blue text-white hover:text-white hover:opacity-90 transition-all duration-300 transform hover:scale-105 group border-0"
               onClick={() => navigate("/auth")}
             >
               Get Started
