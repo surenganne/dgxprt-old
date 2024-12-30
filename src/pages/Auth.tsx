@@ -198,14 +198,18 @@ const Auth = () => {
           </div>
 
           <div className="flex flex-col gap-3">
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button 
+              type="submit" 
+              className="w-full bg-gradient-to-r from-primary-purple to-primary-blue text-white hover:text-white hover:opacity-90 transition-all duration-300" 
+              disabled={loading}
+            >
               {loading ? "Signing in..." : "Sign in"}
             </Button>
             
             <Button
               type="button"
               variant="outline"
-              className="w-full"
+              className="w-full bg-gradient-to-r from-primary-purple to-primary-blue text-white hover:text-white hover:opacity-90 transition-all duration-300 border-0"
               onClick={handleMagicLink}
               disabled={loading || !email}
             >
