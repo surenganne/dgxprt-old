@@ -1,9 +1,19 @@
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/ui/theme-provider";
 import { Button } from "@/components/ui/button";
+import { useLocation } from "react-router-dom";
 
 export const ThemeToggle = () => {
   const { theme, setTheme } = useTheme();
+  const location = useLocation();
+
+  // Only show theme toggle on admin and user dashboard routes
+  const showThemeToggle = location.pathname.includes('/admin/') || 
+                         location.pathname.includes('/user/');
+
+  if (!showThemeToggle) {
+    return null;
+  }
 
   return (
     <Button

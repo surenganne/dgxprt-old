@@ -148,12 +148,12 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-white relative overflow-hidden">
       <div className="absolute top-4 left-4 z-20">
         <Button
           variant="ghost"
           size="sm"
-          className="flex items-center gap-2 hover:bg-background/50"
+          className="flex items-center gap-2 hover:bg-gray-100"
           onClick={handleBackToHome}
         >
           <ArrowLeft className="h-4 w-4" />
@@ -163,14 +163,14 @@ const Auth = () => {
 
       <BackgroundEffects />
       
-      <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-lg shadow-lg relative z-10">
+      <div className="w-full max-w-md space-y-8 p-8 bg-white rounded-lg shadow-lg relative z-10">
         <div className="text-center">
           <img
             src="/dg-text-logo.png"
             alt="DGXPRT Logo"
             className="h-12 mx-auto mb-4"
           />
-          <h2 className="text-2xl font-bold tracking-tight">
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900">
             Sign in to your account
           </h2>
         </div>

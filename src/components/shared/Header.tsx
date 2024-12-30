@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -13,7 +12,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-white">
       <nav className="container px-4 mx-auto">
         <div className="relative flex h-16 items-center justify-between">
           <div className="flex items-center gap-8">
@@ -36,11 +35,11 @@ export function Header() {
                   to={item.href}
                   className={cn(
                     "px-4 py-2 text-sm rounded-md transition-colors",
-                    "hover:bg-accent hover:text-accent-foreground",
+                    "hover:bg-gray-100",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
                     isActiveLink(item.href)
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground"
+                      ? "bg-gray-100 text-gray-900"
+                      : "text-gray-600"
                   )}
                 >
                   {item.label}
@@ -50,7 +49,6 @@ export function Header() {
           </div>
 
           <div className="flex items-center gap-4">
-            <ThemeToggle />
             <Button 
               variant="outline" 
               className="hidden md:inline-flex bg-gradient-to-r from-primary-purple to-primary-blue text-white hover:opacity-90 transition-all duration-300 transform hover:scale-105 group border-0"
