@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "@/components/ui/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,9 +40,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <SessionContextProvider supabaseClient={supabase}>
-        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-          <Router>
-            <Routes>
+        <Router>
+          <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/create-owner" element={<CreateOwner />} />
@@ -198,10 +196,9 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-            </Routes>
-          </Router>
+          </Routes>
           <Toaster />
-        </ThemeProvider>
+        </Router>
       </SessionContextProvider>
     </QueryClientProvider>
   );

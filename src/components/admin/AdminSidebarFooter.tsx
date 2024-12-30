@@ -2,24 +2,19 @@ import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { SidebarFooter } from "@/components/ui/sidebar";
 import { AdminSidebarCollapse } from "./AdminSidebarCollapse";
-import { useTheme } from "@/components/ui/theme-provider";
 import { toast } from "sonner";
 
 export const AdminSidebarFooter = () => {
   const session = useSession();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
 
   const handleSignOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       
-      // If we get a 403 user_not_found error, the user is already signed out
-      // or doesn't exist anymore, so we can just redirect them
       if (error?.message?.includes('user_not_found')) {
         console.log('User already signed out or does not exist');
         navigate("/auth");
@@ -38,7 +33,6 @@ export const AdminSidebarFooter = () => {
     } catch (error) {
       console.error('Error in sign out process:', error);
       toast.error("Error signing out");
-      // Force navigate to auth page if we catch any error
       navigate("/auth");
     }
   };
@@ -61,17 +55,6 @@ export const AdminSidebarFooter = () => {
           <AdminSidebarCollapse />
         </div>
         <div className="flex flex-col space-y-2">
-          <Button
-            variant="ghost"
-            className="text-white hover:bg-white/50 hover:text-black transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=collapsed]:px-3 group-data-[state=collapsed]:py-3"
-            size="sm"
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-          >
-            <div className="flex items-center w-full">
-              <ThemeToggle />
-              <span className="ml-2 group-data-[state=collapsed]:hidden">Theme</span>
-            </div>
-          </Button>
           <Button
             variant="ghost"
             size="sm"
