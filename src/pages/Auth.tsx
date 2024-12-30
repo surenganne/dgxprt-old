@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui/button";
@@ -14,48 +14,6 @@ const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const supabase = useSupabaseClient();
-
-  // Check auth state on mount and when it changes
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profile?.is_admin) {
-          navigate('/admin/dashboard', { replace: true });
-        } else {
-          navigate('/user/dashboard', { replace: true });
-        }
-      }
-    };
-
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profile?.is_admin) {
-          navigate('/admin/dashboard', { replace: true });
-        } else {
-          navigate('/user/dashboard', { replace: true });
-        }
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [navigate, supabase]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +34,7 @@ const Auth = () => {
           .from('profiles')
           .select('is_admin, has_reset_password')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (profileError) {
           console.error("[Auth] Error fetching profile:", profileError);
