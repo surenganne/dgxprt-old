@@ -20,7 +20,6 @@ const Auth = () => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // If user is authenticated, redirect to appropriate dashboard
         const { data: profile } = await supabase
           .from('profiles')
           .select('is_admin')
@@ -37,7 +36,6 @@ const Auth = () => {
 
     checkAuth();
 
-    // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
         const { data: profile } = await supabase
@@ -110,15 +108,12 @@ const Auth = () => {
   };
 
   const handleBackToHome = () => {
-    // Check if we came from a protected route
     const isFromProtectedRoute = location.pathname.startsWith('/user/') || 
                                 location.pathname.startsWith('/admin/');
     
-    // If from protected route, go to root
     if (isFromProtectedRoute) {
       navigate('/', { replace: true });
     } else {
-      // Otherwise, go back
       navigate(-1);
     }
   };
@@ -129,7 +124,7 @@ const Auth = () => {
         <Button
           variant="ghost"
           size="sm"
-          className="flex items-center gap-2 hover:bg-gray-100"
+          className="flex items-center gap-2 text-primary-purple hover:text-primary-purple/90 hover:bg-primary-purple/10"
           onClick={handleBackToHome}
         >
           <ArrowLeft className="h-4 w-4" />
@@ -139,49 +134,63 @@ const Auth = () => {
 
       <BackgroundEffects />
       
-      <div className="w-full max-w-md space-y-8 p-8 bg-white rounded-lg shadow-lg relative z-10">
-        <div className="text-center">
+      <div className="w-full max-w-[440px] space-y-8 p-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg relative z-10">
+        <div className="text-center space-y-2">
           <img
             src="/dg-text-logo.png"
             alt="DGXPRT Logo"
-            className="h-12 mx-auto mb-4"
+            className="h-12 mx-auto mb-8"
           />
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900">
-            Sign in to your account
-          </h2>
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary-purple to-primary-blue bg-clip-text text-transparent">
+            Welcome Back
+          </h1>
+          <p className="text-gray-600">
+            Sign in to continue managing your chemical safety system
+          </p>
         </div>
 
         <form className="space-y-6" onSubmit={handleLogin}>
-          <div>
-            <Input
-              type="email"
-              placeholder="Email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full"
-            />
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
+                className="w-full"
+                placeholder="Enter your email"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={loading}
+                className="w-full"
+                placeholder="Enter your password"
+              />
+            </div>
           </div>
 
-          <div>
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full"
-            />
-          </div>
-
-          <div className="flex flex-col gap-3">
-            <Button 
-              type="submit" 
-              className="w-full bg-gradient-to-r from-primary-purple to-primary-blue text-white hover:text-white hover:opacity-90 transition-all duration-300" 
-              disabled={loading}
-            >
-              {loading ? "Signing in..." : "Sign in"}
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-r from-primary-purple to-primary-blue text-white hover:text-white hover:opacity-90 transition-all duration-300"
+            disabled={loading}
+          >
+            {loading ? "Signing in..." : "Sign in"}
+          </Button>
         </form>
       </div>
     </div>
