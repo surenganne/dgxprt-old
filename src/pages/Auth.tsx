@@ -109,30 +109,6 @@ const Auth = () => {
     }
   };
 
-  const handleMagicLink = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      console.log("[Auth] Sending magic link to:", email);
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/verify`,
-        },
-      });
-
-      if (error) throw error;
-
-      toast.success('Magic link sent to your email');
-    } catch (error: any) {
-      console.error('[Auth] Magic link error:', error);
-      toast.error(error.message || 'Error sending magic link');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleBackToHome = () => {
     // Check if we came from a protected route
     const isFromProtectedRoute = location.pathname.startsWith('/user/') || 
@@ -204,16 +180,6 @@ const Auth = () => {
               disabled={loading}
             >
               {loading ? "Signing in..." : "Sign in"}
-            </Button>
-            
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full bg-gradient-to-r from-primary-purple to-primary-blue text-white hover:text-white hover:opacity-90 transition-all duration-300 border-0"
-              onClick={handleMagicLink}
-              disabled={loading || !email}
-            >
-              Send Magic Link
             </Button>
           </div>
         </form>
