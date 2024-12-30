@@ -2,17 +2,14 @@ import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { SidebarFooter } from "@/components/ui/sidebar";
 import { UserSidebarCollapse } from "./UserSidebarCollapse";
-import { useTheme } from "@/components/ui/theme-provider";
 import { toast } from "sonner";
 
 export const UserSidebarFooter = () => {
   const session = useSession();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
 
   const handleSignOut = async () => {
     try {
@@ -44,17 +41,6 @@ export const UserSidebarFooter = () => {
           <UserSidebarCollapse />
         </div>
         <div className="flex flex-col space-y-2">
-          <Button
-            variant="ghost"
-            className="text-white hover:bg-white/50 hover:text-black transition-colors duration-200 ease-in-out w-full justify-start pl-2 group-data-[state=collapsed]:px-3 group-data-[state=collapsed]:py-3"
-            size="sm"
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-          >
-            <div className="flex items-center w-full">
-              <ThemeToggle />
-              <span className="ml-2 group-data-[state=collapsed]:hidden">Theme</span>
-            </div>
-          </Button>
           <Button
             variant="ghost"
             size="sm"
